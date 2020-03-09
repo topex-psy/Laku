@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +12,10 @@ import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
 import 'home.dart';
 import 'splash.dart';
+
+const AUTO_VERIFY_TIMEOUT = 60;
+const RESEND_CODE_TIMEOUT = 10;
+const SMS_CODE_LENGTH = 6;
 
 class Login extends StatefulWidget {
   @override
@@ -126,23 +132,19 @@ class FormDaftar extends StatefulWidget {
 
 class _FormDaftarState extends State<FormDaftar> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _emailController;
   TextEditingController _nomorPonselController;
   TextEditingController _smsCodeController;
-  FocusNode _emailFocusNode;
   FocusNode _nomorPonselFocusNode;
   FocusNode _smsCodeFocusNode;
-  var _emailError = '';
   var _nomorPonselError = '';
-  var _smsCodeError = '';
   var _smsVerificationCode = '';
+  var _showResend = false;
+  var _signedIn = false;
 
   @override
   void initState() {
-    _emailController = TextEditingController();
     _nomorPonselController = TextEditingController();
     _smsCodeController = TextEditingController();
-    _emailFocusNode = FocusNode();
     _nomorPonselFocusNode = FocusNode();
     _smsCodeFocusNode = FocusNode();
     super.initState();
@@ -150,10 +152,8 @@ class _FormDaftarState extends State<FormDaftar> {
 
   @override
   void dispose() {
-    _emailController.dispose();
     _nomorPonselController.dispose();
     _smsCodeController.dispose();
-    _emailFocusNode.dispose();
     _nomorPonselFocusNode.dispose();
     _smsCodeFocusNode.dispose();
     super.dispose();
@@ -161,13 +161,14 @@ class _FormDaftarState extends State<FormDaftar> {
 
   _verifyPhoneNumber(BuildContext context) async {
     String phoneNumber = "+62${_nomorPonselController.text}";
+    FocusScope.of(context).requestFocus(FocusNode());
     widget.setLoading(true);
     await firebaseAuth.verifyPhoneNumber(
       verificationCompleted: (authCredential) => _verificationComplete(authCredential, context),
       verificationFailed: (authException) => _verificationFailed(authException, context),
       codeAutoRetrievalTimeout: (verificationId) => _codeAutoRetrievalTimeout(verificationId),
       codeSent: (verificationId, [code]) => _smsCodeSent(verificationId, [code]),
-      timeout: Duration(seconds: 10),
+      timeout: Duration(seconds: AUTO_VERIFY_TIMEOUT),
       phoneNumber: phoneNumber,
     );
   }
@@ -186,23 +187,26 @@ class _FormDaftarState extends State<FormDaftar> {
 
   _smsCodeSent(String verificationId, List<int> code) {
     print("PHONE AUTH CODE SENT: $verificationId");
+    print("PHONE AUTH CODE: $code");
     setState(() {
       _smsVerificationCode = verificationId;
+      _showResend = false;
     });
     widget.setLoading(false);
   }
 
   _codeAutoRetrievalTimeout(String verificationId) {
     print("PHONE AUTH CODE TIMEOUT: $verificationId");
-    setState(() {
-      _smsVerificationCode = verificationId;
+    if (!_signedIn) setState(() {
+      _smsVerificationCode = '';
     });
-    widget.setLoading(false);
   }
 
   _signInWithCode(String smsCode) {
-    var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
+    if (smsCode.length < SMS_CODE_LENGTH) return;
+    print(" ==> _signInWithCode ...\n$_smsVerificationCode\n$smsCode");
     widget.setLoading(true);
+    var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
     firebaseAuth.signInWithCredential(authCredential).catchError((error) {
       print("SIGNIN WITH CODE ERROR: $error");
     }).then((AuthResult authResult) {
@@ -212,8 +216,12 @@ class _FormDaftarState extends State<FormDaftar> {
   }
 
   _cekUserUID(String uid) async {
+    setState(() {
+      _signedIn = true;
+    });
+    print("SIGNED IN: $uid");
+    widget.setLoading(true);
     var user = await api.user('get', {'FIREBASE_UID': uid});
-    widget.setLoading(false);
     print(user);
     // TODO kalo user ada maka tampil form pin, else tampil form daftar
   }
@@ -222,25 +230,28 @@ class _FormDaftarState extends State<FormDaftar> {
   Widget build(BuildContext context) {
     var _formVerifikasi = <Widget>[
       Row(children: <Widget>[
-        Expanded(child: Text("Silakan masukkan kode verifikasi yang terkirim di kotak masuk SMS.", style: style.textWhite,),),
+        Expanded(child: Text("Silakan masukkan kode verifikasi yang dikirim melalui SMS.", style: style.textWhite,),),
         SizedBox(width: 12,),
-        Icon(LineIcons.user, color: Colors.white, size: 60,),
+        Icon(LineIcons.mobile, color: Colors.white, size: 60,),
       ],),
       SizedBox(height: 20,),
-      Text("Kode verifikasi:", style: style.textLabel),
-      CodeInput(
-        length: 4,
-        keyboardType: TextInputType.number,
-        builder: CodeInputBuilders.lightCircle(),
-        onFilled: (value) => print('Your input is $value.'),
+      Text("Kode verifikasi:", style: style.textLabelWhite),
+      SizedBox(height: 8,),
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: CodeInput(
+          length: SMS_CODE_LENGTH,
+          keyboardType: TextInputType.number,
+          builder: CodeInputBuilders.lightCircle(),
+          onFilled: _signInWithCode,
+        ),
       ),
-      // UiInput(isRequired: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Kode verifikasi", type: UiInputType.PASSWORD, controller: _smsCodeController, focusNode: _smsCodeFocusNode, error: _smsCodeError,),
       SizedBox(height: 12,),
       SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {
         _signInWithCode(_smsCodeController.text);
       },),),
       SizedBox(height: 12,),
-      Center(child: GestureDetector(
+      Center(child: _showResend ? GestureDetector(
         onTap: () {
           setState(() {
             _smsVerificationCode = '';
@@ -248,8 +259,15 @@ class _FormDaftarState extends State<FormDaftar> {
         },
         child: Padding(
           padding: EdgeInsets.all(4),
-          child: Text("Tidak menerima SMS?", style: style.textLink,),
+          child: Text("Tidak menerima SMS?", style: style.textWhiteS,),
         ),
+      ) : Padding(
+        padding: EdgeInsets.all(4),
+        child: Detik("Mengirim SMS ...", duration: RESEND_CODE_TIMEOUT, onFinish: () {
+          setState(() {
+            _showResend = true;
+          });
+        }),
       ),),
       SizedBox(height: 30,),
       Center(child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS))
@@ -262,7 +280,6 @@ class _FormDaftarState extends State<FormDaftar> {
       ],),
       SizedBox(height: 20,),
       UiInput(isRequired: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Nomor ponsel", type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
-      // UiInput(isRequired: true, icon: LineIcons.envelope_o, placeholder: "Alamat email", type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _emailError),
       SizedBox(height: 12,),
       SizedBox(height: style.heightButtonL, child: UiButton(label: "Lanjut", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {
         _verifyPhoneNumber(context);
@@ -286,5 +303,44 @@ class FirstDisabledFocusNode extends FocusNode {
   @override
   bool consumeKeyboardToken() {
     return false;
+  }
+}
+
+class Detik extends StatefulWidget {
+  Detik(this.label, {Key key, @required this.duration, this.onFinish}) : super(key: key);
+  final String label;
+  final int duration;
+  final VoidCallback onFinish;
+
+  @override
+  _DetikState createState() => _DetikState();
+}
+
+class _DetikState extends State<Detik> {
+  int _detik;
+  Timer _timer;
+
+  @override
+  void initState() {
+    _detik = widget.duration;
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (_detik > 0) setState(() { _detik--; }); else if (widget.onFinish != null) {
+          widget.onFinish();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text("${widget.label} $_detik", style: style.textWhiteS,);
   }
 }
