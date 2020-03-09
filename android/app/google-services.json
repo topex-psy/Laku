@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "167372446266-p03ot9l09c4m6fo5bps48k40m9eoq4nm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.laku",
+            "certificate_hash": "9780dfef2228e8bb0b41914fa05e68760b6d0a4d"
+          }
+        },
+        {
           "client_id": "167372446266-j321u3o67qfm6qbiee1dbdvavdkbfobq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

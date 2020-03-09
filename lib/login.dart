@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:code_input/code_input.dart';
 import 'package:line_icons/line_icons.dart';
 import 'utils/api.dart' as api;
 import 'utils/constants.dart';
@@ -99,7 +101,11 @@ class _LoginState extends State<Login> {
                 UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
                 Offstage(
                   offstage: !_isSplashDone,
-                  child: FormDaftar(),
+                  child: FormDaftar(setLoading: (val) {
+                    if (_isLoading != val) setState(() {
+                      _isLoading = val;
+                    });
+                  }),
                 ),
               ],
             )
@@ -111,6 +117,9 @@ class _LoginState extends State<Login> {
 }
 
 class FormDaftar extends StatefulWidget {
+  FormDaftar({Key key, @required this.setLoading}) : super(key: key);
+  final void Function(bool) setLoading;
+
   @override
   _FormDaftarState createState() => _FormDaftarState();
 }
@@ -119,17 +128,23 @@ class _FormDaftarState extends State<FormDaftar> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _emailController;
   TextEditingController _nomorPonselController;
+  TextEditingController _smsCodeController;
   FocusNode _emailFocusNode;
   FocusNode _nomorPonselFocusNode;
+  FocusNode _smsCodeFocusNode;
   var _emailError = '';
   var _nomorPonselError = '';
+  var _smsCodeError = '';
+  var _smsVerificationCode = '';
 
   @override
   void initState() {
     _emailController = TextEditingController();
     _nomorPonselController = TextEditingController();
+    _smsCodeController = TextEditingController();
     _emailFocusNode = FocusNode();
     _nomorPonselFocusNode = FocusNode();
+    _smsCodeFocusNode = FocusNode();
     super.initState();
   }
 
@@ -137,56 +152,131 @@ class _FormDaftarState extends State<FormDaftar> {
   void dispose() {
     _emailController.dispose();
     _nomorPonselController.dispose();
+    _smsCodeController.dispose();
     _emailFocusNode.dispose();
     _nomorPonselFocusNode.dispose();
+    _smsCodeFocusNode.dispose();
     super.dispose();
+  }
+
+  _verifyPhoneNumber(BuildContext context) async {
+    String phoneNumber = "+62${_nomorPonselController.text}";
+    widget.setLoading(true);
+    await firebaseAuth.verifyPhoneNumber(
+      verificationCompleted: (authCredential) => _verificationComplete(authCredential, context),
+      verificationFailed: (authException) => _verificationFailed(authException, context),
+      codeAutoRetrievalTimeout: (verificationId) => _codeAutoRetrievalTimeout(verificationId),
+      codeSent: (verificationId, [code]) => _smsCodeSent(verificationId, [code]),
+      timeout: Duration(seconds: 10),
+      phoneNumber: phoneNumber,
+    );
+  }
+
+  _verificationComplete(AuthCredential authCredential, BuildContext context) {
+    widget.setLoading(true);
+    firebaseAuth.signInWithCredential(authCredential).then((authResult) {
+      print("PHONE AUTH SUCCESS: ${authResult.user.uid}");
+      _cekUserUID(authResult.user.uid);
+    });
+  }
+
+  _verificationFailed(AuthException authException, BuildContext context) {
+    print("PHONE AUTH FAILED: ${authException.message}");
+  }
+
+  _smsCodeSent(String verificationId, List<int> code) {
+    print("PHONE AUTH CODE SENT: $verificationId");
+    setState(() {
+      _smsVerificationCode = verificationId;
+    });
+    widget.setLoading(false);
+  }
+
+  _codeAutoRetrievalTimeout(String verificationId) {
+    print("PHONE AUTH CODE TIMEOUT: $verificationId");
+    setState(() {
+      _smsVerificationCode = verificationId;
+    });
+    widget.setLoading(false);
+  }
+
+  _signInWithCode(String smsCode) {
+    var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
+    widget.setLoading(true);
+    firebaseAuth.signInWithCredential(authCredential).catchError((error) {
+      print("SIGNIN WITH CODE ERROR: $error");
+    }).then((AuthResult authResult) {
+      print("SIGNIN WITH CODE SUCCESS: ${authResult.user.uid}");
+      _cekUserUID(authResult.user.uid);
+    });
+  }
+
+  _cekUserUID(String uid) async {
+    var user = await api.user('get', {'FIREBASE_UID': uid});
+    widget.setLoading(false);
+    print(user);
+    // TODO kalo user ada maka tampil form pin, else tampil form daftar
   }
 
   @override
   Widget build(BuildContext context) {
+    var _formVerifikasi = <Widget>[
+      Row(children: <Widget>[
+        Expanded(child: Text("Silakan masukkan kode verifikasi yang terkirim di kotak masuk SMS.", style: style.textWhite,),),
+        SizedBox(width: 12,),
+        Icon(LineIcons.user, color: Colors.white, size: 60,),
+      ],),
+      SizedBox(height: 20,),
+      Text("Kode verifikasi:", style: style.textLabel),
+      CodeInput(
+        length: 4,
+        keyboardType: TextInputType.number,
+        builder: CodeInputBuilders.lightCircle(),
+        onFilled: (value) => print('Your input is $value.'),
+      ),
+      // UiInput(isRequired: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Kode verifikasi", type: UiInputType.PASSWORD, controller: _smsCodeController, focusNode: _smsCodeFocusNode, error: _smsCodeError,),
+      SizedBox(height: 12,),
+      SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {
+        _signInWithCode(_smsCodeController.text);
+      },),),
+      SizedBox(height: 12,),
+      Center(child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _smsVerificationCode = '';
+          });
+        },
+        child: Padding(
+          padding: EdgeInsets.all(4),
+          child: Text("Tidak menerima SMS?", style: style.textLink,),
+        ),
+      ),),
+      SizedBox(height: 30,),
+      Center(child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS))
+    ];
+    var _formDaftar = <Widget>[
+      Row(children: <Widget>[
+        Expanded(child: Text("Silakan masukkan nomor ponsel untuk melanjutkan.", style: style.textWhite,),),
+        SizedBox(width: 12,),
+        Icon(LineIcons.user, color: Colors.white, size: 60,),
+      ],),
+      SizedBox(height: 20,),
+      UiInput(isRequired: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Nomor ponsel", type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
+      // UiInput(isRequired: true, icon: LineIcons.envelope_o, placeholder: "Alamat email", type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _emailError),
+      SizedBox(height: 12,),
+      SizedBox(height: style.heightButtonL, child: UiButton(label: "Lanjut", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {
+        _verifyPhoneNumber(context);
+      },),),
+      SizedBox(height: 42,),
+      Center(child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS))
+    ];
     return Form(
       key: _formKey,
       autovalidate: false,
       onChanged: () {},
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(children: <Widget>[
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                // Text("Selamat Datang!", style: style.textTitle,),
-                // SizedBox(height: 4,),
-                Text("Silakan masukkan nomor ponsel untuk melanjutkan.", style: style.textWhite,),
-              ],),
-            ),
-            SizedBox(width: 12,),
-            Icon(LineIcons.user, color: Colors.white, size: 60,),
-          ],),
-          SizedBox(height: 20,),
-          UiInput(isRequired: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Nomor ponsel", type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
-          // UiInput(isRequired: true, icon: LineIcons.envelope_o, placeholder: "Alamat email", type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _emailError),
-          SizedBox(height: 12,),
-          SizedBox(height: style.heightButtonL, child: UiButton(label: "Lanjut", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () async {
-            var user = await api.user('get', {'NO_HP': _nomorPonselController.text});
-            print(user);
-            // TODO kalo user ada maka tampil form pin, else tampil form daftar
-          },),),
-          SizedBox(height: 12,),
-          // Center(child: GestureDetector(
-          //   onTap: () {
-          //     setState(() {
-          //       _isRegistered = !_isRegistered;
-          //     });
-          //   },
-          //   child: Padding(
-          //     padding: EdgeInsets.all(4),
-          //     child: Text("${_isRegistered?'Belum':'Sudah'} punya akun?", style: style.textLink,),
-          //   ),
-          // ),)
-          // Expanded(child: Container()),
-          SizedBox(height: 30,),
-          Center(child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS))
-        ],
+        children: _smsVerificationCode.isEmpty ? _formDaftar : _formVerifikasi,
       ),
     );
   }
