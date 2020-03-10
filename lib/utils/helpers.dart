@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'constants.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
+bool isDebugMode = false;
 
 UIHelper h;
 UserHelper a;
