@@ -29,6 +29,8 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
+
+    // set orientation menjadi portrait untuk sementara
     try {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     } on PlatformException {
@@ -61,14 +63,12 @@ class _LoginState extends State<Login> {
   }
 
   _getCurrentUser() async {
+    if (!_isLoading) setState(() { _isLoading = true; });
     final user = await firebaseAuth.currentUser();
-    if (user == null) {
-      setState(() {
-        _isLoading = false;
-      });
-    } else {
-      var userApi = await api.user('get', {'FIREBASE_UID': user.uid});
-      print(userApi);
+    if (user == null) setState(() { _isLoading = false; }); else {
+      // TODO FIXME fetch user data, kalo user ada maka tampil form pin, else tampil form daftar
+      // var userApi = await api.user('get', {'FIREBASE_UID': user.uid});
+      // print(userApi);
       Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Home()));
       print(results);
     }
@@ -107,11 +107,14 @@ class _LoginState extends State<Login> {
                 UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
                 Offstage(
                   offstage: !_isSplashDone,
-                  child: FormDaftar(setLoading: (val) {
-                    if (_isLoading != val) setState(() {
-                      _isLoading = val;
-                    });
-                  }),
+                  child: FormDaftar(
+                    setLoading: (val) {
+                      if (_isLoading != val) setState(() {
+                        _isLoading = val;
+                      });
+                    },
+                    getCurrentUser: _getCurrentUser
+                  ),
                 ),
               ],
             )
@@ -123,8 +126,9 @@ class _LoginState extends State<Login> {
 }
 
 class FormDaftar extends StatefulWidget {
-  FormDaftar({Key key, @required this.setLoading}) : super(key: key);
+  FormDaftar({Key key, @required this.setLoading, @required this.getCurrentUser}) : super(key: key);
   final void Function(bool) setLoading;
+  final VoidCallback getCurrentUser;
 
   @override
   _FormDaftarState createState() => _FormDaftarState();
@@ -220,10 +224,7 @@ class _FormDaftarState extends State<FormDaftar> {
       _signedIn = true;
     });
     print("SIGNED IN: $uid");
-    widget.setLoading(true);
-    var user = await api.user('get', {'FIREBASE_UID': uid});
-    print(user);
-    // TODO kalo user ada maka tampil form pin, else tampil form daftar
+    widget.getCurrentUser();
   }
 
   @override

@@ -3,12 +3,14 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rounded_date_picker/src/material_rounded_date_picker_style.dart';
 import 'package:flutter_rounded_date_picker/src/material_rounded_year_picker_style.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'constants.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
 
 UIHelper h;
 UserHelper a;
+FormatHelper f;
 
 initializeHelpers(BuildContext context, [String source]) {
   print("INITIALIZE HELPERS ............... $source");
@@ -18,7 +20,11 @@ initializeHelpers(BuildContext context, [String source]) {
   }
   h = UIHelper(context);
   a = UserHelper(context);
-  // f = FormatHelper();
+  f = FormatHelper();
+}
+
+class FormatHelper {
+  String formatNumber(num nominal) => NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
 }
 
 class UserHelper {

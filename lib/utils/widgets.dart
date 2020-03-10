@@ -480,7 +480,6 @@ class UiButton extends StatelessWidget {
           focusElevation: elevation,
           highlightElevation: elevation,
           shape: RoundedRectangleBorder(
-            // side: BorderSide(color: onPressed == null ? Colors.grey : _borderColor, width: 2),
             side: BorderSide(color: _borderColor, width: 2),
             borderRadius: borderRadius ?? BorderRadius.circular(30)
           ),

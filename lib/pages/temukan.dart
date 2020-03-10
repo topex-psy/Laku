@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:line_icons/line_icons.dart';
 import '../utils/styles.dart' as style;
+import '../utils/helpers.dart';
 
 class Iklan {
   Iklan({this.judul, this.pic, this.x, this.y});
@@ -43,7 +44,6 @@ class _TemukanState extends State<Temukan> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: OrientationBuilder(builder: (context, orientation) {
-        var _screenSize = MediaQuery.of(context).size;
         var _isPortrait = orientation == Orientation.portrait;
         return Container(
           padding: EdgeInsets.all(10),
@@ -99,7 +99,7 @@ class _TemukanState extends State<Temukan> {
                             //   image: NetworkImage(item.pic),
                             //   fit: BoxFit.cover,
                             // ),
-                            Container(width: double.infinity, height: _screenSize.width / 6, decoration: BoxDecoration(
+                            Container(width: double.infinity, height: h.screenSize.width / 6, decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: FractionalOffset.topCenter,
                                 end: FractionalOffset.bottomCenter,
