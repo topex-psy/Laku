@@ -8,6 +8,7 @@ const APP_LOCALE         = "id_ID";
 // const APP_HOST           = "https://www.taufiknur.com/laku/";
 const APP_HOST           = "http://192.168.8.101/laku/";
 
+const THEME_BACKGROUND     = Color(0XFFDEFFF3);
 const THEME_BORDER_RADIUS  = 12.0;
 const THEME_COLOR          = Colors.teal;
 const THEME_PADDING        = 15.0;

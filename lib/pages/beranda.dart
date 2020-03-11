@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import '../models/report.dart';
+import '../providers/notifications.dart';
 import '../utils/constants.dart';
 import '../utils/curves.dart';
 import '../utils/helpers.dart';
@@ -52,118 +52,20 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
     });
   }
 
-  Widget _buildCardList({
-    @required String label,
-    @required String buttonLabel,
-    @required IconData buttonIcon,
-    @required String notif
-  }) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
-      elevation: THEME_CARD_ELEVATION,
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Row(children: <Widget>[
-          SizedBox(width: 8,),
-          Consumer<ReportModel>(builder: (context, report, widget) {
-            var angka;
-            switch (notif) {
-              case 'iklanTerpasang': angka = report.iklanTerpasang; break;
-              case 'pesanMasuk': angka = report.pesanMasuk; break;
-            }
-            return Text(f.formatNumber(angka) ?? '-', style: style.textHeadline,);
-          },),
-          SizedBox(width: 8,),
-          Expanded(child: Text(label)),
-          SizedBox(width: 100, height: style.heightButton, child: UiButton(label: buttonLabel, color: Colors.teal[300], textStyle: style.textButton, icon: buttonIcon, iconRight: true, onPressed: () {
-            // TODO buka kelola iklan
-          }),),
-        ],),
-      ),
-    );
-  }
-  
-  Widget _buildCardBox({
-    Color color,
-    @required IconData icon,
-    @required String notif,
-    @required String label,
-  }) {
-    var size = (h.screenSize.width - 38) / 2;
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
-        elevation: THEME_CARD_ELEVATION,
-        color: color ?? THEME_COLOR,
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: FractionalOffset.topLeft,
-              end: FractionalOffset.bottomCenter,
-              colors: [
-                Colors.white.withOpacity(0.0),
-                Colors.white.withOpacity(0.1),
-              ],
-              stops: [
-                0.0,
-                1.0,
-              ]
-            ),
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-            Row(children: <Widget>[
-              Icon(icon, color: Colors.white, size: 18,),
-              // Container(
-              //   width: 30,
-              //   height: 30,
-              //   decoration: BoxDecoration(
-              //     border: Border.all(
-              //       color: Colors.white54,
-              //       width: 1.0,
-              //     ),
-              //     borderRadius: BorderRadius.circular(50),
-              //   ),
-              //   child: Center(child: Icon(icon, color: Colors.white, size: 18,))
-              // ),
-              Expanded(child: Container(),),
-              SizedBox(width: 8,),
-              Icon(LineIcons.arrow_up, color: Colors.white, size: 12,),
-              SizedBox(width: 4,),
-              Text("0.5", style: style.textWhiteS,)
-            ]),
-            SizedBox(height: 8,),
-            Consumer<ReportModel>(builder: (context, report, widget) {
-              var angka;
-              switch (notif) {
-                case 'iklan': angka = report.iklan; break;
-                case 'pengguna': angka = report.pengguna; break;
-                case 'pencari': angka = report.pencari; break;
-              }
-              return Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,);
-            },),
-            Text("$label", style: style.textTitleWhite,),
-            SizedBox(height: 14,),
-            Row(children: <Widget>[
-              Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
-              SizedBox(width: 8,),
-              Icon(LineIcons.chevron_circle_right, color: Colors.white70, size: 12,)
-            ],)
-          ],),
-        ),
-      ),
-    );
-  }
-
   _getAllData() {
     print(" ==> GET ALL DATA ..................");
+    var notification = Provider.of<NotificationsProvider>(context);
     Future.delayed(Duration(milliseconds: 2000), () {
       _refreshController.refreshCompleted();
       // TODO on error
       // _refreshController.refreshFailed();
+      notification.setNotif(
+        iklanTerpasang: 8,
+        pesanMasuk: 2,
+        iklan: 29,
+        pengguna: 8,
+        pencari: 1,
+      );
       setState(() {
         _isLoading = false;
       });
@@ -237,52 +139,28 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
                       Text("Kamu punya:", style: style.textLabelWhite),
                       SizedBox(height: 8,),
-                      _buildCardList(label: "Iklan terpasang", notif: 'iklanTerpasang', buttonLabel: "Kelola", buttonIcon: LineIcons.dropbox),
-                      _buildCardList(label: "Pesan masuk", notif: 'pesanMasuk', buttonLabel: "Cek", buttonIcon: LineIcons.inbox),
+                      CardList(label: "Iklan terpasang", notif: 'iklanTerpasang', buttonLabel: "Kelola", buttonIcon: LineIcons.dropbox),
+                      CardList(label: "Pesan masuk", notif: 'pesanMasuk', buttonLabel: "Cek", buttonIcon: LineIcons.inbox),
 
                       SizedBox(height: SECTION_MARGIN,),
 
                       Text("Di sekitarmu ada:", style: style.textLabel),
                       SizedBox(height: 12,),
                       Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
-                        _buildCardBox(color: Colors.blue, notif: 'iklan', icon: LineIcons.map_marker, label: "Iklan"),
-                        _buildCardBox(color: Colors.green, notif: 'pengguna', icon: LineIcons.users, label: "Pengguna"),
-                        _buildCardBox(color: Colors.orange, notif: 'pencari', icon: LineIcons.binoculars, label: "Pencari"),
+                        CardBox(color: Colors.blue, notif: 'iklan', icon: LineIcons.map_marker, label: "Iklan"),
+                        CardBox(color: Colors.green, notif: 'pengguna', icon: LineIcons.users, label: "Pengguna"),
+                        CardBox(color: Colors.orange, notif: 'pencari', icon: LineIcons.binoculars, label: "Pencari"),
                       ],),
 
                       SizedBox(height: SECTION_MARGIN,),
 
                       Text("Ingin jangkauan lebih luas?", style: style.textLabel),
                       SizedBox(height: 12,),
-
                       SizedBox(width: 200, height: style.heightButton, child: UiButton(label: "Upgrade akunmu", color: Colors.teal[300], textStyle: style.textButton, icon: LineIcons.certificate, iconRight: true, onPressed: () {
                         // TODO upgrade akun
                       }),),
 
                       SizedBox(height: SECTION_MARGIN,),
-
-                      // Card(child: ListView.separated(
-                      //   physics: NeverScrollableScrollPhysics(),
-                      //   separatorBuilder: (context, index) => Divider(),
-                      //   itemCount: 3,
-                      //   itemBuilder: (context, index) {
-                      //     return Container(
-                      //       padding: EdgeInsets.all(20),
-                      //       child: Row(children: <Widget>[
-                      //         CircleAvatar(),
-                      //         SizedBox(width: 8,),
-                      //         Expanded(child: Column(children: <Widget>[
-                      //           Row(children: <Widget>[
-                      //             Text("Nama Orang", style: style.textLabel),
-                      //             SizedBox(width: 12,),
-                      //             Expanded(child: Text("2 hari lalu", style: style.textMutedS,),)
-                      //           ],),
-                      //           Text("Halo", style: style.textMuted),
-                      //         ],),)
-                      //       ],)
-                      //     );
-                      //   }
-                      // ),)
                     ],),
                   ),
                 ),),
@@ -296,6 +174,130 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
             ),
           ),) : SizedBox()
         ],
+      ),
+    );
+  }
+}
+
+class CardBox extends StatefulWidget {
+  CardBox({Key key, this.color, @required this.icon, @required this.notif, @required this.label}) : super(key: key);
+  final Color color;
+  final IconData icon;
+  final String notif;
+  final String label;
+
+  @override
+  _CardBoxState createState() => _CardBoxState();
+}
+
+class _CardBoxState extends State<CardBox> {
+  @override
+  Widget build(BuildContext context) {
+    var size = (h.screenSize.width - 38) / 2;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
+        elevation: THEME_CARD_ELEVATION,
+        color: widget.color ?? THEME_COLOR,
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: FractionalOffset.topLeft,
+              end: FractionalOffset.bottomCenter,
+              colors: [
+                Colors.white.withOpacity(0.0),
+                Colors.white.withOpacity(0.1),
+              ],
+              stops: [
+                0.0,
+                1.0,
+              ]
+            ),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+            Row(children: <Widget>[
+              Icon(widget.icon, color: Colors.white, size: 18,),
+              // Container(
+              //   width: 30,
+              //   height: 30,
+              //   decoration: BoxDecoration(
+              //     border: Border.all(
+              //       color: Colors.white54,
+              //       width: 1.0,
+              //     ),
+              //     borderRadius: BorderRadius.circular(50),
+              //   ),
+              //   child: Center(child: Icon(icon, color: Colors.white, size: 18,))
+              // ),
+              Expanded(child: Container(),),
+              SizedBox(width: 8,),
+              Icon(LineIcons.arrow_up, color: Colors.white, size: 12,),
+              SizedBox(width: 4,),
+              Text("0.5", style: style.textWhiteS,)
+            ]),
+            SizedBox(height: 8,),
+            Consumer<NotificationsProvider>(builder: (context, notification, w) {
+              var angka;
+              switch (widget.notif) {
+                case 'iklan': angka = notification.iklan; break;
+                case 'pengguna': angka = notification.pengguna; break;
+                case 'pencari': angka = notification.pencari; break;
+              }
+              return Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,);
+            },),
+            Text("${widget.label}", style: style.textTitleWhite,),
+            SizedBox(height: 14,),
+            Row(children: <Widget>[
+              Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
+              SizedBox(width: 8,),
+              Icon(LineIcons.chevron_circle_right, color: Colors.white70, size: 12,)
+            ],)
+          ],),
+        ),
+      ),
+    );
+  }
+}
+
+class CardList extends StatefulWidget {
+  CardList({Key key, @required this.label, @required this.buttonLabel, @required this.buttonIcon, @required this.notif}) : super(key: key);
+  final String label;
+  final String buttonLabel;
+  final IconData buttonIcon;
+  final String notif;
+
+  @override
+  _CardListState createState() => _CardListState();
+}
+
+class _CardListState extends State<CardList> {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
+      elevation: THEME_CARD_ELEVATION,
+      child: Padding(
+        padding: EdgeInsets.all(12),
+        child: Row(children: <Widget>[
+          SizedBox(width: 8,),
+          Consumer<NotificationsProvider>(builder: (context, notification, w) {
+            var angka;
+            switch (widget.notif) {
+              case 'iklanTerpasang': angka = notification.iklanTerpasang; break;
+              case 'pesanMasuk': angka = notification.pesanMasuk; break;
+            }
+            return Text(f.formatNumber(angka) ?? '-', style: style.textHeadline,);
+          },),
+          SizedBox(width: 8,),
+          Expanded(child: Text(widget.label)),
+          SizedBox(width: 100, height: style.heightButton, child: UiButton(label: widget.buttonLabel, color: Colors.teal[300], textStyle: style.textButton, icon: widget.buttonIcon, iconRight: true, onPressed: () {
+            // TODO buka kelola iklan
+          }),),
+        ],),
       ),
     );
   }
