@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart';
 import 'pages/akun.dart';
 import 'pages/beranda.dart';
 import 'pages/favorit.dart';
 import 'pages/temukan.dart';
-import 'providers/settings.dart';
-import 'services/firestore_service.dart';
+// import 'providers/settings.dart';
 import 'utils/helpers.dart';
 import 'tambah.dart';
 
@@ -27,7 +26,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
   PreloadPageController _pageController;
-  final _firestore = FirestoreService();
   final _pages = <Page>[
     Page(title: 'Beranda', icon: LineIcons.home, content: Beranda()),
     Page(title: 'Temukan', icon: LineIcons.search, content: Temukan()),
@@ -60,7 +58,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     initializeHelpers(context, "after init _HomeState");
-    final _settings = Provider.of<SettingsProvider>(context);
+    // final _settings = Provider.of<SettingsProvider>(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: PreloadPageView.builder(
@@ -79,15 +77,8 @@ class _HomeState extends State<Home> {
         transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
         child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
           onPressed: () async {
-            // Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Tambah()));
-            // print(results);
-            _firestore.addReport({
-              'iklanTerpasang': 8,
-              'pesanMasuk': 2,
-              'iklan': 29,
-              'pengguna': 8,
-              'pencari': 1,
-            });
+            Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Tambah()));
+            print(results);
           },
           tooltip: 'Tambah Barang',
           child: Icon(LineIcons.plus),

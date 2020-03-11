@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
 import 'package:line_icons/line_icons.dart';
-import 'utils/api.dart' as api;
+// import 'utils/api.dart' as api;
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
@@ -37,6 +37,7 @@ class _LoginState extends State<Login> {
       print("setPreferredOrientations FAILEEEEEEEEEEEED");
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(FocusNode());
       _splashScreen();
     });
   }
@@ -69,6 +70,7 @@ class _LoginState extends State<Login> {
       // TODO FIXME fetch user data, kalo user ada maka tampil form pin, else tampil form daftar
       // var userApi = await api.user('get', {'FIREBASE_UID': user.uid});
       // print(userApi);
+      FocusScope.of(context).requestFocus(FocusNode());
       currentPersonUid = user.uid;
       Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Home()));
       print(results);
@@ -93,10 +95,13 @@ class _LoginState extends State<Login> {
               },
               child: Hero(
                 tag: "SplashLogo",
-                child: Semantics(
-                  label: "Logo $APP_NAME",
-                  image: true,
-                  child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
+                child: Opacity(
+                  opacity: _isSplashDone ? 1 : 0,
+                  child: Semantics(
+                    label: "Logo $APP_NAME",
+                    image: true,
+                    child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
+                  ),
                 ),
               ),
             ),),

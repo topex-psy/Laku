@@ -7,8 +7,6 @@ import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
 
-const MAX_IMAGE_SELECT = 3;
-
 class Tambah extends StatefulWidget {
   @override
   _TambahState createState() => _TambahState();
@@ -19,15 +17,16 @@ class _TambahState extends State<Tambah> {
   var _images = <Asset>[];
   var _isLoading = true;
   var _isGranted = false;
+  var _maxImageSelect = 3;
 
   _pickImages() async {
-    if (_imagesEdit.length + _images.length == MAX_IMAGE_SELECT) {
-      h.failAlert("Maksimal Foto", "Anda dapat menambahkan maksimal sebanyak $MAX_IMAGE_SELECT foto per transaksi.");
+    if (_imagesEdit.length + _images.length == _maxImageSelect) {
+      h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak $_maxImageSelect foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
       return;
     }
     var resultList = <Asset>[];
     try {
-      resultList = await MultiImagePicker.pickImages(maxImages: MAX_IMAGE_SELECT - _imagesEdit.length - _images.length, enableCamera: true);
+      resultList = await MultiImagePicker.pickImages(maxImages: _maxImageSelect - _imagesEdit.length - _images.length, enableCamera: true);
     } on Exception catch (e) {
       print("PICK IMAGES ERROOOOOOOOOOOOOOOOOR: $e");
     }
@@ -44,6 +43,7 @@ class _TambahState extends State<Tambah> {
       PermissionStatus permission = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
       setState(() {
         _isGranted = permission == PermissionStatus.granted;
+        _maxImageSelect = 3; // TODO ambil dari data user
         _isLoading = false;
       });
     });

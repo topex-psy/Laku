@@ -54,13 +54,14 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
   _getAllData() {
     print(" ==> GET ALL DATA ..................");
-    var notification = Provider.of<NotificationsProvider>(context);
+    var notification = Provider.of<NotificationsProvider>(context, listen: false);
     Future.delayed(Duration(milliseconds: 2000), () {
       _refreshController.refreshCompleted();
       // TODO on error
       // _refreshController.refreshFailed();
       notification.setNotif(
-        iklanTerpasang: 8,
+        iklanTerpasang: 0,
+        pencarianTerpasang: 0,
         pesanMasuk: 2,
         iklan: 29,
         pengguna: 8,
@@ -140,6 +141,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
                       Text("Kamu punya:", style: style.textLabelWhite),
                       SizedBox(height: 8,),
                       CardList(label: "Iklan terpasang", notif: 'iklanTerpasang', buttonLabel: "Kelola", buttonIcon: LineIcons.dropbox),
+                      CardList(label: "Pencarian terpasang", notif: 'pencarianTerpasang', buttonLabel: "Lihat", buttonIcon: LineIcons.binoculars),
                       CardList(label: "Pesan masuk", notif: 'pesanMasuk', buttonLabel: "Cek", buttonIcon: LineIcons.inbox),
 
                       SizedBox(height: SECTION_MARGIN,),
@@ -193,8 +195,25 @@ class CardBox extends StatefulWidget {
 class _CardBoxState extends State<CardBox> {
   @override
   Widget build(BuildContext context) {
+    var notification = Provider.of<NotificationsProvider>(context);
     var size = (h.screenSize.width - 38) / 2;
-    return SizedBox(
+    int angka;
+    VoidCallback buka;
+    switch (widget.notif) {
+      case 'iklan':
+        angka = notification.iklan;
+        buka = () {};
+        break;
+      case 'pengguna':
+        angka = notification.pengguna;
+        buka = () {};
+        break;
+      case 'pencari':
+        angka = notification.pencari;
+        buka = () {};
+        break;
+    }
+    return angka == 0 && widget.notif != 'iklan' ? SizedBox() : SizedBox(
       width: size,
       height: size,
       child: Card(
@@ -202,61 +221,56 @@ class _CardBoxState extends State<CardBox> {
         elevation: THEME_CARD_ELEVATION,
         color: widget.color ?? THEME_COLOR,
         clipBehavior: Clip.antiAlias,
-        child: Container(
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: FractionalOffset.topLeft,
-              end: FractionalOffset.bottomCenter,
-              colors: [
-                Colors.white.withOpacity(0.0),
-                Colors.white.withOpacity(0.1),
-              ],
-              stops: [
-                0.0,
-                1.0,
-              ]
+        child: InkWell(
+          onTap: buka,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: FractionalOffset.topLeft,
+                end: FractionalOffset.bottomCenter,
+                colors: [
+                  Colors.white.withOpacity(0.0),
+                  Colors.white.withOpacity(0.1),
+                ],
+                stops: [
+                  0.0,
+                  1.0,
+                ]
+              ),
             ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+              Row(children: <Widget>[
+                Icon(widget.icon, color: Colors.white, size: 18,),
+                // Container(
+                //   width: 30,
+                //   height: 30,
+                //   decoration: BoxDecoration(
+                //     border: Border.all(
+                //       color: Colors.white54,
+                //       width: 1.0,
+                //     ),
+                //     borderRadius: BorderRadius.circular(50),
+                //   ),
+                //   child: Center(child: Icon(icon, color: Colors.white, size: 18,))
+                // ),
+                Expanded(child: Container(),),
+                SizedBox(width: 8,),
+                Icon(LineIcons.arrow_up, color: Colors.white, size: 12,),
+                SizedBox(width: 4,),
+                Text("0.5", style: style.textWhiteS,)
+              ]),
+              SizedBox(height: 8,),
+              Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,),
+              Text("${widget.label}", style: style.textTitleWhite,),
+              SizedBox(height: 14,),
+              Row(children: <Widget>[
+                Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
+                SizedBox(width: 8,),
+                Icon(LineIcons.chevron_circle_right, color: Colors.white70, size: 12,)
+              ],)
+            ],),
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-            Row(children: <Widget>[
-              Icon(widget.icon, color: Colors.white, size: 18,),
-              // Container(
-              //   width: 30,
-              //   height: 30,
-              //   decoration: BoxDecoration(
-              //     border: Border.all(
-              //       color: Colors.white54,
-              //       width: 1.0,
-              //     ),
-              //     borderRadius: BorderRadius.circular(50),
-              //   ),
-              //   child: Center(child: Icon(icon, color: Colors.white, size: 18,))
-              // ),
-              Expanded(child: Container(),),
-              SizedBox(width: 8,),
-              Icon(LineIcons.arrow_up, color: Colors.white, size: 12,),
-              SizedBox(width: 4,),
-              Text("0.5", style: style.textWhiteS,)
-            ]),
-            SizedBox(height: 8,),
-            Consumer<NotificationsProvider>(builder: (context, notification, w) {
-              var angka;
-              switch (widget.notif) {
-                case 'iklan': angka = notification.iklan; break;
-                case 'pengguna': angka = notification.pengguna; break;
-                case 'pencari': angka = notification.pencari; break;
-              }
-              return Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,);
-            },),
-            Text("${widget.label}", style: style.textTitleWhite,),
-            SizedBox(height: 14,),
-            Row(children: <Widget>[
-              Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
-              SizedBox(width: 8,),
-              Icon(LineIcons.chevron_circle_right, color: Colors.white70, size: 12,)
-            ],)
-          ],),
         ),
       ),
     );
@@ -277,26 +291,40 @@ class CardList extends StatefulWidget {
 class _CardListState extends State<CardList> {
   @override
   Widget build(BuildContext context) {
-    return Card(
+    var notification = Provider.of<NotificationsProvider>(context);
+    int angka;
+    VoidCallback buka;
+    switch (widget.notif) {
+      case 'iklanTerpasang':
+        angka = notification.iklanTerpasang;
+        buka = () {
+          // TODO buka kelola iklan
+        };
+        break;
+      case 'pencarianTerpasang':
+        angka = notification.pencarianTerpasang;
+        buka = () {
+          // TODO buka kelola pencarian
+        };
+        break;
+      case 'pesanMasuk':
+        angka = notification.pesanMasuk;
+        buka = () {
+          // TODO buka kelola pesan
+        };
+        break;
+    }
+    return angka == 0 && widget.notif != 'iklanTerpasang' ? SizedBox() : Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
       elevation: THEME_CARD_ELEVATION,
       child: Padding(
         padding: EdgeInsets.all(12),
         child: Row(children: <Widget>[
           SizedBox(width: 8,),
-          Consumer<NotificationsProvider>(builder: (context, notification, w) {
-            var angka;
-            switch (widget.notif) {
-              case 'iklanTerpasang': angka = notification.iklanTerpasang; break;
-              case 'pesanMasuk': angka = notification.pesanMasuk; break;
-            }
-            return Text(f.formatNumber(angka) ?? '-', style: style.textHeadline,);
-          },),
+          Text(f.formatNumber(angka) ?? '-', style: style.textHeadline,),
           SizedBox(width: 8,),
           Expanded(child: Text(widget.label)),
-          SizedBox(width: 100, height: style.heightButton, child: UiButton(label: widget.buttonLabel, color: Colors.teal[300], textStyle: style.textButton, icon: widget.buttonIcon, iconRight: true, onPressed: () {
-            // TODO buka kelola iklan
-          }),),
+          SizedBox(width: 100, height: style.heightButton, child: UiButton(label: widget.buttonLabel, color: Colors.teal[300], textStyle: style.textButton, icon: widget.buttonIcon, iconRight: true, onPressed: buka),),
         ],),
       ),
     );
