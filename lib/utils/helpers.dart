@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rounded_date_picker/src/material_rounded_date_picker_style.dart';
@@ -7,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'constants.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
+String currentPersonUid;
 bool isDebugMode = false;
 
 UIHelper h;
@@ -25,7 +28,8 @@ initializeHelpers(BuildContext context, [String source]) {
 }
 
 class FormatHelper {
-  String formatNumber(num nominal) => NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
+  int randomNumber(int min, int max) => min + Random().nextInt(max - min);
+  String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
 }
 
 class UserHelper {

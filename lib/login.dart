@@ -69,6 +69,7 @@ class _LoginState extends State<Login> {
       // TODO FIXME fetch user data, kalo user ada maka tampil form pin, else tampil form daftar
       // var userApi = await api.user('get', {'FIREBASE_UID': user.uid});
       // print(userApi);
+      currentPersonUid = user.uid;
       Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Home()));
       print(results);
     }
