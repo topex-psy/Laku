@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -6,11 +7,21 @@ import 'package:flutter_rounded_date_picker/src/material_rounded_date_picker_sty
 import 'package:flutter_rounded_date_picker/src/material_rounded_year_picker_style.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../providers/person.dart';
+import '../utils/api.dart' as api;
 import 'constants.dart';
+import 'toast.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
+final screenScaffoldKey = GlobalKey<ScaffoldState>();
 String currentPersonUid;
+bool isTour1Completed = false;
+bool isTour2Completed = false;
+bool isTour3Completed = false;
 bool isDebugMode = false;
+bool isFirstRun = true;
+Timer timer;
 
 UIHelper h;
 UserHelper a;
@@ -35,6 +46,20 @@ class FormatHelper {
 class UserHelper {
   final BuildContext context;
   UserHelper(this.context);
+
+  signOut() async {
+    final user = await firebaseAuth.currentUser();
+    final person = Provider.of<PersonProvider>(context, listen: false);
+    if (user != null) {
+      api.auth('logout', {'uid': user.uid});
+      await firebaseAuth.signOut();
+    }
+    person.setPerson(isSignedIn: false);
+    Future.delayed(Duration.zero, () {
+      // Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(context).pop();
+    });
+  }
 }
 
 class UIHelper {
@@ -44,7 +69,12 @@ class UIHelper {
   BuildContext get currentContext => context;
   Size get screenSize => MediaQuery.of(context).size;
 
-  // fungsi untuk menampilkan popup dialog berisi pesan atau konten apapun
+  /// fungsi untuk menampilkan toast
+  showToast(String message, {int duration = Toast.DEFAULT_DURATION}) {
+    Toast.show(message, context, duration: duration);
+  }
+
+  /// fungsi untuk menampilkan popup dialog berisi pesan atau konten apapun
   Future showAlert({String title, Widget header, Widget dialog, Widget body, Widget listView, EdgeInsetsGeometry contentPadding, bool barrierDismissible = true, bool showButton = true, String buttonText = "OK", Widget customButton, Color warnaAksen}) {
     return showGeneralDialog(
       barrierColor: Colors.black.withOpacity(0.5),
@@ -82,7 +112,7 @@ class UIHelper {
     );
   }
 
-  // fungsi untuk menampilkan popup dialog konfirmasi
+  /// fungsi untuk menampilkan popup dialog konfirmasi
   Future<bool> showConfirm(String judul, String pesan) async {
     return await showGeneralDialog(
       barrierColor: Colors.black.withOpacity(0.5),
@@ -126,11 +156,11 @@ class UIHelper {
     );
   }
 
-  // fungsi untuk menutup popup dialog
+  /// fungsi untuk menutup popup dialog
   // TODO FIXME seharusnya kalo nggak ada dialog lagi nggak perlu melakukan apa-apa
   closeDialog() => Navigator.of(context, rootNavigator: true).pop('dialog');
 
-  // fungsi untuk menampilkan popup dialog custom
+  /// fungsi untuk menampilkan popup dialog custom
   Future<dynamic> customAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onAction, void Function() onDismiss, actionLabel}) => showAlert(
     title: title,
     body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
@@ -160,7 +190,7 @@ class UIHelper {
     if (onDismiss != null) onDismiss();
   });
 
-  // fungsi untuk menampilkan popup pesan gagal
+  /// fungsi untuk menampilkan popup pesan gagal
   Future<dynamic> failAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onRetry, void Function() onDismiss}) => customAlert(
     title,
     message,
@@ -171,14 +201,14 @@ class UIHelper {
     actionLabel: 'Coba Lagi',
   );
 
-  // fungsi untuk menampilkan popup memuat data
+  /// fungsi untuk menampilkan popup memuat data
   loadAlert([String teks]) => showAlert(body: Row(children: <Widget>[
     SizedBox(width: 30, height: 30, child: CircularProgressIndicator(strokeWidth: 3.0,)),
     SizedBox(width: 5,),
     Text("Tunggu sebentar ...")
   ],), showButton: false, barrierDismissible: false);
 
-  // fungsi yang mengembalikan teks versi html
+  /// fungsi yang mengembalikan teks versi html
   Html html(String htmlString, {TextStyle textStyle}) => Html(
     data: htmlString,
     defaultTextStyle: textStyle,

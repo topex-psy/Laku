@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import '../extensions/widget.dart';
 import '../providers/notifications.dart';
 import '../utils/constants.dart';
 import '../utils/curves.dart';
@@ -24,7 +25,6 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
   final _refreshController = RefreshController(initialRefresh: false);
   var _isGPSOn = true;
   var _isLoading = true;
-  Timer _timer;
 
   @override
   void onPageVisible() {
@@ -33,7 +33,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
   @override
   void onPageInvisible() {
-    _timer.cancel();
+    timer.cancel();
   }
 
   @override
@@ -47,7 +47,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
   _runTimer() {
     _getAllData();
-    _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) {
+    timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) {
       _getAllData();
     });
   }
@@ -60,14 +60,14 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
       // TODO on error
       // _refreshController.refreshFailed();
       notification.setNotif(
-        iklanTerpasang: 0,
+        iklanTerpasang: 5,
         pencarianTerpasang: 0,
         pesanMasuk: 2,
         iklan: 29,
         pengguna: 8,
         pencari: 1,
       );
-      setState(() {
+      if (mounted) setState(() {
         _isLoading = false;
       });
     });
@@ -77,8 +77,9 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
   Widget build(BuildContext context) {
     return Container(
       child: Stack(
+        alignment: Alignment.topCenter,
         children: <Widget>[
-          Positioned.fill(child: CustomPaint(painter: CurvePainter(
+          Container(width: double.infinity, height: 320, child: CustomPaint(painter: CurvePainter(
             color: THEME_COLOR,
           ),),),
           Positioned.fill(child: SafeArea(
@@ -89,7 +90,9 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   child: Row(children: <Widget>[
-                    IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {},),
+                    IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {
+                      screenScaffoldKey.currentState.openEndDrawer();
+                    },),
                     Expanded(child: Container(),),
                     IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
                     IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
@@ -140,18 +143,18 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
                       Text("Kamu punya:", style: style.textLabelWhite),
                       SizedBox(height: 8,),
-                      CardList(label: "Iklan terpasang", notif: 'iklanTerpasang', buttonLabel: "Kelola", buttonIcon: LineIcons.dropbox),
-                      CardList(label: "Pencarian terpasang", notif: 'pencarianTerpasang', buttonLabel: "Lihat", buttonIcon: LineIcons.binoculars),
-                      CardList(label: "Pesan masuk", notif: 'pesanMasuk', buttonLabel: "Cek", buttonIcon: LineIcons.inbox),
+                      CardList('iklanTerpasang'),
+                      CardList('pencarianTerpasang'),
+                      CardList('pesanMasuk'),
 
                       SizedBox(height: SECTION_MARGIN,),
 
                       Text("Di sekitarmu ada:", style: style.textLabel),
                       SizedBox(height: 12,),
                       Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
-                        CardBox(color: Colors.blue, notif: 'iklan', icon: LineIcons.map_marker, label: "Iklan"),
-                        CardBox(color: Colors.green, notif: 'pengguna', icon: LineIcons.users, label: "Pengguna"),
-                        CardBox(color: Colors.orange, notif: 'pencari', icon: LineIcons.binoculars, label: "Pencari"),
+                        CardBox('iklan'),
+                        CardBox('pengguna'),
+                        CardBox('pencari'),
                       ],),
 
                       SizedBox(height: SECTION_MARGIN,),
@@ -182,11 +185,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 }
 
 class CardBox extends StatefulWidget {
-  CardBox({Key key, this.color, @required this.icon, @required this.notif, @required this.label}) : super(key: key);
-  final Color color;
-  final IconData icon;
+  CardBox(this.notif, {Key key}) : super(key: key);
   final String notif;
-  final String label;
 
   @override
   _CardBoxState createState() => _CardBoxState();
@@ -199,17 +199,30 @@ class _CardBoxState extends State<CardBox> {
     var size = (h.screenSize.width - 38) / 2;
     int angka;
     VoidCallback buka;
+    Color color;
+    IconData icon;
+    String label;
+
     switch (widget.notif) {
       case 'iklan':
         angka = notification.iklan;
+        color = Colors.blue;
+        icon = LineIcons.map_marker;
+        label = "Iklan";
         buka = () {};
         break;
       case 'pengguna':
         angka = notification.pengguna;
+        color = Colors.green;
+        icon = LineIcons.users;
+        label = "Pengguna";
         buka = () {};
         break;
       case 'pencari':
         angka = notification.pencari;
+        color = Colors.orange;
+        icon = LineIcons.binoculars;
+        label = "Pencari";
         buka = () {};
         break;
     }
@@ -219,7 +232,7 @@ class _CardBoxState extends State<CardBox> {
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
         elevation: THEME_CARD_ELEVATION,
-        color: widget.color ?? THEME_COLOR,
+        color: color,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: buka,
@@ -241,7 +254,7 @@ class _CardBoxState extends State<CardBox> {
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
               Row(children: <Widget>[
-                Icon(widget.icon, color: Colors.white, size: 18,),
+                Icon(icon, color: Colors.white, size: 18,),
                 // Container(
                 //   width: 30,
                 //   height: 30,
@@ -262,7 +275,7 @@ class _CardBoxState extends State<CardBox> {
               ]),
               SizedBox(height: 8,),
               Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,),
-              Text("${widget.label}", style: style.textTitleWhite,),
+              Text(label, style: style.textTitleWhite,),
               SizedBox(height: 14,),
               Row(children: <Widget>[
                 Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
@@ -278,10 +291,7 @@ class _CardBoxState extends State<CardBox> {
 }
 
 class CardList extends StatefulWidget {
-  CardList({Key key, @required this.label, @required this.buttonLabel, @required this.buttonIcon, @required this.notif}) : super(key: key);
-  final String label;
-  final String buttonLabel;
-  final IconData buttonIcon;
+  CardList(this.notif, {Key key}) : super(key: key);
   final String notif;
 
   @override
@@ -294,21 +304,37 @@ class _CardListState extends State<CardList> {
     var notification = Provider.of<NotificationsProvider>(context);
     int angka;
     VoidCallback buka;
+    String buttonLabel, label;
+    IconData buttonIcon;
+    double buttonWidth;
+    var buttonShimmer = false;
     switch (widget.notif) {
       case 'iklanTerpasang':
         angka = notification.iklanTerpasang;
+        label = "Iklan terpasang";
+        buttonLabel = angka == 0 ? "Buat" : "Kelola";
+        buttonWidth = angka == 0 ? 96 : 100;
+        buttonIcon = angka == 0 ? LineIcons.plus_circle : LineIcons.dropbox;
+        // buttonShimmer = angka == 0;
         buka = () {
           // TODO buka kelola iklan
         };
         break;
       case 'pencarianTerpasang':
         angka = notification.pencarianTerpasang;
+        label = "Pencarian terpasang";
+        buttonLabel = "Lihat";
+        buttonIcon = LineIcons.binoculars;
         buka = () {
           // TODO buka kelola pencarian
         };
         break;
       case 'pesanMasuk':
         angka = notification.pesanMasuk;
+        label = "Pesan masuk";
+        buttonLabel = "Cek";
+        buttonWidth = 90;
+        buttonIcon = LineIcons.inbox;
         buka = () {
           // TODO buka kelola pesan
         };
@@ -323,8 +349,8 @@ class _CardListState extends State<CardList> {
           SizedBox(width: 8,),
           Text(f.formatNumber(angka) ?? '-', style: style.textHeadline,),
           SizedBox(width: 8,),
-          Expanded(child: Text(widget.label)),
-          SizedBox(width: 100, height: style.heightButton, child: UiButton(label: widget.buttonLabel, color: Colors.teal[300], textStyle: style.textButton, icon: widget.buttonIcon, iconRight: true, onPressed: buka),),
+          Expanded(child: Text(label)),
+          SizedBox(width: buttonWidth, height: style.heightButton, child: UiButton(label: buttonLabel, color: Colors.teal[300], textStyle: style.textButton, icon: buttonIcon, iconRight: true, onPressed: buka).shimmerIt(buttonShimmer, 1.0),),
         ],),
       ),
     );

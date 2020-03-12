@@ -6,7 +6,7 @@ Response response;
 dynamic err;
 
 Future<Response> user(String what, Map<String, dynamic> data) async {
-  var url = "${APP_HOST}user";
+  final url = "${APP_HOST}api/data/user";
   try {
     switch(what) {
       case 'get':
@@ -16,6 +16,18 @@ Future<Response> user(String what, Map<String, dynamic> data) async {
         response = await dio.post(url, data: data);
         break;
     }
+  } catch (e) {
+    err = e;
+  }
+  print(" ==> user $what RESPONSE: $response");
+  print(" ==> user $what ERROR: $err");
+  return response;
+}
+
+Future<Response> auth(String what, Map<String, dynamic> data) async {
+  final url = "${APP_HOST}api/auth/$what";
+  try {
+    response = await dio.post(url, data: data);
   } catch (e) {
     err = e;
   }

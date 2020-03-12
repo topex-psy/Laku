@@ -2,10 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
+import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
-// import 'utils/api.dart' as api;
+import 'package:provider/provider.dart';
+import 'utils/api.dart' as api;
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
@@ -18,16 +22,27 @@ const RESEND_CODE_TIMEOUT = 10;
 const SMS_CODE_LENGTH = 6;
 
 class Login extends StatefulWidget {
+  Login({Key key, @required this.analytics, @required this.observer, this.noSplash = false}) : super(key: key);
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+  final bool noSplash;
+
   @override
-  _LoginState createState() => _LoginState();
+  _LoginState createState() => _LoginState(analytics, observer);
 }
 
 class _LoginState extends State<Login> {
+  _LoginState(this.analytics, this.observer);
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+
   var _isSplashDone = false;
   var _isLoading = false;
+  var _isWillExit = false;
 
   @override
   void initState() {
+    _isSplashDone = widget.noSplash;
     super.initState();
 
     // set orientation menjadi portrait untuk sementara
@@ -38,23 +53,23 @@ class _LoginState extends State<Login> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(FocusNode());
-      _splashScreen();
+      if (!widget.noSplash) _splashScreen();
     });
   }
 
   @override
   void dispose() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.landscapeRight,
+    //   DeviceOrientation.landscapeLeft,
+    //   DeviceOrientation.portraitUp,
+    //   DeviceOrientation.portraitDown,
+    // ]);
     super.dispose();
   }
 
   _splashScreen() async {
-    Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Splash()));
+    Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Splash(analytics: analytics, observer: observer,)));
     print(results);
     setState(() {
       _isSplashDone = true;
@@ -67,64 +82,87 @@ class _LoginState extends State<Login> {
     if (!_isLoading) setState(() { _isLoading = true; });
     final user = await firebaseAuth.currentUser();
     if (user == null) setState(() { _isLoading = false; }); else {
-      // TODO FIXME fetch user data, kalo user ada maka tampil form pin, else tampil form daftar
-      // var userApi = await api.user('get', {'FIREBASE_UID': user.uid});
-      // print(userApi);
       FocusScope.of(context).requestFocus(FocusNode());
+      var person = Provider.of<PersonProvider>(context, listen: false);
+      // TODO FIXME fetch user data, set personprovider
+      // TODO ke form daftar kalo fetch not found
+      var userApi = await api.user('get', {'uid': user.uid});
+      print(" ==> GET USER RESULT: $userApi");
+
+      person.setPerson(
+        namaDepan: 'Taufik',
+        namaBelakang: 'Nur Rahmanda',
+        foto: null,
+        isSignedIn: true,
+      );
+
       currentPersonUid = user.uid;
       Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Home()));
+      setState(() {
+        _isLoading = false;
+      });
       print(results);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    initializeHelpers(context, "after init _LoginState");
-    var _logoSize = h.screenSize.height * 0.25;
-    return Scaffold(
-      backgroundColor: THEME_COLOR,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          reverse: true,
-          padding: EdgeInsets.all(30),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-            SizedBox(height: 30,),
-            Center(child: GestureDetector(
-              onTap: () {
-                _splashScreen();
-              },
-              child: Hero(
-                tag: "SplashLogo",
-                child: Opacity(
-                  opacity: _isSplashDone ? 1 : 0,
-                  child: Semantics(
-                    label: "Logo $APP_NAME",
-                    image: true,
-                    child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
+    final _logoSize = MediaQuery.of(context).size.height * 0.25;
+    return WillPopScope(
+      onWillPop: () async {
+        if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
+        h.showToast("Ketuk sekali lagi untuk menutup aplikasi.");
+        _isWillExit = true;
+        Future.delayed(Duration(milliseconds: 2000), () { _isWillExit = false; });
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: THEME_COLOR,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            reverse: true,
+            padding: EdgeInsets.all(30),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+              SizedBox(height: 30,),
+              Center(child: GestureDetector(
+                onTap: _splashScreen,
+                child: Hero(
+                  tag: "SplashLogo",
+                  child: Opacity(
+                    opacity: _isSplashDone ? 1 : 0,
+                    child: Semantics(
+                      label: "Logo $APP_NAME",
+                      image: true,
+                      child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
+                    ),
                   ),
                 ),
-              ),
-            ),),
-            SizedBox(height: 30,),
-            IndexedStack(
-              index: _isLoading ? 0 : 1,
-              alignment: Alignment.center,
-              children: <Widget>[
-                UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
-                Offstage(
-                  offstage: !_isSplashDone,
-                  child: FormDaftar(
-                    setLoading: (val) {
-                      if (_isLoading != val) setState(() {
-                        _isLoading = val;
-                      });
-                    },
-                    getCurrentUser: _getCurrentUser
+              ),),
+              SizedBox(height: 30,),
+              IndexedStack(
+                index: _isLoading ? 0 : 1,
+                alignment: Alignment.center,
+                children: <Widget>[
+                  UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
+                  Offstage(
+                    offstage: !_isSplashDone,
+                    child: Consumer<PersonProvider>(
+                      builder: (context, person, child) {
+                        return (person.isSignedIn ?? false) ? Container() : FormDaftar(
+                          setLoading: (val) {
+                            if (_isLoading != val) setState(() {
+                              _isLoading = val;
+                            });
+                          },
+                          getCurrentUser: _getCurrentUser
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            )
-          ],),
+                ],
+              )
+            ],),
+          ),
         ),
       ),
     );

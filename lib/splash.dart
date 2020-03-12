@@ -1,18 +1,32 @@
 import 'package:flutter/material.dart';
-// import 'package:line_icons/line_icons.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/constants.dart';
+import 'utils/helpers.dart';
+import 'intro.dart';
 
 const SPLASH_LOGO_SIZE = 200.0;
 
 class Splash extends StatefulWidget {
+  Splash({Key key, @required this.analytics, @required this.observer}) : super(key: key);
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+
   @override
-  _SplashState createState() => _SplashState();
+  _SplashState createState() => _SplashState(analytics, observer);
 }
 
 class _SplashState extends State<Splash> with TickerProviderStateMixin {
+  _SplashState(this.analytics, this.observer);
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+
   AnimationController _animation1Controller, _animation2Controller, _animation3Controller;
   Animation _animation1, _animation2, _animation3;
-  bool _showOriginal = false;
+  var _isSplashDone = false;
+  var _isLoading = true;
+  var _isLanjut = false;
 
   @override
   void initState() {
@@ -33,6 +47,8 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     ));
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(FocusNode());
+      _loadPreferences();
       Future.delayed(Duration(milliseconds: 500), () {
         _animation1Controller.forward();
       });
@@ -43,7 +59,8 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
         _animation3Controller.forward();
       });
       Future.delayed(Duration(milliseconds: 3000), () {
-        Navigator.of(context).pop({'isSplashDone': true});
+        _isSplashDone = true;
+        _lanjut();
       });
     });
   }
@@ -54,6 +71,25 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     _animation2Controller.dispose();
     _animation3Controller.dispose();
     super.dispose();
+  }
+
+  _loadPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
+    isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
+    isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
+    isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
+    if (isFirstRun) prefs.setBool('isFirstRun', false);
+    _isLoading = false;
+    _lanjut();
+  }
+
+  _lanjut() async {
+    if (_isLoading || !_isSplashDone || _isLanjut) return;
+    _isLanjut = true;
+    final nav = Navigator.of(context);
+    if (isFirstRun) await nav.push(MaterialPageRoute(builder: (_) => Intro(analytics: analytics, observer: observer,)));
+    nav.pop({'isSplashDone': true});
   }
 
   @override
@@ -115,7 +151,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                     );
                   }
                 ),
-                _showOriginal ? Image.asset('images/logo.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,) : SizedBox(),
+                // Image.asset('images/logo.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
               ],
             ),
           ),

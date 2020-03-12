@@ -41,6 +41,11 @@ class _TemukanState extends State<Temukan> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: OrientationBuilder(builder: (context, orientation) {
@@ -52,11 +57,12 @@ class _TemukanState extends State<Temukan> {
               Row(children: <Widget>[
                 Icon(LineIcons.map_marker),
                 SizedBox(width: 4,),
-                Expanded(child: Text("25 Produk di dekat Anda", style: style.textLabel),),
+                Expanded(child: Text("25 Iklan di dekat Anda", style: style.textLabel),),
                 SizedBox(width: 12,),
                 IconButton(icon: Icon(LineIcons.search), tooltip: "Cari", onPressed: () {},),
                 IconButton(icon: Icon(Icons.sort), tooltip: "Urutkan", onPressed: () {},),
               ],),
+
               // Container(
               //   decoration: BoxDecoration(color: Colors.white, boxShadow: [
               //     BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(1.0))
@@ -70,6 +76,7 @@ class _TemukanState extends State<Temukan> {
               //     IconButton(icon: Icon(Icons.sort), tooltip: "Urutkan", onPressed: () {},),
               //   ],),
               // ),
+
               Expanded(
                 child: StaggeredGridView.countBuilder(
                   padding: EdgeInsets.all(4),

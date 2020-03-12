@@ -494,3 +494,60 @@ class UiButton extends StatelessWidget {
     );
   }
 }
+
+class UiMenuList extends StatelessWidget {
+  UiMenuList({Key key, this.menuPaddingVertical = 12, this.menuPaddingHorizontal = 16, this.isFirst = false, this.isLast = false, this.isLocked = false, this.icon, @required this.teks, @required this.value, @required this.aksi}): super(key: key);
+  final double menuPaddingVertical;
+  final double menuPaddingHorizontal;
+  final bool isFirst;
+  final bool isLast;
+  final bool isLocked;
+  final IconData icon;
+  final String teks;
+  final dynamic value;
+  final void Function(dynamic) aksi;
+
+  @override
+  Widget build(BuildContext context) {
+    var _textTheme = Theme.of(context).textTheme;
+    return Container(
+      decoration: isLast ? null : BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300], width: 1.0,))),
+      width: double.infinity,
+      child: InkWell(onTap: isLocked || aksi == null ? null : () => aksi(value), child: Padding(
+        padding: EdgeInsets.symmetric(vertical: menuPaddingVertical, horizontal: menuPaddingHorizontal),
+        child: Row(children: <Widget>[
+          Icon(icon, color: isLocked || aksi == null ? Colors.grey : Colors.blueGrey, size: 17,),
+          SizedBox(width: 8,),
+          Expanded(child: Text(teks, style: TextStyle(fontSize: _textTheme.bodyText1.fontSize, color: isLocked || aksi == null ? Colors.grey : _textTheme.bodyText1.color),),),
+          isLocked ? Icon(LineIcons.lock, color: THEME_COLOR, size: 17,) : SizedBox(),
+        ],),
+      )),
+    );
+  }
+}
+
+class UiAvatar extends StatelessWidget {
+  UiAvatar({Key key, @required this.image, this.heroTag, this.onPressed, this.strokeWidth = 4}) : super(key: key);
+  final Widget image;
+  final String heroTag;
+  final void Function() onPressed;
+  final double strokeWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    var _image = ClipOval(child: InkWell(onTap: onPressed, child: image));
+    return Card(
+      elevation: 1,
+      color: Colors.white,
+      clipBehavior: Clip.antiAlias,
+      shape: CircleBorder(),
+      child: Padding(
+        padding: EdgeInsets.all(strokeWidth),
+        child: heroTag == null ? _image : Hero(
+          tag: heroTag,
+          child: _image,
+        ),
+      ),
+    );
+  }
+}
