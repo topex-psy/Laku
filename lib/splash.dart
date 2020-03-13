@@ -78,7 +78,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     _isLanjut = true;
     final nav = Navigator.of(context);
     if (isFirstRun) {
-      await nav.pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => route.isFirst);
+      await nav.pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => false);
     } else {
       nav.pop({'isSplashDone': true});
     }
