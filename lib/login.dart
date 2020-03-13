@@ -14,8 +14,6 @@ import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
-import 'home.dart';
-import 'splash.dart';
 
 const AUTO_VERIFY_TIMEOUT = 60;
 const RESEND_CODE_TIMEOUT = 10;
@@ -69,7 +67,8 @@ class _LoginState extends State<Login> {
   }
 
   _splashScreen() async {
-    Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Splash(analytics: analytics, observer: observer,)));
+    // Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Splash(analytics: analytics, observer: observer,)));
+    final results = await Navigator.of(context).pushNamed(ROUTE_SPLASH);
     print(results);
     setState(() {
       _isSplashDone = true;
@@ -97,7 +96,8 @@ class _LoginState extends State<Login> {
       );
 
       currentPersonUid = user.uid;
-      Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Home()));
+      // Map results = await Navigator.of(context).push(MaterialPageRoute(settings: RouteSettings(name: ROUTE_HOME), builder: (_) => Home()));
+      final results = await Navigator.of(context).pushNamed(ROUTE_HOME, arguments: {'justLogin': true});
       setState(() {
         _isLoading = false;
       });
@@ -181,9 +181,7 @@ class FormDaftar extends StatefulWidget {
 class _FormDaftarState extends State<FormDaftar> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nomorPonselController;
-  TextEditingController _smsCodeController;
   FocusNode _nomorPonselFocusNode;
-  FocusNode _smsCodeFocusNode;
   var _nomorPonselError = '';
   var _smsVerificationCode = '';
   var _showResend = false;
@@ -192,18 +190,14 @@ class _FormDaftarState extends State<FormDaftar> {
   @override
   void initState() {
     _nomorPonselController = TextEditingController();
-    _smsCodeController = TextEditingController();
     _nomorPonselFocusNode = FocusNode();
-    _smsCodeFocusNode = FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
     _nomorPonselController.dispose();
-    _smsCodeController.dispose();
     _nomorPonselFocusNode.dispose();
-    _smsCodeFocusNode.dispose();
     super.dispose();
   }
 
@@ -253,6 +247,7 @@ class _FormDaftarState extends State<FormDaftar> {
   _signInWithCode(String smsCode) {
     if (smsCode.length < SMS_CODE_LENGTH) return;
     print(" ==> _signInWithCode ...\n$_smsVerificationCode\n$smsCode");
+    FocusScope.of(context).requestFocus(FocusNode());
     widget.setLoading(true);
     var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
     firebaseAuth.signInWithCredential(authCredential).catchError((error) {
@@ -292,9 +287,7 @@ class _FormDaftarState extends State<FormDaftar> {
         ),
       ),
       SizedBox(height: 12,),
-      SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {
-        _signInWithCode(_smsCodeController.text);
-      },),),
+      SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),),
       SizedBox(height: 12,),
       Center(child: _showResend ? GestureDetector(
         onTap: () {

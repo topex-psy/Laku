@@ -5,9 +5,6 @@ import 'package:line_icons/line_icons.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:koukicons/moneyTransfer.dart';
-// import 'package:koukicons/priceTag.dart';
-// import 'package:koukicons/survey.dart';
 import 'package:wakelock/wakelock.dart';
 import 'components/intro/page_dragger.dart';
 import 'components/intro/page_reveal.dart';
@@ -46,7 +43,7 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    initializeHelpers(context);
+    initializeHelpers(context, "after init _IntroState");
     return Scaffold(
       body: IntroPage(analytics: analytics, observer: observer),
     );
@@ -143,8 +140,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
     final imageWidth = h.screenSize.width * 0.69;
     final pages = [
       PageViewModel(
-        color: Colors.pink[400],
-        // hero: KoukiconsMoneyTransfer(width: imageWidth,),
+        color: Colors.purple[400],
         hero: SvgPicture.asset(
           'images/onboarding/1.svg',
           semanticsLabel: 'Intro 1',
@@ -152,11 +148,10 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         ),
         icon: LineIcons.tags,
         title: 'Banyak Barang',
-        body: 'Sering belanja sampai bingung terlalu banyak barang?',
+        body: 'Apakah kamu sering buang duit untuk berbelanja barang-barang yang gak penting?',
       ),
       PageViewModel(
-        color: Colors.blue[400],
-        // hero: KoukiconsPriceTag(width: imageWidth,),
+        color: Colors.green[400],
         hero: SvgPicture.asset(
           'images/onboarding/2.svg',
           semanticsLabel: 'Intro 2',
@@ -164,19 +159,18 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         ),
         icon: LineIcons.mobile_phone,
         title: 'Jangan Bingung',
-        body: 'Baju lamamu bisa kamu jual ke orang-orang terdekat.',
+        body: 'Beritahu orang-orang kalau kamu punya barang-barang itu. Mungkin saja mereka berminat.',
       ),
       PageViewModel(
-        color: Colors.green[400],
-        // hero: KoukiconsSurvey(width: imageWidth,),
+        color: Colors.teal[400],
         hero: SvgPicture.asset(
           'images/onboarding/3.svg',
           semanticsLabel: 'Intro 3',
           width: imageWidth,
         ),
         icon: LineIcons.cloud,
-        title: 'Mudah Saja',
-        body: 'Barang tak terpakai bisa menjadi uang dengan praktis!',
+        title: 'Sebarkan!',
+        body: 'Pasang iklan apa saja seperti produk baru, bekas, bisnis, jasa, loker, kos-kosan. Semua bisa!',
       ),
     ];
     return Stack(

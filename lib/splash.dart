@@ -1,27 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_analytics/observer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
-import 'intro.dart';
 
 const SPLASH_LOGO_SIZE = 200.0;
 
 class Splash extends StatefulWidget {
-  Splash({Key key, @required this.analytics, @required this.observer}) : super(key: key);
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
   @override
-  _SplashState createState() => _SplashState(analytics, observer);
+  _SplashState createState() => _SplashState();
 }
 
 class _SplashState extends State<Splash> with TickerProviderStateMixin {
-  _SplashState(this.analytics, this.observer);
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
   AnimationController _animation1Controller, _animation2Controller, _animation3Controller;
   Animation _animation1, _animation2, _animation3;
   var _isSplashDone = false;
@@ -88,8 +77,11 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     if (_isLoading || !_isSplashDone || _isLanjut) return;
     _isLanjut = true;
     final nav = Navigator.of(context);
-    if (isFirstRun) await nav.push(MaterialPageRoute(builder: (_) => Intro(analytics: analytics, observer: observer,)));
-    nav.pop({'isSplashDone': true});
+    if (isFirstRun) {
+      await nav.pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => route.isFirst);
+    } else {
+      nav.pop({'isSplashDone': true});
+    }
   }
 
   @override

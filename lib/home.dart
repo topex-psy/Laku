@@ -10,13 +10,10 @@ import 'pages/akun.dart';
 import 'pages/beranda.dart';
 import 'pages/favorit.dart';
 import 'pages/temukan.dart';
-import 'pages/profil.dart';
 import 'providers/person.dart';
-// import 'providers/settings.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/widgets.dart';
-import 'tambah.dart';
 
 class Page {
   Page({@required this.title, @required this.icon, @required this.content});
@@ -111,7 +108,8 @@ class _HomeState extends State<Home> {
                                 width: 69, height: 69,
                                 fit: BoxFit.cover,
                               ),
-                              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => Profil())),
+                              // onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => Profil())),
+                              onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),
                             );
                           },
                         ),
@@ -149,7 +147,8 @@ class _HomeState extends State<Home> {
           transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
           child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
             onPressed: () async {
-              Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Tambah()));
+              // Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Tambah()));
+              final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH);
               print(results);
             },
             tooltip: 'Tambah Barang',

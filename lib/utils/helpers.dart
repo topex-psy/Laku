@@ -56,8 +56,10 @@ class UserHelper {
     }
     person.setPerson(isSignedIn: false);
     Future.delayed(Duration.zero, () {
-      // Navigator.of(context).popUntil((route) => route.isFirst);
-      Navigator.of(context).pop();
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
+      // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_LOGIN));
+      // Navigator.of(context).pop();
     });
   }
 }
