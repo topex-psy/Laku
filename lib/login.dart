@@ -277,15 +277,21 @@ class _FormDaftarState extends State<FormDaftar> {
       SizedBox(height: 20,),
       Text("Kode verifikasi:", style: style.textLabelWhite),
       SizedBox(height: 8,),
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: CodeInput(
-          length: SMS_CODE_LENGTH,
-          keyboardType: TextInputType.number,
-          builder: CodeInputBuilders.lightCircle(),
-          onFilled: _signInWithCode,
-        ),
-      ),
+      // SingleChildScrollView(
+      //   scrollDirection: Axis.horizontal,
+      //   child: CodeInput(
+      //     length: SMS_CODE_LENGTH,
+      //     keyboardType: TextInputType.number,
+      //     builder: CodeInputBuilders.lightCircle(),
+      //     onFilled: _signInWithCode,
+      //   ),
+      // ),
+      Container(width: MediaQuery.of(context).size.width, child: CodeInput(
+        length: SMS_CODE_LENGTH,
+        keyboardType: TextInputType.number,
+        builder: CodeInputBuilders.lightCircle(),
+        onFilled: _signInWithCode,
+      ),),
       SizedBox(height: 12,),
       SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),),
       SizedBox(height: 12,),

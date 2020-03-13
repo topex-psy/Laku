@@ -44,6 +44,7 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     initializeHelpers(context, "after init _IntroState");
+    // TODO onWillPop toast exit
     return Scaffold(
       body: IntroPage(analytics: analytics, observer: observer),
     );

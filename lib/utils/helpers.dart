@@ -49,14 +49,15 @@ class UserHelper {
 
   signOut() async {
     final user = await firebaseAuth.currentUser();
-    final person = Provider.of<PersonProvider>(context, listen: false);
     if (user != null) {
       api.auth('logout', {'uid': user.uid});
       await firebaseAuth.signOut();
     }
+    final person = Provider.of<PersonProvider>(context, listen: false);
     person.setPerson(isSignedIn: false);
     Future.delayed(Duration.zero, () {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_LOGIN, (route) => route.isFirst, arguments: {'noSplash': true});
       // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
       // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_LOGIN));
       // Navigator.of(context).pop();

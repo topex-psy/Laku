@@ -57,13 +57,15 @@ class MyApp extends StatelessWidget {
           fontFamily: THEME_FONT_MAIN,
         ),
         onGenerateRoute: (RouteSettings settings) {
+          final args = settings.arguments as Map;
           switch (settings.name) {
             case ROUTE_SPLASH:
               return MaterialPageRoute(builder: (_) => Splash());
             case ROUTE_INTRO:
               return MaterialPageRoute(builder: (_) => Intro(analytics: analytics, observer: observer,));
             case ROUTE_LOGIN:
-              return MaterialPageRoute(builder: (_) => Login(analytics: analytics, observer: observer,));
+              var noSplash = args != null && args.containsKey('noSplash') && args['noSplash'];
+              return MaterialPageRoute(builder: (_) => Login(analytics: analytics, observer: observer, noSplash: noSplash,));
             case ROUTE_PROFIL:
               return MaterialPageRoute(builder: (_) => Profil());
             case ROUTE_TAMBAH:
@@ -71,7 +73,6 @@ class MyApp extends StatelessWidget {
             case ROUTE_HOME:
             case '/':
             default:
-              var args = settings.arguments;
               print(args);
               return MaterialPageRoute(builder: (_) => Home());
           }
