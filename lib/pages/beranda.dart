@@ -23,8 +23,10 @@ class Beranda extends StatefulWidget {
 
 class _BerandaState extends State<Beranda> with MainPageStateMixin {
   final _refreshController = RefreshController(initialRefresh: false);
+  final _scrollController = ScrollController();
   var _isGPSOn = true;
   var _isLoading = true;
+  var _curveHeight = 320.0; // TODO taruh di provider
 
   @override
   void onPageVisible() {
@@ -38,6 +40,10 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
   @override
   void initState() {
+    _scrollController.addListener(() {
+      print(_scrollController.offset);
+      // TODO set provider curve height
+    });
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // TODO load gps status
@@ -79,9 +85,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
       child: Stack(
         alignment: Alignment.topCenter,
         children: <Widget>[
-          Container(width: double.infinity, height: 320, child: CustomPaint(painter: CurvePainter(
-            color: THEME_COLOR,
-          ),),),
+          Container(width: double.infinity, height: _curveHeight, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
           Positioned.fill(child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,6 +110,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
                   controller: _refreshController,
                   onRefresh: _getAllData,
                   child: SingleChildScrollView(
+                    controller: _scrollController,
                     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                       SizedBox(height: 10,),

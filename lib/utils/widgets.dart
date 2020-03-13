@@ -551,3 +551,14 @@ class UiAvatar extends StatelessWidget {
     );
   }
 }
+
+class Copyright extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+      Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS),
+      SizedBox(height: 12,),
+      h.html("Menggunakan aplikasi ini berarti menyetujui <a>syarat penggunaan</a> dan <a>kebijakan privasi</a>.", textStyle: style.textWhite70S)
+    ],);
+  }
+}

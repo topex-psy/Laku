@@ -278,21 +278,15 @@ class _FormDaftarState extends State<FormDaftar> {
       SizedBox(height: 20,),
       Text("Kode verifikasi:", style: style.textLabelWhite),
       SizedBox(height: 8,),
-      // SingleChildScrollView(
-      //   scrollDirection: Axis.horizontal,
-      //   child: CodeInput(
-      //     length: SMS_CODE_LENGTH,
-      //     keyboardType: TextInputType.number,
-      //     builder: CodeInputBuilders.lightCircle(),
-      //     onFilled: _signInWithCode,
-      //   ),
-      // ),
-      Container(width: MediaQuery.of(context).size.width, child: CodeInput(
-        length: SMS_CODE_LENGTH,
-        keyboardType: TextInputType.number,
-        builder: CodeInputBuilders.lightCircle(),
-        onFilled: _signInWithCode,
-      ),),
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: CodeInput(
+          length: SMS_CODE_LENGTH,
+          keyboardType: TextInputType.number,
+          builder: CodeInputBuilders.lightCircle(),
+          onFilled: _signInWithCode,
+        ),
+      ),
       SizedBox(height: 12,),
       SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),),
       SizedBox(height: 12,),
@@ -314,8 +308,8 @@ class _FormDaftarState extends State<FormDaftar> {
           });
         }),
       ),),
-      SizedBox(height: 30,),
-      Center(child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS))
+      // SizedBox(height: 30,),
+      // Copyright()
     ];
     var _formDaftar = <Widget>[
       Row(children: <Widget>[
@@ -330,7 +324,7 @@ class _FormDaftarState extends State<FormDaftar> {
         _verifyPhoneNumber(context);
       },),),
       SizedBox(height: 42,),
-      Center(child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS))
+      Copyright()
     ];
     return Form(
       key: _formKey,

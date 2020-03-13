@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
           fontFamily: THEME_FONT_MAIN,
         ),
         onGenerateRoute: (RouteSettings settings) {
-          final arguments = settings.arguments as Map;
+          final Map arguments = settings.arguments ?? {};
           switch (settings.name) {
             case ROUTE_SPLASH:
               return MaterialPageRoute(builder: (_) => Splash());
