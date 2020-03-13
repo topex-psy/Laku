@@ -98,7 +98,7 @@ class _LoginState extends State<Login> {
 
       currentPersonUid = user.uid;
       // Map results = await Navigator.of(context).push(MaterialPageRoute(settings: RouteSettings(name: ROUTE_HOME), builder: (_) => Home()));
-      final results = await Navigator.of(context).pushNamed(ROUTE_HOME, arguments: {'justLogin': true});
+      final results = await Navigator.of(context).pushNamed(ROUTE_HOME);
       setState(() {
         _isLoading = false;
       });

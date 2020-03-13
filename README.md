@@ -1,5 +1,7 @@
 # Laku
 
+<img src="images/logo.png?raw=true" alt="Laku Logo" title="Laku Logo" width="200"/>
+
 Solusi praktis jual barang bekas ke orang-orang di sekitarmu.
 
 ## Kenapa Laku?

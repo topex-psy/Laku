@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wakelock/wakelock.dart';
 import 'components/intro/page_dragger.dart';
 import 'components/intro/page_reveal.dart';
@@ -144,33 +143,21 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
     final pages = [
       PageViewModel(
         color: Colors.purple[400],
-        hero: SvgPicture.asset(
-          'images/onboarding/1.svg',
-          semanticsLabel: 'Intro 1',
-          width: imageWidth,
-        ),
+        hero: Image.asset('images/onboarding/1.png', width: imageWidth,),
         icon: LineIcons.tags,
         title: 'Banyak Barang',
         body: 'Apakah kamu sering buang duit untuk berbelanja barang-barang yang gak penting?',
       ),
       PageViewModel(
         color: Colors.green[400],
-        hero: SvgPicture.asset(
-          'images/onboarding/2.svg',
-          semanticsLabel: 'Intro 2',
-          width: imageWidth,
-        ),
+        hero: Image.asset('images/onboarding/2.png', width: imageWidth,),
         icon: LineIcons.mobile_phone,
         title: 'Jangan Bingung',
         body: 'Beritahu orang-orang kalau kamu punya barang-barang itu. Mungkin saja mereka berminat.',
       ),
       PageViewModel(
         color: Colors.teal[400],
-        hero: SvgPicture.asset(
-          'images/onboarding/3.svg',
-          semanticsLabel: 'Intro 3',
-          width: imageWidth,
-        ),
+        hero: Image.asset('images/onboarding/3.png', width: imageWidth,),
         icon: LineIcons.cloud,
         title: 'Sebarkan!',
         body: 'Pasang iklan apa saja seperti produk baru, bekas, bisnis, jasa, loker, kos-kosan. Semua bisa!',
