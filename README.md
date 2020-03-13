@@ -4,7 +4,7 @@ Solusi praktis jual barang bekas ke orang-orang di sekitarmu.
 
 ## Kenapa Laku?
 
-Jangan buru-buru buang barang yang tak terpakai! Karena mungkin saja barang-barangmu yang tidak laku bisa jadi laku dan jadi uang secara cepat. Misalnya kamu punya tumpukan kardus, tumpukan koran, baju-baju lama, barang-barang yang sudah jarang dipakai, atau mungkin kamu baru membeli springbed baru, lemari baru, dan punya barang-barang lama yang gak tau mau diapain. Pasang aja barang-barang tak terpakaimu di aplikasi Laku.
+Jangan buru-buru buang barang yang tak terpakai! Karena mungkin saja barang-barangmu yang kamu pikir tidak laku bisa jadi uang secara cepat. Misalnya kamu punya tumpukan kardus, tumpukan koran, baju-baju lama, barang-barang yang sudah jarang dipakai, atau mungkin kamu baru membeli springbed baru, lemari baru, dan punya barang-barang lama yang gak tau mau diapain. Pasang aja barang-barang tak terpakaimu di aplikasi Laku.
 
 ## Apa yang terjadi setelah memasang barang di aplikasi Laku?
 

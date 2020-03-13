@@ -44,9 +44,11 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     initializeHelpers(context, "after init _IntroState");
-    // TODO onWillPop toast exit
-    return Scaffold(
-      body: IntroPage(analytics: analytics, observer: observer),
+    return WillPopScope(
+      onWillPop: () async => Future<bool>.value(false),
+      child: Scaffold(
+        body: IntroPage(analytics: analytics, observer: observer),
+      ),
     );
   }
 }
@@ -203,7 +205,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
           child: _nextPageIndex == pages.length ? Login(
             analytics: analytics,
             observer: observer,
-            noSplash: true,
+            arguments: {'noSplash': true},
           ) : Page(
             viewModel: pages[_nextPageIndex],
             percentVisible: _slidePercent,

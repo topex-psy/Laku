@@ -20,10 +20,10 @@ const RESEND_CODE_TIMEOUT = 10;
 const SMS_CODE_LENGTH = 6;
 
 class Login extends StatefulWidget {
-  Login({Key key, @required this.analytics, @required this.observer, this.noSplash = false}) : super(key: key);
+  Login({Key key, @required this.analytics, @required this.observer, this.arguments}) : super(key: key);
   final FirebaseAnalytics analytics;
   final FirebaseAnalyticsObserver observer;
-  final bool noSplash;
+  final Map arguments;
 
   @override
   _LoginState createState() => _LoginState(analytics, observer);
@@ -40,7 +40,8 @@ class _LoginState extends State<Login> {
 
   @override
   void initState() {
-    _isSplashDone = widget.noSplash;
+    bool _noSplash = widget.arguments.containsKey('noSplash') && widget.arguments['noSplash'];
+    _isSplashDone = _noSplash;
     super.initState();
 
     // set orientation menjadi portrait untuk sementara
@@ -51,7 +52,7 @@ class _LoginState extends State<Login> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(FocusNode());
-      if (!widget.noSplash) _splashScreen();
+      if (!_noSplash) _splashScreen();
     });
   }
 

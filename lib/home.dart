@@ -67,7 +67,6 @@ class _HomeState extends State<Home> {
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
-        // TODO pake provider.value
         if (!Provider.of<PersonProvider>(context, listen: false).isSignedIn) return true;
         if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
         h.showToast("Ketuk sekali lagi untuk menutup aplikasi.");
