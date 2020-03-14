@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 // import 'models/report.dart';
 import 'providers/notifications.dart';
 import 'providers/person.dart';
+import 'providers/settings.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'home.dart';
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => PersonProvider()),
         ChangeNotifierProvider(create: (context) => NotificationsProvider()),
+        ChangeNotifierProvider(create: (context) => SettingsProvider()),
         // StreamProvider<ReportModel>.value(value: _firestore.getReport()),
         // StreamProvider(create: (context) => _firestore.getReport())
       ],
@@ -58,6 +60,8 @@ class MyApp extends StatelessWidget {
         ),
         onGenerateRoute: (RouteSettings settings) {
           final Map arguments = settings.arguments ?? {};
+          print(" ==> TO ROUTE NAME: ${settings.name}");
+          print(" ==> TO ROUTE ARGS: $arguments");
           switch (settings.name) {
             case ROUTE_SPLASH:
               return MaterialPageRoute(builder: (_) => Splash());
@@ -72,8 +76,6 @@ class MyApp extends StatelessWidget {
             case ROUTE_HOME:
             case '/':
             default:
-              print(settings.name);
-              print(arguments);
               return MaterialPageRoute(builder: (_) => Home());
           }
         },

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
@@ -24,44 +25,10 @@ class Intro extends StatefulWidget {
 }
 
 class _IntroState extends State<Intro> with TickerProviderStateMixin {
-  _IntroState(this.analytics, this.observer);
+  // _IntroState(this.analytics, this.observer);
   final FirebaseAnalytics analytics;
   final FirebaseAnalyticsObserver observer;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      FocusScope.of(context).requestFocus(FocusNode());
-      setState(() {
-        print(" -> wakelock: ENABLED");
-        Wakelock.enable();
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    initializeHelpers(context, "after init _IntroState");
-    return WillPopScope(
-      onWillPop: () async => Future<bool>.value(false),
-      child: Scaffold(
-        body: IntroPage(analytics: analytics, observer: observer),
-      ),
-    );
-  }
-}
-
-class IntroPage extends StatefulWidget {
-  IntroPage({Key key, @required this.analytics, @required this.observer}) : super(key: key);
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
-  @override
-  _IntroPageState createState() => _IntroPageState(analytics, observer);
-}
-
-class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   StreamController<SlideUpdate> slideUpdateStream;
   AnimatedPageDragger animatedPageDragger;
 
@@ -69,11 +36,9 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   var _slideDirection = SlideDirection.none;
   var _nextPageIndex = 0;
   var _slidePercent = 0.0;
+  var _isWillExit = false;
 
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
-  _IntroPageState(this.analytics, this.observer) {
+  _IntroState(this.analytics, this.observer) {
     slideUpdateStream = StreamController<SlideUpdate>();
     slideUpdateStream.stream.listen((SlideUpdate event) {
       setState(() {
@@ -133,12 +98,18 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
     _slidePercent = isFirstRun ? 0.0 : 1.0;
     _nextPageIndex = _activeIndex;
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      FocusScope.of(context).requestFocus(FocusNode());
+      setState(() {
+        print(" -> wakelock: ENABLED");
+        Wakelock.enable();
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    initializeHelpers(context, "after init _IntroState");
     final imageWidth = h.screenSize.width * 0.69;
     final pages = [
       PageViewModel(
@@ -163,64 +134,90 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         body: 'Pasang iklan apa saja seperti produk baru, bekas, bisnis, jasa, loker, kos-kosan. Semua bisa!',
       ),
     ];
-    return Stack(
-      children: [
-        _activeIndex == pages.length ? Container() : GestureDetector(
-          onTap: () {
-            print("HALAMAN SLIDE: $_activeIndex");
-            if (_activeIndex < pages.length) {
-              setState(() {
-                animatedPageDragger = AnimatedPageDragger(
-                  slideDirection: SlideDirection.rightToLeft,
-                  transitionGoal: TransitionGoal.open,
-                  slidePercent: 0.0,
-                  slideUpdateStream: slideUpdateStream,
-                  vsync: this,
-                );
-                _nextPageIndex = _activeIndex + 1;
-                animatedPageDragger.run();
-              });
-            }
-          },
-          child: Page(
-            viewModel: pages[_activeIndex],
-            percentVisible: 1.0,
-          ),
-        ),
-        PageReveal(
-          revealPercent: _slidePercent,
-          child: _nextPageIndex == pages.length ? Login(
-            analytics: analytics,
-            observer: observer,
-            arguments: {'noSplash': true},
-          ) : Page(
-            viewModel: pages[_nextPageIndex],
-            percentVisible: _slidePercent,
-          ),
-        ),
-        IgnorePointer(
-          ignoring: _activeIndex == pages.length,
-          child: Opacity(
-            opacity: _activeIndex == pages.length ? 0.0 : (_nextPageIndex == pages.length ? 1.0 - _slidePercent : 1.0),
-            child: PagerIndicator(
-              viewModel: PagerIndicatorViewModel(
-                pages,
-                _activeIndex,
-                _slideDirection,
-                _slidePercent,
+    return WillPopScope(
+      // onWillPop: () async => Future<bool>.value(false),
+      onWillPop: () async {
+        if (isFirstRun && _activeIndex > 0 && _activeIndex != INTRO_PAGE_LENGTH) {
+          setState(() {
+            animatedPageDragger = AnimatedPageDragger(
+              slideDirection: SlideDirection.leftToRight,
+              transitionGoal: TransitionGoal.open,
+              slidePercent: 0.0,
+              slideUpdateStream: slideUpdateStream,
+              vsync: this,
+            );
+            _nextPageIndex = _activeIndex - 1;
+            animatedPageDragger.run();
+          });
+        } else {
+          if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
+          h.showToast("Ketuk sekali lagi untuk menutup aplikasi.");
+          _isWillExit = true;
+          Future.delayed(Duration(milliseconds: 2000), () { _isWillExit = false; });
+        }
+        return false;
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            _activeIndex == pages.length ? Container() : GestureDetector(
+              onTap: () {
+                print("HALAMAN SLIDE: $_activeIndex");
+                if (_activeIndex < pages.length) {
+                  setState(() {
+                    animatedPageDragger = AnimatedPageDragger(
+                      slideDirection: SlideDirection.rightToLeft,
+                      transitionGoal: TransitionGoal.open,
+                      slidePercent: 0.0,
+                      slideUpdateStream: slideUpdateStream,
+                      vsync: this,
+                    );
+                    _nextPageIndex = _activeIndex + 1;
+                    animatedPageDragger.run();
+                  });
+                }
+              },
+              child: Page(
+                viewModel: pages[_activeIndex],
+                percentVisible: 1.0,
               ),
             ),
-          ),
+            PageReveal(
+              revealPercent: _slidePercent,
+              child: _nextPageIndex == pages.length ? Login(
+                analytics: analytics,
+                observer: observer,
+                arguments: {'noSplash': true},
+              ) : Page(
+                viewModel: pages[_nextPageIndex],
+                percentVisible: _slidePercent,
+              ),
+            ),
+            IgnorePointer(
+              ignoring: _activeIndex == pages.length,
+              child: Opacity(
+                opacity: _activeIndex == pages.length ? 0.0 : (_nextPageIndex == pages.length ? 1.0 - _slidePercent : 1.0),
+                child: PagerIndicator(
+                  viewModel: PagerIndicatorViewModel(
+                    pages,
+                    _activeIndex,
+                    _slideDirection,
+                    _slidePercent,
+                  ),
+                ),
+              ),
+            ),
+            IgnorePointer(
+              ignoring: _activeIndex == pages.length,
+              child: PageDragger(
+                canDragLeftToRight: _activeIndex > 0 && _activeIndex < pages.length,
+                canDragRightToLeft: _activeIndex < pages.length,
+                slideUpdateStream: this.slideUpdateStream,
+              ),
+            ),
+          ],
         ),
-        IgnorePointer(
-          ignoring: _activeIndex == pages.length,
-          child: PageDragger(
-            canDragLeftToRight: _activeIndex > 0 && _activeIndex < pages.length,
-            canDragRightToLeft: _activeIndex < pages.length,
-            slideUpdateStream: this.slideUpdateStream,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

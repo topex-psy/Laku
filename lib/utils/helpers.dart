@@ -21,7 +21,6 @@ bool isTour2Completed = false;
 bool isTour3Completed = false;
 bool isDebugMode = false;
 bool isFirstRun = true;
-Timer timer;
 
 UIHelper h;
 UserHelper a;
@@ -215,15 +214,6 @@ class UIHelper {
   Html html(String htmlString, {TextStyle textStyle}) => Html(
     data: htmlString,
     defaultTextStyle: textStyle,
-    onLinkTap: (url) async {
-      print("OPENING URL: $url");
-      print("OPENING PAGE: ${url.replaceAll(APP_HOST, '')}");
-      // loadAlert();
-      // var responseJson = await getPage(url.replaceAll(APP_HOST, ''));
-      // var page = PageApi.fromJson(responseJson["result"]);
-      // closeDialog();
-      // showAlert(title: page.judul, body: html(page.isi, textStyle: TextStyle(fontSize: 14)));
-    },
   );
 
   MaterialRoundedDatePickerStyle get datePickerStyle {

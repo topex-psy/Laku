@@ -20,7 +20,7 @@ const RESEND_CODE_TIMEOUT = 10;
 const SMS_CODE_LENGTH = 6;
 
 class Login extends StatefulWidget {
-  Login({Key key, @required this.analytics, @required this.observer, this.arguments}) : super(key: key);
+  Login({Key key, @required this.analytics, @required this.observer, this.arguments = const {}}) : super(key: key);
   final FirebaseAnalytics analytics;
   final FirebaseAnalyticsObserver observer;
   final Map arguments;

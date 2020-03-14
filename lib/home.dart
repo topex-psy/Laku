@@ -47,7 +47,6 @@ class _HomeState extends State<Home> {
   @override
   void dispose() {
     _pageController.dispose();
-    timer.cancel();
     super.dispose();
   }
 

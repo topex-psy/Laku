@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
@@ -558,7 +559,19 @@ class Copyright extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS),
       SizedBox(height: 12,),
-      h.html("Menggunakan aplikasi ini berarti menyetujui <a>syarat penggunaan</a> dan <a>kebijakan privasi</a>.", textStyle: style.textWhite70S)
+      Html(
+        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="${APP_TERMS_URL}">syarat penggunaan</a> dan <a href="${APP_PRIVACY_URL}">kebijakan privasi</a>.',
+        defaultTextStyle: style.textWhite70S,
+        onLinkTap: (url) async {
+          print("OPENING URL: $url");
+          print("OPENING PAGE: ${url.replaceAll(APP_HOST, '')}");
+          // loadAlert();
+          // var responseJson = await getPage(url.replaceAll(APP_HOST, ''));
+          // var page = PageApi.fromJson(responseJson["result"]);
+          // closeDialog();
+          // showAlert(title: page.judul, body: html(page.isi, textStyle: TextStyle(fontSize: 14)));
+        },
+      )
     ],);
   }
 }

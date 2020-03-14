@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:laku/providers/settings.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -26,7 +27,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
   final _scrollController = ScrollController();
   var _isGPSOn = true;
   var _isLoading = true;
-  var _curveHeight = 320.0; // TODO taruh di provider
+  Timer _timer;
 
   @override
   void onPageVisible() {
@@ -35,27 +36,32 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
   @override
   void onPageInvisible() {
-    timer.cancel();
+    _timer.cancel();
   }
 
   @override
   void initState() {
-    _scrollController.addListener(() {
-      print(_scrollController.offset);
-      // TODO set provider curve height
-    });
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.addListener(() {
+        print("_scrollController.offset = ${_scrollController.offset}");
+        Provider.of<SettingsProvider>(context, listen: false).scrollPosition = _scrollController.offset;
+      });
       // TODO load gps status
       _runTimer();
     });
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _timer.cancel();
+    super.dispose();
+  }
+
   _runTimer() {
     _getAllData();
-    timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) {
-      _getAllData();
-    });
+    _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getAllData());
   }
 
   _getAllData() {
@@ -85,7 +91,12 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
       child: Stack(
         alignment: Alignment.topCenter,
         children: <Widget>[
-          Container(width: double.infinity, height: _curveHeight, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
+          Selector<SettingsProvider, double>(
+            selector: (buildContext, settings) => settings.scrollPosition,
+            builder: (context, scrollPosition, child) {
+              return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
+            }
+          ),
           Positioned.fill(child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

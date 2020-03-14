@@ -1,28 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsProvider with ChangeNotifier {
-  String _units;
+  double _scrollPosition;
 
-  SettingsProvider() {
-    _units = 'Imperial';
-    loadPreferences();
-  }
+  double get scrollPosition => _scrollPosition;
 
-  String get units => _units;
-  set units(String units) {
-    _units = units;
+  set scrollPosition(double val) {
+    _scrollPosition = val;
     notifyListeners();
-    savePreferences();
-  }
-
-  savePreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('units', _units);
-  }
-
-  loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    units = prefs.getString('units');
   }
 }
