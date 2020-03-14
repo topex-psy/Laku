@@ -56,9 +56,9 @@ class UserHelper {
     person.setPerson(isSignedIn: false);
     Future.delayed(Duration.zero, () {
       Navigator.of(context).popUntil((route) => route.isFirst);
-      // Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_LOGIN, (route) => route.isFirst, arguments: {'noSplash': true});
-      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
-      // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_LOGIN));
+      // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_INTRO));
+      // Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => route.isFirst, arguments: {'noSplash': true});
+      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_INTRO);
       // Navigator.of(context).pop();
     });
   }

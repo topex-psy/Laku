@@ -17,7 +17,7 @@ const DEBUG_ONBOARDING     = false;
 
 const ROUTE_SPLASH         = '/Splash';
 const ROUTE_INTRO          = '/Intro';
-const ROUTE_LOGIN          = '/Login';
+// const ROUTE_LOGIN          = '/Login';
 const ROUTE_PROFIL         = '/Profil';
 const ROUTE_TAMBAH         = '/Tambah';
 const ROUTE_HOME           = '/Home';

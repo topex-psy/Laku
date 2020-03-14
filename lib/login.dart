@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
 import 'package:laku/providers/person.dart';
@@ -20,69 +18,31 @@ const RESEND_CODE_TIMEOUT = 10;
 const SMS_CODE_LENGTH = 6;
 
 class Login extends StatefulWidget {
-  Login({Key key, @required this.analytics, @required this.observer, this.arguments = const {}}) : super(key: key);
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-  final Map arguments;
-
   @override
-  _LoginState createState() => _LoginState(analytics, observer);
+  _LoginState createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
-  _LoginState(this.analytics, this.observer);
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
-  var _isSplashDone = false;
-  var _isLoading = false;
-  var _isWillExit = false;
+  var _isLoading = true;
 
   @override
   void initState() {
-    bool _noSplash = widget.arguments.containsKey('noSplash') && widget.arguments['noSplash'];
-    _isSplashDone = _noSplash;
     super.initState();
 
-    // set orientation menjadi portrait untuk sementara
-    try {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    } on PlatformException {
-      print("setPreferredOrientations FAILEEEEEEEEEEEED");
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(FocusNode());
-      if (!_noSplash) _splashScreen();
+      _getCurrentUser(Navigator.of(context));
     });
   }
 
-  @override
-  void dispose() {
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.landscapeRight,
-    //   DeviceOrientation.landscapeLeft,
-    //   DeviceOrientation.portraitUp,
-    //   DeviceOrientation.portraitDown,
-    // ]);
-    super.dispose();
-  }
-
-  _splashScreen() async {
-    // Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Splash(analytics: analytics, observer: observer,)));
-    final results = await Navigator.of(context).pushNamed(ROUTE_SPLASH);
-    print(results);
-    setState(() {
-      _isSplashDone = true;
-      _isLoading = true;
-    });
-    _getCurrentUser();
-  }
-
-  _getCurrentUser() async {
+  _getCurrentUser([NavigatorState nav]) async {
+    FocusScope.of(context).requestFocus(FocusNode());
     if (!_isLoading) setState(() { _isLoading = true; });
     final user = await firebaseAuth.currentUser();
-    if (user == null) setState(() { _isLoading = false; }); else {
-      FocusScope.of(context).requestFocus(FocusNode());
+    if (user == null) {
+      print(" ==> FIREBASE USER: NOT LOGGED IN");
+      setState(() { _isLoading = false; });
+    } else {
+      print(" ==> FIREBASE USER: EXIST");
       var person = Provider.of<PersonProvider>(context, listen: false);
       // TODO FIXME fetch user data, set personprovider
       // TODO ke form daftar kalo fetch not found
@@ -97,8 +57,7 @@ class _LoginState extends State<Login> {
       );
 
       currentPersonUid = user.uid;
-      // Map results = await Navigator.of(context).push(MaterialPageRoute(settings: RouteSettings(name: ROUTE_HOME), builder: (_) => Home()));
-      final results = await Navigator.of(context).pushNamed(ROUTE_HOME);
+      final results = await (nav ?? Navigator.of(context)).pushNamed(ROUTE_HOME);
       setState(() {
         _isLoading = false;
       });
@@ -109,34 +68,23 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     final _logoSize = MediaQuery.of(context).size.height * 0.25;
-    return WillPopScope(
-      onWillPop: () async {
-        if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
-        h.showToast("Ketuk sekali lagi untuk menutup aplikasi.");
-        _isWillExit = true;
-        Future.delayed(Duration(milliseconds: 2000), () { _isWillExit = false; });
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: THEME_COLOR,
-        body: SafeArea(
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: THEME_COLOR,
+      child: SafeArea(
+        child: Center(
           child: SingleChildScrollView(
             reverse: true,
             padding: EdgeInsets.all(30),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
               SizedBox(height: 30,),
-              Center(child: GestureDetector(
-                onTap: _splashScreen,
-                child: Hero(
-                  tag: "SplashLogo",
-                  child: Opacity(
-                    opacity: _isSplashDone ? 1 : 0,
-                    child: Semantics(
-                      label: "Logo $APP_NAME",
-                      image: true,
-                      child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
-                    ),
-                  ),
+              Center(child: Hero(
+                tag: "SplashLogo",
+                child: Semantics(
+                  label: "Logo $APP_NAME",
+                  image: true,
+                  child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
                 ),
               ),),
               SizedBox(height: 30,),
@@ -145,20 +93,17 @@ class _LoginState extends State<Login> {
                 alignment: Alignment.center,
                 children: <Widget>[
                   UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
-                  Offstage(
-                    offstage: !_isSplashDone,
-                    child: Consumer<PersonProvider>(
-                      builder: (context, person, child) {
-                        return (person.isSignedIn ?? false) ? Container() : FormDaftar(
-                          setLoading: (val) {
-                            if (_isLoading != val) setState(() {
-                              _isLoading = val;
-                            });
-                          },
-                          getCurrentUser: _getCurrentUser
-                        );
-                      },
-                    ),
+                  Consumer<PersonProvider>(
+                    builder: (context, person, child) {
+                      return (person.isSignedIn ?? false) ? Container() : FormDaftar(
+                        setLoading: (val) {
+                          if (_isLoading != val) setState(() {
+                            _isLoading = val;
+                          });
+                        },
+                        getCurrentUser: _getCurrentUser
+                      );
+                    },
                   ),
                 ],
               )

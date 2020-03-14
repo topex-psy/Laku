@@ -13,9 +13,6 @@ class Splash extends StatefulWidget {
 class _SplashState extends State<Splash> with TickerProviderStateMixin {
   AnimationController _animation1Controller, _animation2Controller, _animation3Controller;
   Animation _animation1, _animation2, _animation3;
-  var _isSplashDone = false;
-  var _isLoading = true;
-  var _isLanjut = false;
 
   @override
   void initState() {
@@ -37,19 +34,8 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(FocusNode());
-      _loadPreferences();
       Future.delayed(Duration(milliseconds: 500), () {
-        _animation1Controller.forward();
-      });
-      Future.delayed(Duration(milliseconds: 1000), () {
-        _animation2Controller.forward();
-      });
-      Future.delayed(Duration(milliseconds: 1250), () {
-        _animation3Controller.forward();
-      });
-      Future.delayed(Duration(milliseconds: 3000), () {
-        _isSplashDone = true;
-        _lanjut();
+        _startSplash();
       });
     });
   }
@@ -62,89 +48,97 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  _startSplash() {
+    _animation1Controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) _loadPreferences();
+    });
+    _animation1Controller.forward();
+  }
+
   _loadPreferences() async {
+    print(" ==> LOAD PREFERENCES!!!");
+    const delay = 450;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
     isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
     isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
     isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
     if (isFirstRun) prefs.setBool('isFirstRun', false);
-    _isLoading = false;
-    _lanjut();
+    Future.delayed(Duration(milliseconds: delay), () {
+      _animation2Controller.forward();
+    });
+    Future.delayed(Duration(milliseconds: delay + 250), () {
+      _animation3Controller.forward();
+    });
+    Future.delayed(Duration(milliseconds: delay + 2000), () {
+      _lanjut();
+    });
   }
 
   _lanjut() async {
-    if (_isLoading || !_isSplashDone || _isLanjut) return;
-    _isLanjut = true;
-    final nav = Navigator.of(context);
-    if (isFirstRun) {
-      await nav.pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => false);
-    } else {
-      nav.pop({'isSplashDone': true});
-    }
+    print(" ==> LANJUT!!!");
+    await Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: THEME_COLOR,
-      // floatingActionButton: FloatingActionButton(child: Icon(_showOriginal ? LineIcons.image : null), onPressed: () {
-      //   setState(() {
-      //     _showOriginal = !_showOriginal;
-      //   });
-      // }),
-      body: SafeArea(
-        child: Center(
-          child: Hero(
-            tag: "SplashLogo",
-            child: Stack(
-              alignment: Alignment.center,
-              children: <Widget>[
-                Image.asset('images/logo_bg.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
-                AnimatedBuilder(
-                  animation: _animation1Controller,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, 17 * _animation1.value),
-                      child: Opacity(
-                        opacity: _animation1.value,
-                        child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
-                      )
-                    );
-                  }
-                ),
-                AnimatedBuilder(
-                  animation: _animation2Controller,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(41.75, -22.5),
-                      child: Transform.scale(
-                        scale: 1 * _animation2.value,
+    return WillPopScope(
+      onWillPop: () async => Future<bool>.value(false),
+      child: Scaffold(
+        backgroundColor: THEME_COLOR,
+        body: SafeArea(
+          child: Center(
+            child: Hero(
+              tag: "SplashLogo",
+              child: Stack(
+                alignment: Alignment.center,
+                children: <Widget>[
+                  Image.asset('images/logo_bg.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
+                  AnimatedBuilder(
+                    animation: _animation1Controller,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(0, 17 * _animation1.value),
                         child: Opacity(
-                          opacity: 0.8,
-                          child: Container(width: 25, height: 25, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,),),
-                        ),
-                      )
-                    );
-                  }
-                ),
-                AnimatedBuilder(
-                  animation: _animation3Controller,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(11, -53.5),
-                      child: Transform.scale(
-                        scale: 1 * _animation3.value,
-                        child: Opacity(
-                          opacity: 0.6,
-                          child: Container(width: 36.5, height: 36.5, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,),),
-                        ),
-                      )
-                    );
-                  }
-                ),
-                // Image.asset('images/logo.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
-              ],
+                          opacity: _animation1.value,
+                          child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
+                        )
+                      );
+                    }
+                  ),
+                  AnimatedBuilder(
+                    animation: _animation2Controller,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(41.75, -22.5),
+                        child: Transform.scale(
+                          scale: 1 * _animation2.value,
+                          child: Opacity(
+                            opacity: 0.8,
+                            child: Container(width: 25, height: 25, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,),),
+                          ),
+                        )
+                      );
+                    }
+                  ),
+                  AnimatedBuilder(
+                    animation: _animation3Controller,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(11, -53.5),
+                        child: Transform.scale(
+                          scale: 1 * _animation3.value,
+                          child: Opacity(
+                            opacity: 0.6,
+                            child: Container(width: 36.5, height: 36.5, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,),),
+                          ),
+                        )
+                      );
+                    }
+                  ),
+                  // Image.asset('images/logo.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
+                ],
+              ),
             ),
           ),
         ),

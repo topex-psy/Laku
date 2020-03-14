@@ -11,7 +11,7 @@ import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'home.dart';
 import 'intro.dart';
-import 'login.dart';
+// import 'login.dart';
 import 'profil.dart';
 import 'splash.dart';
 import 'tambah.dart';
@@ -64,26 +64,21 @@ class MyApp extends StatelessWidget {
           print(" ==> TO ROUTE ARGS: $arguments");
           switch (settings.name) {
             case ROUTE_SPLASH:
-              return MaterialPageRoute(builder: (_) => Splash());
+              return MaterialPageRoute(settings: settings, builder: (_) => Splash());
             case ROUTE_INTRO:
-              return MaterialPageRoute(builder: (_) => Intro(analytics: analytics, observer: observer,));
-            case ROUTE_LOGIN:
-              return MaterialPageRoute(builder: (_) => Login(analytics: analytics, observer: observer, arguments: arguments,));
+              return MaterialPageRoute(settings: settings, builder: (_) => Intro(analytics: analytics, observer: observer,));
             case ROUTE_PROFIL:
-              return MaterialPageRoute(builder: (_) => Profil());
+              return MaterialPageRoute(settings: settings, builder: (_) => Profil());
             case ROUTE_TAMBAH:
-              return MaterialPageRoute(builder: (_) => Tambah());
+              return MaterialPageRoute(settings: settings, builder: (_) => Tambah());
             case ROUTE_HOME:
             case '/':
             default:
-              return MaterialPageRoute(builder: (_) => Home());
+              return MaterialPageRoute(settings: settings, builder: (_) => Home());
           }
         },
-        initialRoute: ROUTE_LOGIN,
-        home: Login(
-          analytics: analytics,
-          observer: observer,
-        ),
+        initialRoute: ROUTE_SPLASH,
+        home: Splash(),
       ),
     );
   }
