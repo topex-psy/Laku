@@ -10,7 +10,6 @@ import 'components/intro/page_dragger.dart';
 import 'components/intro/page_reveal.dart';
 import 'components/intro/pager_indicator.dart';
 import 'components/intro/pages.dart';
-// import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'login.dart';
 
@@ -99,14 +98,6 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
     _slidePercent = isFirstRun ? 0.0 : 1.0;
     _nextPageIndex = _activeIndex;
     super.initState();
-
-    // set orientation menjadi portrait untuk sementara
-    try {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    } on PlatformException {
-      print("setPreferredOrientations FAILEEEEEEEEEEEED");
-    }
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       FocusScope.of(context).requestFocus(FocusNode());
       setState(() {
@@ -114,17 +105,6 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
         Wakelock.enable();
       });
     });
-  }
-
-  @override
-  void dispose() {
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.landscapeRight,
-    //   DeviceOrientation.landscapeLeft,
-    //   DeviceOrientation.portraitUp,
-    //   DeviceOrientation.portraitDown,
-    // ]);
-    super.dispose();
   }
 
   @override
@@ -155,7 +135,6 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
       ),
     ];
     return WillPopScope(
-      // onWillPop: () async => Future<bool>.value(false),
       onWillPop: () async {
         if (isFirstRun && _activeIndex > 0 && _activeIndex != INTRO_PAGE_LENGTH) {
           setState(() {
@@ -204,12 +183,7 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
             ),
             PageReveal(
               revealPercent: _slidePercent,
-              child: _nextPageIndex == pages.length ? Login(
-                // analytics: analytics,
-                // observer: observer,
-                // arguments: {'noSplash': true},
-                // showSplash: !isFirstRun
-              ) : Page(
+              child: _nextPageIndex == pages.length ? Login() : Page(
                 viewModel: pages[_nextPageIndex],
                 percentVisible: _slidePercent,
               ),

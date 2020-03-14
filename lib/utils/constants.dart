@@ -13,7 +13,7 @@ const APP_PRIVACY_URL      = "${APP_HOST}privacy";
 const APP_ABOUT_URL        = "${APP_HOST}about";
 
 const DEBUG_TOUR           = false;
-const DEBUG_ONBOARDING     = false;
+const DEBUG_ONBOARDING     = true;
 
 const ROUTE_SPLASH         = '/Splash';
 const ROUTE_INTRO          = '/Intro';

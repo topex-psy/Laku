@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -32,6 +33,14 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
       curve: Curves.bounceInOut
     ));
     super.initState();
+
+    // set orientation menjadi portrait untuk sementara
+    try {
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    } on PlatformException {
+      print("setPreferredOrientations FAILEEEEEEEEEEEED");
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(FocusNode());
       Future.delayed(Duration(milliseconds: 500), () {
@@ -45,6 +54,12 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     _animation1Controller.dispose();
     _animation2Controller.dispose();
     _animation3Controller.dispose();
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.landscapeRight,
+    //   DeviceOrientation.landscapeLeft,
+    //   DeviceOrientation.portraitUp,
+    //   DeviceOrientation.portraitDown,
+    // ]);
     super.dispose();
   }
 
@@ -57,20 +72,19 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
 
   _loadPreferences() async {
     print(" ==> LOAD PREFERENCES!!!");
-    const delay = 450;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
     isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
     isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
     isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
     if (isFirstRun) prefs.setBool('isFirstRun', false);
-    Future.delayed(Duration(milliseconds: delay), () {
+    Future.delayed(Duration.zero, () {
       _animation2Controller.forward();
     });
-    Future.delayed(Duration(milliseconds: delay + 250), () {
+    Future.delayed(Duration(milliseconds: 250), () {
       _animation3Controller.forward();
     });
-    Future.delayed(Duration(milliseconds: delay + 2000), () {
+    Future.delayed(Duration(milliseconds: 2000), () {
       _lanjut();
     });
   }

@@ -11,7 +11,6 @@ import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'home.dart';
 import 'intro.dart';
-// import 'login.dart';
 import 'profil.dart';
 import 'splash.dart';
 import 'tambah.dart';
