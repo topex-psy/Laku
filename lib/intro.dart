@@ -3,32 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_analytics/observer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 import 'components/intro/page_dragger.dart';
 import 'components/intro/page_reveal.dart';
 import 'components/intro/pager_indicator.dart';
 import 'components/intro/pages.dart';
+import 'utils/constants.dart';
 import 'utils/helpers.dart';
-import 'login.dart';
-
-const INTRO_PAGE_LENGTH = 3;
 
 class Intro extends StatefulWidget {
-  Intro({Key key, @required this.analytics, @required this.observer}) : super(key: key);
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
   @override
-  _IntroState createState() => _IntroState(analytics, observer);
+  _IntroState createState() => _IntroState();
 }
 
 class _IntroState extends State<Intro> with TickerProviderStateMixin {
-  // _IntroState(this.analytics, this.observer);
-  final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
-
   StreamController<SlideUpdate> slideUpdateStream;
   AnimatedPageDragger animatedPageDragger;
 
@@ -38,7 +27,7 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
   var _slidePercent = 0.0;
   var _isWillExit = false;
 
-  _IntroState(this.analytics, this.observer) {
+  _IntroState() {
     slideUpdateStream = StreamController<SlideUpdate>();
     slideUpdateStream.stream.listen((SlideUpdate event) {
       setState(() {
@@ -80,13 +69,8 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
         } else if (event.updateType == UpdateType.doneAnimating) {
           _activeIndex = _nextPageIndex;
           _slideDirection = SlideDirection.none;
+          _slidePercent = 0.0;
           animatedPageDragger.dispose();
-          if (_activeIndex == INTRO_PAGE_LENGTH) {
-            print(" -> wakelock: DISABLED");
-            Wakelock.disable();
-          } else {
-            _slidePercent = 0.0;
-          }
         }
       });
     });
@@ -94,8 +78,8 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    _activeIndex = isFirstRun ? 0 : INTRO_PAGE_LENGTH;
-    _slidePercent = isFirstRun ? 0.0 : 1.0;
+    _activeIndex = 0;
+    _slidePercent = 0.0;
     _nextPageIndex = _activeIndex;
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -124,19 +108,19 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
         hero: Image.asset('images/onboarding/2.png', width: imageWidth,),
         icon: LineIcons.mobile_phone,
         title: 'Jangan Bingung',
-        body: 'Beritahu orang-orang kalau kamu punya barang-barang itu. Mungkin saja mereka berminat.',
+        body: 'Beritahu orang-orang kalau kamu punya barang-barang itu. Mungkin mereka lebih butuh.',
       ),
       PageViewModel(
         color: Colors.teal[400],
         hero: Image.asset('images/onboarding/3.png', width: imageWidth,),
         icon: LineIcons.cloud,
-        title: 'Sebarkan!',
+        title: 'Jadi Duit!',
         body: 'Pasang iklan apa saja seperti produk baru, bekas, bisnis, jasa, loker, kos-kosan. Semua bisa!',
       ),
     ];
     return WillPopScope(
       onWillPop: () async {
-        if (isFirstRun && _activeIndex > 0 && _activeIndex != INTRO_PAGE_LENGTH) {
+        if (_activeIndex > 0) {
           setState(() {
             animatedPageDragger = AnimatedPageDragger(
               slideDirection: SlideDirection.leftToRight,
@@ -162,7 +146,7 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
             _activeIndex == pages.length ? Container() : GestureDetector(
               onTap: () {
                 print("HALAMAN SLIDE: $_activeIndex");
-                if (_activeIndex < pages.length) {
+                if (_activeIndex < pages.length - 1) {
                   setState(() {
                     animatedPageDragger = AnimatedPageDragger(
                       slideDirection: SlideDirection.rightToLeft,
@@ -174,6 +158,16 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
                     _nextPageIndex = _activeIndex + 1;
                     animatedPageDragger.run();
                   });
+                } else {
+                  if (isFirstRun) SharedPreferences.getInstance().then((prefs) {
+                    prefs.setBool('isFirstRun', false);
+                    isFirstRun = false;
+                  });
+                  setState(() {
+                    print(" -> wakelock: DISABLED");
+                    Wakelock.disable();
+                  });
+                  Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_LOGIN, (route) => false);
                 }
               },
               child: Page(
@@ -183,32 +177,23 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
             ),
             PageReveal(
               revealPercent: _slidePercent,
-              child: _nextPageIndex == pages.length ? Login() : Page(
+              child: Page(
                 viewModel: pages[_nextPageIndex],
                 percentVisible: _slidePercent,
               ),
             ),
-            IgnorePointer(
-              ignoring: _activeIndex == pages.length,
-              child: Opacity(
-                opacity: _activeIndex == pages.length ? 0.0 : (_nextPageIndex == pages.length ? 1.0 - _slidePercent : 1.0),
-                child: PagerIndicator(
-                  viewModel: PagerIndicatorViewModel(
-                    pages,
-                    _activeIndex,
-                    _slideDirection,
-                    _slidePercent,
-                  ),
-                ),
+            PagerIndicator(
+              viewModel: PagerIndicatorViewModel(
+                pages,
+                _activeIndex,
+                _slideDirection,
+                _slidePercent,
               ),
             ),
-            IgnorePointer(
-              ignoring: _activeIndex == pages.length,
-              child: PageDragger(
-                canDragLeftToRight: _activeIndex > 0 && _activeIndex < pages.length,
-                canDragRightToLeft: _activeIndex < pages.length,
-                slideUpdateStream: this.slideUpdateStream,
-              ),
+            PageDragger(
+              canDragLeftToRight: _activeIndex > 0 && _activeIndex < pages.length,
+              canDragRightToLeft: _activeIndex < pages.length - 1,
+              slideUpdateStream: this.slideUpdateStream,
             ),
           ],
         ),

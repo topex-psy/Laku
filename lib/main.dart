@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 // import 'services/firestore_service.dart';
 // import 'models/report.dart';
 import 'providers/notifications.dart';
@@ -9,7 +11,9 @@ import 'providers/person.dart';
 import 'providers/settings.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
+import 'daftar.dart';
 import 'home.dart';
+import 'login.dart';
 import 'intro.dart';
 import 'profil.dart';
 import 'splash.dart';
@@ -42,16 +46,16 @@ class MyApp extends StatelessWidget {
         title: APP_NAME,
         debugShowCheckedModeBanner: false,
         locale: Locale('id', 'ID'),
-        // localizationsDelegates: [
-        //   GlobalMaterialLocalizations.delegate,
-        //   GlobalWidgetsLocalizations.delegate,
-        //   GlobalCupertinoLocalizations.delegate,
-        //   RefreshLocalizations.delegate,
-        // ],
-        // supportedLocales: [
-        //   Locale('id', 'ID'),
-        //   Locale('en', 'US'),
-        // ],
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          RefreshLocalizations.delegate,
+        ],
+        supportedLocales: [
+          Locale('id', 'ID'),
+          Locale('en', 'US'),
+        ],
         theme: ThemeData(
           scaffoldBackgroundColor: THEME_BACKGROUND,
           primarySwatch: THEME_COLOR,
@@ -59,22 +63,20 @@ class MyApp extends StatelessWidget {
         ),
         onGenerateRoute: (RouteSettings settings) {
           final Map arguments = settings.arguments ?? {};
-          print(" ==> TO ROUTE NAME: ${settings.name}");
-          print(" ==> TO ROUTE ARGS: $arguments");
+          print(" ==> TO ROUTE: ${settings.name} $arguments");
+          Widget page;
           switch (settings.name) {
-            case ROUTE_SPLASH:
-              return MaterialPageRoute(settings: settings, builder: (_) => Splash());
-            case ROUTE_INTRO:
-              return MaterialPageRoute(settings: settings, builder: (_) => Intro(analytics: analytics, observer: observer,));
-            case ROUTE_PROFIL:
-              return MaterialPageRoute(settings: settings, builder: (_) => Profil());
-            case ROUTE_TAMBAH:
-              return MaterialPageRoute(settings: settings, builder: (_) => Tambah());
+            case ROUTE_SPLASH: page = Splash(); break;
+            case ROUTE_INTRO:  page = Intro();  break;
+            case ROUTE_LOGIN:  page = Login();  break;
+            case ROUTE_DAFTAR: page = Daftar(); break;
+            case ROUTE_PROFIL: page = Profil(); break;
+            case ROUTE_TAMBAH: page = Tambah(); break;
             case ROUTE_HOME:
             case '/':
-            default:
-              return MaterialPageRoute(settings: settings, builder: (_) => Home());
+            default: page = Home(analytics: analytics, observer: observer,); break;
           }
+          return MaterialPageRoute(settings: settings, builder: (_) => page);
         },
         initialRoute: ROUTE_SPLASH,
         home: Splash(),

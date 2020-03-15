@@ -6,18 +6,19 @@ const APP_SLOGAN           = "Aplikasi praktis untuk jual barang bekas";
 const APP_COPYRIGHT        = "TaufikNur Production";
 const APP_LOCALE           = "id_ID";
 // const APP_HOST          = "https://www.taufiknur.com/laku/";
-// const APP_HOST             = "http://192.168.8.101/laku/public/";
+// const APP_HOST          = "http://192.168.8.101/laku/public/";
 const APP_HOST             = "http://192.168.1.68/laku/public/";
 const APP_TERMS_URL        = "${APP_HOST}terms";
 const APP_PRIVACY_URL      = "${APP_HOST}privacy";
 const APP_ABOUT_URL        = "${APP_HOST}about";
 
 const DEBUG_TOUR           = false;
-const DEBUG_ONBOARDING     = true;
+const DEBUG_ONBOARDING     = false;
 
 const ROUTE_SPLASH         = '/Splash';
 const ROUTE_INTRO          = '/Intro';
-// const ROUTE_LOGIN          = '/Login';
+const ROUTE_LOGIN          = '/Login';
+const ROUTE_DAFTAR         = '/Daftar';
 const ROUTE_PROFIL         = '/Profil';
 const ROUTE_TAMBAH         = '/Tambah';
 const ROUTE_HOME           = '/Home';

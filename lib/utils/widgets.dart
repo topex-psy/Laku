@@ -5,12 +5,14 @@ import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
+import 'api.dart';
 import 'constants.dart';
 import 'helpers.dart';
 import 'styles.dart' as style;
 
 enum UiInputType {
   TEXT,
+  NAME,
   PASSWORD,
   DATE,
   DATE_OF_BIRTH,
@@ -20,12 +22,14 @@ enum UiInputType {
   PIN,
   NOTE,
   SEARCH,
+  TAG,
 }
 
 class UiInput extends StatefulWidget {
-  UiInput({Key key, this.icon, this.placeholder, this.fontSize = 16.0, this.textAlign = TextAlign.start, this.showLabel = true, this.labelStyle, this.info, this.prefiks, this.height = 45.0, this.color, this.borderColor, this.borderWidth = 1.0, this.type = UiInputType.TEXT, this.caps, this.controller, this.focusNode, this.autofocus = false, this.initialValue, this.isRequired = false, this.readOnly = false, this.aksi, this.klik, this.cancelAction, this.onChanged, this.margin, this.borderRadius, this.elevation, this.dateFormat = "dd/MM/yyyy", this.isClearable = true, this.error = ''}) : super(key: key);
+  UiInput({Key key, this.icon, this.placeholder, this.maxLength, this.fontSize = 15.0, this.textAlign = TextAlign.start, this.showLabel = true, this.labelStyle, this.info, this.prefiks, this.height, this.color, this.borderColor, this.borderWidth = 1.0, this.type = UiInputType.TEXT, this.caps, this.controller, this.focusNode, this.autofocus = false, this.initialValue, this.isRequired = false, this.readOnly = false, this.aksi, this.klik, this.cancelAction, this.onChanged, this.margin, this.borderRadius, this.elevation, this.dateFormat = "dd/MM/yyyy", this.isClearable = true, this.error = ''}) : super(key: key);
   final IconData icon;
   final String placeholder;
+  final int maxLength;
   final double fontSize;
   final TextAlign textAlign;
   final String info;
@@ -37,7 +41,6 @@ class UiInput extends StatefulWidget {
   final Color borderColor;
   final double borderWidth;
   final UiInputType type;
-  // final TextInputType tipe;
   final TextCapitalization caps;
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -81,36 +84,51 @@ class _UiInputState extends State<UiInput> {
       return null;
     };
     double _iconSize = widget.fontSize * 1.3;
-    Widget _icon = widget.icon == null ? null : Icon(widget.icon, size: _iconSize, color: Colors.grey);
-    if (_icon == null) _contentPadding = EdgeInsets.only(top: 10.0, bottom: 10.0, left: 20.0);
+    Widget _icon = widget.icon == null ? null : Padding(padding: EdgeInsets.only(left: 20), child: Icon(widget.icon, size: _iconSize, color: Colors.grey));
+    int _maxLength = widget.maxLength;
 
     switch (widget.type) {
       case UiInputType.TEXT:
+      case UiInputType.NAME:
       case UiInputType.NOTE:
       case UiInputType.SEARCH:
       case UiInputType.EMAIL:
+      case UiInputType.TAG:
+        var _textCapitalization = [UiInputType.NAME, UiInputType.TAG].contains(widget.type) ? TextCapitalization.words : TextCapitalization.none;
+        if (widget.type == UiInputType.TAG && _maxLength == null) _maxLength = 50;
         _input = Stack(alignment: Alignment.topRight, children: <Widget>[
           Padding(
             padding: EdgeInsets.only(right: widget.cancelAction == null ? 16.0 : 40.0),
             child: TextFormField(
               // initialValue: widget.initialValue,
               keyboardType: widget.type == UiInputType.EMAIL ? TextInputType.emailAddress : TextInputType.text,
-              textCapitalization: widget.caps ?? TextCapitalization.none,
+              textCapitalization: widget.caps ?? _textCapitalization,
               style: TextStyle(fontSize: widget.fontSize),
               textAlign: widget.textAlign,
               readOnly: widget.readOnly,
-              decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, prefixIcon: _icon, border: InputBorder.none),
+              decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
               textInputAction: TextInputAction.go,
               controller: widget.controller,
               focusNode: widget.focusNode,
+              inputFormatters: _maxLength != null ? <TextInputFormatter>[
+                LengthLimitingTextInputFormatter(_maxLength),
+              ] : null,
               maxLines: widget.type == UiInputType.NOTE ? null : 1,
               enableInteractiveSelection: widget.klik == null,
               onTap: widget.klik == null ? null : () {
                 FocusScope.of(context).requestFocus(FocusNode());
                 widget.klik();
               },
-              //onSubmitted: widget.aksi,
-              onChanged: widget.onChanged,
+              // onSubmitted: widget.aksi,
+              // onChanged: widget.onChanged,
+              onChanged: (val) {
+                if (widget.controller != null) {
+                  if (widget.type == UiInputType.TAG && val.contains(' ')) {
+                    widget.controller.text = val.replaceAll(' ', '');
+                  }
+                }
+                widget.onChanged(val);
+              },
               validator: _validator,
             ),
           ),
@@ -123,7 +141,7 @@ class _UiInputState extends State<UiInput> {
           child: TextFormField(
             keyboardType: TextInputType.phone,
             style: TextStyle(fontSize: widget.fontSize),
-            decoration: InputDecoration(contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefiks ?? "+62  ", style: _prefixStyle), hintText: widget.placeholder, prefixIcon: _icon, border: InputBorder.none),
+            decoration: InputDecoration(contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefiks ?? "+62  ", style: _prefixStyle), hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
             textInputAction: TextInputAction.go,
             controller: widget.controller,
             focusNode: widget.focusNode,
@@ -142,6 +160,7 @@ class _UiInputState extends State<UiInput> {
         );
         break;
       case UiInputType.CURRENCY:
+        if (_maxLength != null && _maxLength > 15) _maxLength = 15;
         _input = Padding(
           padding: EdgeInsets.only(right: 20.0),
           child: TextFormField(
@@ -150,7 +169,7 @@ class _UiInputState extends State<UiInput> {
             style: TextStyle(fontSize: widget.fontSize),
             textAlign: widget.textAlign,
             readOnly: widget.readOnly,
-            decoration: InputDecoration(contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefiks ?? "Rp  ", style: _prefixStyle), hintText: widget.placeholder, prefixIcon: _icon, border: InputBorder.none),
+            decoration: InputDecoration(contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefiks ?? "Rp  ", style: _prefixStyle), hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
             textInputAction: TextInputAction.go,
             controller: widget.controller,
             focusNode: widget.focusNode,
@@ -161,7 +180,7 @@ class _UiInputState extends State<UiInput> {
             },
             inputFormatters: <TextInputFormatter>[
               WhitelistingTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(15),
+              LengthLimitingTextInputFormatter(_maxLength),
               CurrencyInputFormatter()
             ],
             onChanged: widget.onChanged,
@@ -180,12 +199,14 @@ class _UiInputState extends State<UiInput> {
               enableInteractiveSelection: false,
               keyboardType: widget.type == UiInputType.PIN ? TextInputType.number : null,
               inputFormatters: widget.type == UiInputType.PIN ? <TextInputFormatter>[
+                LengthLimitingTextInputFormatter(_maxLength ?? 6),
                 WhitelistingTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ] : null,
+              ] : <TextInputFormatter>[
+                LengthLimitingTextInputFormatter(_maxLength ?? 32),
+              ],
               maxLines: 1,
               style: TextStyle(fontSize: widget.fontSize),
-              decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, prefixIcon: _icon, border: InputBorder.none),
+              decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
               textInputAction: TextInputAction.go,
               controller: widget.controller,
               focusNode: widget.focusNode,
@@ -206,11 +227,11 @@ class _UiInputState extends State<UiInput> {
           format: DateFormat(widget.dateFormat, APP_LOCALE),
           initialValue: widget.initialValue == null ? null : (widget.initialValue is DateTime ? widget.initialValue : DateTime.parse(widget.initialValue.toString())),
           style: TextStyle(fontSize: widget.fontSize),
-          decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, prefixIcon: _icon, border: InputBorder.none),
+          decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
           resetIcon: widget.isClearable ? Icon(LineIcons.close, size: widget.fontSize,) : null,
           onShowPicker: (context, currentValue) {
             DateTime now = DateTime.now();
-            DateTime min = DateTime(2019);
+            DateTime min = DateTime(2020);
             DateTime max = now;
             if (widget.type == UiInputType.DATE_OF_BIRTH) {
               min = now.subtract(Duration(days: SETUP_MAX_PERSON_AGE * 365));
@@ -255,6 +276,7 @@ class _UiInputState extends State<UiInput> {
             margin: EdgeInsets.zero,
             // TODO input note autosize height
             child: widget.height == null ? _input : SizedBox(height: widget.height, child: Center(child: _input,),),
+            // child: _input,
           ),
           (widget.error ?? '').isEmpty ? SizedBox() : ErrorText(widget.error)
         ],
@@ -366,10 +388,10 @@ class _ErrorTextState extends State<ErrorText> with SingleTickerProviderStateMix
 
   @override
   void initState() {
-    _animationController = AnimationController(duration: Duration(milliseconds: 1500), vsync: this);
+    _animationController = AnimationController(duration: Duration(milliseconds: 500), vsync: this);
     _animation1 = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.elasticOut
+      curve: Curves.easeOutBack
     ));
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -395,7 +417,7 @@ class _ErrorTextState extends State<ErrorText> with SingleTickerProviderStateMix
             child: Container(
               child: Row(
                 children: <Widget>[
-                  Icon(LineIcons.warning, color: Colors.red),
+                  Icon(LineIcons.exclamation_circle, color: Colors.red),
                   SizedBox(width: 5,),
                   Text(widget.error, style: TextStyle(fontSize: 13, color: Colors.red)),
                 ],
@@ -565,13 +587,58 @@ class Copyright extends StatelessWidget {
         onLinkTap: (url) async {
           print("OPENING URL: $url");
           print("OPENING PAGE: ${url.replaceAll(APP_HOST, '')}");
-          // loadAlert();
-          // var responseJson = await getPage(url.replaceAll(APP_HOST, ''));
-          // var page = PageApi.fromJson(responseJson["result"]);
-          // closeDialog();
-          // showAlert(title: page.judul, body: html(page.isi, textStyle: TextStyle(fontSize: 14)));
+          h.loadAlert();
+          Map pageApi = await api('page', type: url.replaceAll(APP_HOST, ''));
+          Map pageRes = pageApi['result'];
+          h.closeDialog();
+          h.showAlert(title: pageRes['JUDUL'], body: h.html(pageRes['ISI'], textStyle: TextStyle(fontSize: 14)));
         },
       )
     ],);
+  }
+}
+
+class UiCaption extends StatelessWidget {
+  UiCaption({Key key, this.no, this.total, this.icon, this.teks, this.stepAction, this.tool}) : super(key: key);
+  final int no;
+  final int total;
+  final Widget icon;
+  final String teks;
+  final void Function(int) stepAction;
+  final Widget tool;
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: <Widget>[
+        icon ?? SizedBox(),
+        Expanded(child: Container(
+          child: Row(children: <Widget>[
+            Text("$teks", style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
+            Expanded(child: Container(height: 60,),),
+            no == null ? SizedBox() : Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(total, (index) {
+                  double _scale = no == index + 1 ? 1.1 : 0.9;
+                  Color _backgroundColor = no == index + 1 ? Colors.white : Colors.white30;
+                  Color _textColor = no == index + 1 ? THEME_COLOR : THEME_COLOR;
+                  return Transform.scale(
+                    scale: _scale,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: CircleAvatar(backgroundColor: _backgroundColor, child: Text("${index + 1}", style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),),),
+                      onPressed: () => stepAction(index),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],),
+        ),),
+        tool ?? SizedBox(),
+      ],),
+    );
   }
 }

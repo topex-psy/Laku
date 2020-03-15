@@ -38,6 +38,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     try {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     } on PlatformException {
+      // PlatformException (PlatformException(error, Only fullscreen activities can request orientation, null))
       print("setPreferredOrientations FAILEEEEEEEEEEEED");
     }
 
@@ -71,13 +72,11 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   }
 
   _loadPreferences() async {
-    print(" ==> LOAD PREFERENCES!!!");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
     isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
     isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
     isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
-    if (isFirstRun) prefs.setBool('isFirstRun', false);
     Future.delayed(Duration.zero, () {
       _animation2Controller.forward();
     });
@@ -89,9 +88,8 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     });
   }
 
-  _lanjut() async {
-    print(" ==> LANJUT!!!");
-    await Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => false);
+  _lanjut() {
+    Navigator.of(context).pushNamedAndRemoveUntil(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN, (route) => false);
   }
 
   @override
@@ -150,7 +148,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                       );
                     }
                   ),
-                  // Image.asset('images/logo.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
                 ],
               ),
             ),

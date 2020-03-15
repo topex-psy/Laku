@@ -1,13 +1,15 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
+import 'package:intl/intl.dart';
 import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
-import 'utils/api.dart' as api;
+import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
@@ -24,17 +26,17 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   var _isLoading = true;
+  var _isWillExit = false;
 
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _getCurrentUser(Navigator.of(context));
+      _getCurrentUser();
     });
   }
 
-  _getCurrentUser([NavigatorState nav]) async {
+  _getCurrentUser() async {
     FocusScope.of(context).requestFocus(FocusNode());
     if (!_isLoading) setState(() { _isLoading = true; });
     final user = await firebaseAuth.currentUser();
@@ -43,71 +45,95 @@ class _LoginState extends State<Login> {
       setState(() { _isLoading = false; });
     } else {
       print(" ==> FIREBASE USER: EXIST");
-      var person = Provider.of<PersonProvider>(context, listen: false);
-      // TODO FIXME fetch user data, set personprovider
-      // TODO ke form daftar kalo fetch not found
-      var userApi = await api.user('get', {'uid': user.uid});
-      print(" ==> GET USER RESULT: $userApi");
-
-      person.setPerson(
-        namaDepan: 'Taufik',
-        namaBelakang: 'Nur Rahmanda',
-        foto: null,
-        isSignedIn: true,
-      );
-
-      currentPersonUid = user.uid;
-      final results = await (nav ?? Navigator.of(context)).pushNamed(ROUTE_HOME);
-      setState(() {
-        _isLoading = false;
-      });
-      print(results);
+      Map userApi = await api('user', data: {'uid': user.uid});
+      if (userApi == null) {
+        setState(() { _isLoading = false; });
+        return;
+      }
+      Map userGet = userApi['get'];
+      if (userGet['TOTAL'] == 0) {
+        final results = await Navigator.of(context).pushNamed(ROUTE_DAFTAR);
+        Map registerData = results ?? {};
+        if (registerData.containsKey('email')) {
+          await auth('register', registerData);
+        }
+        _getCurrentUser();
+      } else {
+        Map userRes = userApi['result'][0];
+        if (userRes['IS_BANNED'] == null || userRes['IS_BANNED'].isEmpty) {
+          var hingga = DateFormat('dd/mm/YYYY').format(DateTime.parse(userRes['BAN_UNTIL']));
+          h.failAlert("Akun Terblokir", "Akunmu diblokir hingga $hingga karena ${userRes['BAN_REASON']}");
+          setState(() { _isLoading = false; });
+        } else {
+          var person = Provider.of<PersonProvider>(context, listen: false);
+          person.setPerson(
+            namaDepan: userRes['NAMA_DEPAN'],
+            namaBelakang: userRes['NAMA_BELAKANG'],
+            foto: userRes['FOTO'],
+            isSignedIn: true,
+          );
+          currentPersonUid = user.uid;
+          await Navigator.of(context).pushNamed(ROUTE_HOME);
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final _logoSize = MediaQuery.of(context).size.height * 0.25;
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: THEME_COLOR,
-      child: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            reverse: true,
-            padding: EdgeInsets.all(30),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-              SizedBox(height: 30,),
-              Center(child: Hero(
-                tag: "SplashLogo",
-                child: Semantics(
-                  label: "Logo $APP_NAME",
-                  image: true,
-                  child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
-                ),
-              ),),
-              SizedBox(height: 30,),
-              IndexedStack(
-                index: _isLoading ? 0 : 1,
-                alignment: Alignment.center,
-                children: <Widget>[
-                  UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
-                  Consumer<PersonProvider>(
-                    builder: (context, person, child) {
-                      return (person.isSignedIn ?? false) ? Container() : FormDaftar(
-                        setLoading: (val) {
-                          if (_isLoading != val) setState(() {
-                            _isLoading = val;
-                          });
-                        },
-                        getCurrentUser: _getCurrentUser
-                      );
-                    },
+    initializeHelpers(context, "after init _LoginState");
+    final _logoSize = h.screenSize.height * 0.25;
+    return WillPopScope(
+      onWillPop: () async {
+        if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
+        h.showToast("Ketuk sekali lagi untuk menutup aplikasi.");
+        _isWillExit = true;
+        Future.delayed(Duration(milliseconds: 2000), () { _isWillExit = false; });
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: THEME_COLOR,
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              reverse: true,
+              padding: EdgeInsets.all(30),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                SizedBox(height: 30,),
+                Center(child: Hero(
+                  tag: "SplashLogo",
+                  child: Semantics(
+                    label: "Logo $APP_NAME",
+                    image: true,
+                    child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
                   ),
-                ],
-              )
-            ],),
+                ),),
+                SizedBox(height: 30,),
+                IndexedStack(
+                  index: _isLoading ? 0 : 1,
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
+                    Selector<PersonProvider, bool>(
+                      selector: (buildContext, person) => person.isSignedIn,
+                      builder: (context, isSignedIn, child) {
+                        return (isSignedIn ?? false) ? Container() : LoginForm(
+                          setLoading: (val) {
+                            if (_isLoading != val) setState(() {
+                              _isLoading = val;
+                            });
+                          },
+                          getCurrentUser: _getCurrentUser
+                        );
+                      }
+                    ),
+                  ],
+                )
+              ],),
+            ),
           ),
         ),
       ),
@@ -115,16 +141,16 @@ class _LoginState extends State<Login> {
   }
 }
 
-class FormDaftar extends StatefulWidget {
-  FormDaftar({Key key, @required this.setLoading, @required this.getCurrentUser}) : super(key: key);
+class LoginForm extends StatefulWidget {
+  LoginForm({Key key, @required this.setLoading, @required this.getCurrentUser}) : super(key: key);
   final void Function(bool) setLoading;
   final VoidCallback getCurrentUser;
 
   @override
-  _FormDaftarState createState() => _FormDaftarState();
+  _LoginFormState createState() => _LoginFormState();
 }
 
-class _FormDaftarState extends State<FormDaftar> {
+class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _nomorPonselController;
   FocusNode _nomorPonselFocusNode;
@@ -148,6 +174,10 @@ class _FormDaftarState extends State<FormDaftar> {
   }
 
   _verifyPhoneNumber(BuildContext context) async {
+    if (_nomorPonselController.text.isEmpty) {
+      h.showFlashBar("Masukkan nomor ponsel!", "Harap masukkan nomor ponsel valid untuk login atau mendaftar ke aplikasi.");
+      return;
+    }
     String phoneNumber = "+62${_nomorPonselController.text}";
     FocusScope.of(context).requestFocus(FocusNode());
     widget.setLoading(true);
@@ -233,7 +263,7 @@ class _FormDaftarState extends State<FormDaftar> {
         ),
       ),
       SizedBox(height: 12,),
-      SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),),
+      SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonXL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),),
       SizedBox(height: 12,),
       Center(child: _showResend ? GestureDetector(
         onTap: () {
@@ -253,19 +283,17 @@ class _FormDaftarState extends State<FormDaftar> {
           });
         }),
       ),),
-      // SizedBox(height: 30,),
-      // Copyright()
     ];
-    var _formDaftar = <Widget>[
+    var _formNomorPonsel = <Widget>[
       Row(children: <Widget>[
         Expanded(child: Text("Silakan masukkan nomor ponsel untuk melanjutkan.", style: style.textWhite,),),
         SizedBox(width: 12,),
         Icon(LineIcons.user, color: Colors.white, size: 60,),
       ],),
       SizedBox(height: 20,),
-      UiInput(isRequired: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Nomor ponsel", type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
+      UiInput(isRequired: true, autofocus: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Nomor ponsel", type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
       SizedBox(height: 12,),
-      SizedBox(height: style.heightButtonL, child: UiButton(label: "Lanjut", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {
+      SizedBox(height: style.heightButtonL, child: UiButton(label: "Lanjut", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconRight: true, onPressed: () {
         _verifyPhoneNumber(context);
       },),),
       SizedBox(height: 42,),
@@ -277,7 +305,7 @@ class _FormDaftarState extends State<FormDaftar> {
       onChanged: () {},
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: _smsVerificationCode.isEmpty ? _formDaftar : _formVerifikasi,
+        children: _smsVerificationCode.isEmpty ? _formNomorPonsel : _formVerifikasi,
       ),
     );
   }

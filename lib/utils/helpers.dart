@@ -6,6 +6,8 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rounded_date_picker/src/material_rounded_date_picker_style.dart';
 import 'package:flutter_rounded_date_picker/src/material_rounded_year_picker_style.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flash/flash.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/person.dart';
@@ -38,6 +40,14 @@ initializeHelpers(BuildContext context, [String source]) {
 }
 
 class FormatHelper {
+  FormatHelper() : this.initialize();
+
+  // inisiasi intl date format untuk locale indonesia
+  FormatHelper.initialize() {
+    var format = initializeDateFormatting(APP_LOCALE);
+    Future.wait([format]);
+  }
+
   int randomNumber(int min, int max) => min + Random().nextInt(max - min);
   String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
 }
@@ -205,10 +215,54 @@ class UIHelper {
 
   /// fungsi untuk menampilkan popup memuat data
   loadAlert([String teks]) => showAlert(body: Row(children: <Widget>[
-    SizedBox(width: 30, height: 30, child: CircularProgressIndicator(strokeWidth: 3.0,)),
-    SizedBox(width: 5,),
-    Text("Tunggu sebentar ...")
+    SizedBox(width: 30, height: 30, child: Padding(
+      padding: EdgeInsets.all(4),
+      child: CircularProgressIndicator(strokeWidth: 4,),
+    )),
+    SizedBox(width: 12,),
+    Text(teks ?? "Tunggu sebentar ...")
   ],), showButton: false, barrierDismissible: false);
+
+  // fungsi untuk menampilkan notifikasi flashbar
+  showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, void Function() action}) {
+    showFlash(
+      context: context,
+      duration: Duration(milliseconds: duration),
+      persistent: true,
+      builder: (_, controller) {
+        return Flash(
+          controller: controller,
+          backgroundColor: Colors.white,
+          brightness: Brightness.light,
+          boxShadows: [BoxShadow(blurRadius: 12.0)],
+          barrierBlur: 3.0,
+          barrierColor: Colors.black38,
+          barrierDismissible: true,
+          style: FlashStyle.grounded,
+          position: FlashPosition.top,
+          child: FlashBar(
+            title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+            // message: html(message),
+            message: Text(message, style: TextStyle(fontSize: 15)),
+            icon: icon,
+            showProgressIndicator: false,
+            primaryAction: showDismiss ? FlatButton(
+              child: Text(actionLabel ?? 'TUTUP', style: TextStyle(color: THEME_COLOR)),
+              onPressed: () {
+                controller.dismiss();
+                if (action != null) action();
+              },
+            ) : null,
+          ),
+        );
+      },
+    );
+  }
+
+  // fungsi untuk menampilkan popup pesan gagal konek
+  failAlertInternet({String message, void Function() onRetry, String onRetryLabel}) {
+    showFlashBar("Gagal Memuat", message ?? "Terjadi masalah saat memuat data. Harap periksa koneksi internet Anda!", actionLabel: onRetry == null ? 'TUTUP' : (onRetryLabel ?? 'REFRESH'), action: onRetry);
+  }
 
   /// fungsi yang mengembalikan teks versi html
   Html html(String htmlString, {TextStyle textStyle}) => Html(
@@ -218,12 +272,12 @@ class UIHelper {
 
   MaterialRoundedDatePickerStyle get datePickerStyle {
     return MaterialRoundedDatePickerStyle(
-      textStyleDayButton: TextStyle(fontSize: 18), //Rab, 19 Feb
+      textStyleDayButton: TextStyle(fontSize: 18, color: Colors.white), //Rab, 19 Feb
       textStyleYearButton: TextStyle(fontSize: 45, color: Colors.white), //2020
       textStyleDayHeader: TextStyle(fontSize: 11), // M S S R K J S
       textStyleCurrentDayOnCalendar: TextStyle(fontSize: 16, color: THEME_COLOR),
       textStyleDayOnCalendar: TextStyle(fontSize: 16),
-      textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+      textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
       // textStyleDayOnCalendarDisabled: TextStyle(fontSize: 28, color: Colors.white.withOpacity(0.1)),
       textStyleMonthYearHeader: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold), // Februari 2020
       paddingDatePicker: EdgeInsets.all(0),

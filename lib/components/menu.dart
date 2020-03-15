@@ -37,7 +37,7 @@ class _MenuNavContentState extends State<MenuNavContent> {
         break;
       case MenuNavVal.logout:
         Navigator.of(context).pop();
-        bool confirm = await h.showConfirm("Akhiri Sesi?", "Apakah Anda yakin ingin mengakhiri sesi?") ?? false;
+        bool confirm = await h.showConfirm("Akhiri Sesi?", "Apakah kamu yakin ingin mengakhiri sesi?") ?? false;
         if (confirm) a.signOut();
         break;
       default:

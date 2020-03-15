@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
@@ -23,11 +25,19 @@ class Page {
 }
 
 class Home extends StatefulWidget {
+  Home({Key key, @required this.analytics, @required this.observer}) : super(key: key);
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+
   @override
-  _HomeState createState() => _HomeState();
+  _HomeState createState() => _HomeState(analytics, observer);
 }
 
 class _HomeState extends State<Home> {
+  _HomeState(this.analytics, this.observer);
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+
   var _selectedIndex = 0;
   var _isWillExit = false;
   PreloadPageController _pageController;

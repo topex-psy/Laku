@@ -106,7 +106,7 @@ class _FormBarangState extends State<FormBarang> {
         Text("Foto:", style: style.textLabel,),
         Text("Ukuran iklan:", style: style.textLabel,),
         // TODO 5 token tersisa
-        SizedBox(height: style.heightButtonL, child: UiButton(color: Colors.green, label: "Pasang!", textStyle: style.textButtonL, icon: LineIcons.check, iconSize: 20, onPressed: () {
+        SizedBox(height: style.heightButtonL, child: UiButton(color: Colors.green, label: "Pasang!", textStyle: style.textButtonL, icon: LineIcons.check, onPressed: () {
           // TODO post item
         },),),
       ],)
