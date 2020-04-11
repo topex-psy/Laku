@@ -38,10 +38,6 @@ class _DaftarState extends State<Daftar> {
   FocusNode _emailFocusNode;
   FocusNode _lakuTagFocusNode;
   var _errorText = <String, String>{};
-  // var _namaLengkapError = '';
-  // var _tanggalLahirError = '';
-  // var _emailError = '';
-  // var _lakuTagError = '';
   var _jenisKelamin  = 'L';
   var _tanggalLahir  = '';
   var _lakuTag = '';
@@ -124,8 +120,13 @@ class _DaftarState extends State<Daftar> {
   }
 
   Future<bool> _batal() async {
-    bool confirm = await h.showConfirm("Batal Daftar?", "Apakah kamu yakin ingin membatalkan pendaftaran?") ?? false;
-    if (confirm) a.signOut();
+    if (_registerIndex > 0) {
+      setState(() { _registerIndex--; });
+      _registerScrollController.jumpTo(0);
+    } else {
+      bool confirm = await h.showConfirm("Batal Daftar?", "Apakah kamu yakin ingin membatalkan pendaftaran?") ?? false;
+      if (confirm) a.signOut();
+    }
     return false;
   }
 

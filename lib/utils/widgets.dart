@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
-// import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
 import '../extensions/string.dart';
@@ -758,6 +757,32 @@ class UiCaption extends StatelessWidget {
         ),),
         tool ?? SizedBox(),
       ],),
+    );
+  }
+}
+
+class UiIconButton extends StatelessWidget {
+  UiIconButton(this.icon, {Key key, this.color, this.size, this.onPressed}) : super(key: key);
+  final Widget icon;
+  final double size;
+  final Color color;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: FlatButton(
+        splashColor: Colors.grey.withOpacity(0.2),
+        highlightColor: Colors.grey.withOpacity(0.2),
+        visualDensity: VisualDensity.compact,
+        child: icon,
+        color: color ?? Colors.transparent,
+        shape: CircleBorder(),
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+      ),
     );
   }
 }

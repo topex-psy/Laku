@@ -81,10 +81,23 @@ class DateTimeField extends FormField<DateTime> {
                 decoration: effectiveDecoration.copyWith(
                   errorText: field.errorText,
                   suffixIcon: state.shouldShowClearIcon(effectiveDecoration)
-                      ? GestureDetector(
+                      ? SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: FlatButton(
+                          splashColor: Colors.grey.withOpacity(0.2),
+                          highlightColor: Colors.grey.withOpacity(0.2),
+                          visualDensity: VisualDensity.compact,
                           child: resetIcon,
-                          onTap: state.clear,
-                        )
+                          shape: CircleBorder(),
+                          padding: EdgeInsets.zero,
+                          onPressed: state.clear,
+                        ),
+                      )
+                      // ? GestureDetector(
+                      //     child: resetIcon,
+                      //     onTap: state.clear,
+                      //   )
                       : null,
                 ),
                 keyboardType: keyboardType,
