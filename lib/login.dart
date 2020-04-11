@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
+import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
@@ -52,10 +52,9 @@ class _LoginState extends State<Login> {
       }
       Map userGet = userApi['get'];
       if (userGet['TOTAL'] == 0) {
-        final results = await Navigator.of(context).pushNamed(ROUTE_DAFTAR);
-        Map registerData = results ?? {};
-        if (registerData.containsKey('email')) {
-          await auth('register', registerData);
+        final results = await Navigator.of(context).pushNamed(ROUTE_DAFTAR) as Map;
+        if (results != null && results.containsKey('email')) {
+          await auth('register', results);
         }
         _getCurrentUser();
       } else {
@@ -84,8 +83,11 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    initializeHelpers(context, "after init _LoginState");
-    final _logoSize = h.screenSize.height * 0.25;
+    h = UIHelper(context);
+    a = UserHelper(context);
+    f = FormatHelper();
+
+    final _logoSize = MediaQuery.of(context).size.height * 0.25;
     return WillPopScope(
       onWillPop: () async {
         if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
@@ -151,7 +153,6 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
-  final _formKey = GlobalKey<FormState>();
   TextEditingController _nomorPonselController;
   FocusNode _nomorPonselFocusNode;
   var _nomorPonselError = '';
@@ -220,18 +221,26 @@ class _LoginFormState extends State<LoginForm> {
     });
   }
 
-  _signInWithCode(String smsCode) {
+  _signInWithCode(String smsCode) async {
     if (smsCode.length < SMS_CODE_LENGTH) return;
     print(" ==> _signInWithCode ...\n$_smsVerificationCode\n$smsCode");
     FocusScope.of(context).requestFocus(FocusNode());
     widget.setLoading(true);
     var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
-    firebaseAuth.signInWithCredential(authCredential).catchError((error) {
-      print("SIGNIN WITH CODE ERROR: $error");
-    }).then((AuthResult authResult) {
-      print("SIGNIN WITH CODE SUCCESS: ${authResult.user.uid}");
+    try {
+      AuthResult authResult = await firebaseAuth.signInWithCredential(authCredential);
       _cekUserUID(authResult.user.uid);
-    });
+    } on PlatformException catch(e) {
+      print(e.code);
+      print(e.message);
+      print(e.toString());
+      widget.setLoading(false);
+      if (e.code == "ERROR_INVALID_VERIFICATION_CODE") {
+        h.failAlert("Autentikasi Gagal", "Kode verifikasi salah!");
+      } else {
+        h.failAlert("Autentikasi Gagal", "Terjadi kesalahan saat memverifikasi kode. Silakan coba lagi.");
+      }
+    }
   }
 
   _cekUserUID(String uid) async {
@@ -291,7 +300,7 @@ class _LoginFormState extends State<LoginForm> {
         Icon(LineIcons.user, color: Colors.white, size: 60,),
       ],),
       SizedBox(height: 20,),
-      UiInput(isRequired: true, autofocus: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, placeholder: "Nomor ponsel", type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
+      UiInput("Nomor ponsel", isRequired: true, autoFocus: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
       SizedBox(height: 12,),
       SizedBox(height: style.heightButtonL, child: UiButton(label: "Lanjut", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconRight: true, onPressed: () {
         _verifyPhoneNumber(context);
@@ -299,14 +308,9 @@ class _LoginFormState extends State<LoginForm> {
       SizedBox(height: 42,),
       Copyright()
     ];
-    return Form(
-      key: _formKey,
-      autovalidate: false,
-      onChanged: () {},
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: _smsVerificationCode.isEmpty ? _formNomorPonsel : _formVerifikasi,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _smsVerificationCode.isEmpty ? _formNomorPonsel : _formVerifikasi,
     );
   }
 }

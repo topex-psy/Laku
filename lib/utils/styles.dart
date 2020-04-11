@@ -22,6 +22,8 @@ var textWhite54S   = TextStyle(fontSize: 12, color: Colors.white54);
 var textWhite70S   = TextStyle(fontSize: 12, color: Colors.white70);
 var textS          = TextStyle(fontSize: 12);
 var textLink       = TextStyle(color: THEME_COLOR);
+var textInput      = TextStyle(fontSize: 15, color: Colors.grey[850]);
+var textHint       = TextStyle(fontSize: 15, color: Colors.grey[600]);
 
 var heightButton   = 40.0;
 var heightButtonL  = 45.0;

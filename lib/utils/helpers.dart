@@ -10,10 +10,10 @@ import 'package:flash/flash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../plugins/toast.dart';
 import '../providers/person.dart';
 import '../utils/api.dart' as api;
 import 'constants.dart';
-import 'toast.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
 final screenScaffoldKey = GlobalKey<ScaffoldState>();
@@ -27,17 +27,6 @@ bool isFirstRun = true;
 UIHelper h;
 UserHelper a;
 FormatHelper f;
-
-initializeHelpers(BuildContext context, [String source]) {
-  print("INITIALIZE HELPERS ............... $source");
-  if (h?.currentContext == context) {
-    print("CONTEXT IDENTHICC!!!!!");
-    return;
-  }
-  h = UIHelper(context);
-  a = UserHelper(context);
-  f = FormatHelper();
-}
 
 class FormatHelper {
   FormatHelper() : this.initialize();
@@ -79,7 +68,7 @@ class UIHelper {
   UIHelper(this.context);
 
   BuildContext get currentContext => context;
-  Size get screenSize => MediaQuery.of(context).size;
+  // Size get screenSize => MediaQuery.of(context).size;
 
   /// fungsi untuk menampilkan toast
   showToast(String message, {int duration = Toast.DEFAULT_DURATION}) {
@@ -234,7 +223,7 @@ class UIHelper {
           controller: controller,
           backgroundColor: Colors.white,
           brightness: Brightness.light,
-          boxShadows: [BoxShadow(blurRadius: 12.0)],
+          boxShadows: [BoxShadow(color: Colors.grey[800], blurRadius: 8.0)],
           barrierBlur: 3.0,
           barrierColor: Colors.black38,
           barrierDismissible: true,

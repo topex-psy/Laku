@@ -93,8 +93,11 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    initializeHelpers(context, "after init _IntroState");
-    final imageWidth = h.screenSize.width * 0.69;
+    h = UIHelper(context);
+    a = UserHelper(context);
+    f = FormatHelper();
+
+    final imageWidth = MediaQuery.of(context).size.width * 0.69;
     final pages = [
       PageViewModel(
         color: Colors.purple[400],
@@ -170,14 +173,14 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
                   Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_LOGIN, (route) => false);
                 }
               },
-              child: Page(
+              child: OnboardingPage(
                 viewModel: pages[_activeIndex],
                 percentVisible: 1.0,
               ),
             ),
             PageReveal(
               revealPercent: _slidePercent,
-              child: Page(
+              child: OnboardingPage(
                 viewModel: pages[_nextPageIndex],
                 percentVisible: _slidePercent,
               ),

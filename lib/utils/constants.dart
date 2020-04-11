@@ -29,6 +29,7 @@ const SETUP_MIN_PERSON_AGE = 10;
 const THEME_BACKGROUND     = Color(0XFFDEFFF3);
 const THEME_BORDER_RADIUS  = 12.0;
 const THEME_COLOR          = Colors.teal;
+const THEME_INPUT_HEIGHT   = 50.0;
 const THEME_PADDING        = 15.0;
 const THEME_FONT_MAIN      = 'Quicksand';
 const THEME_FONT_SECONDARY = 'Quicksand';

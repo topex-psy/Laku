@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+// import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
+import '../extensions/string.dart';
+import '../plugins/datetime_picker_formfield.dart';
 import 'api.dart';
 import 'constants.dart';
 import 'helpers.dart';
@@ -26,17 +28,52 @@ enum UiInputType {
 }
 
 class UiInput extends StatefulWidget {
-  UiInput({Key key, this.icon, this.placeholder, this.maxLength, this.fontSize = 15.0, this.textAlign = TextAlign.start, this.showLabel = true, this.labelStyle, this.info, this.prefiks, this.height, this.color, this.borderColor, this.borderWidth = 1.0, this.type = UiInputType.TEXT, this.caps, this.controller, this.focusNode, this.autofocus = false, this.initialValue, this.isRequired = false, this.readOnly = false, this.aksi, this.klik, this.cancelAction, this.onChanged, this.margin, this.borderRadius, this.elevation, this.dateFormat = "dd/MM/yyyy", this.isClearable = true, this.error = ''}) : super(key: key);
+  UiInput(this.label, {
+    Key key,
+    this.icon,
+    this.maxLength,
+    this.textStyle,
+    this.textAlign = TextAlign.start,
+    this.showLabel = true,
+    this.labelStyle,
+    this.info,
+    this.prefix,
+    this.height = THEME_INPUT_HEIGHT,
+    this.contentPadding,
+    this.color,
+    this.borderColor,
+    this.borderWidth = 1.0,
+    this.type = UiInputType.TEXT,
+    this.caps,
+    this.controller,
+    this.focusNode,
+    this.autoFocus = false,
+    this.initialValue,
+    this.isRequired = false,
+    this.readOnly = false,
+    this.onSubmit,
+    this.onTap,
+    this.cancelAction,
+    this.onChanged,
+    this.margin,
+    this.borderRadius,
+    this.dateFormat = "dd/MM/yyyy",
+    this.isClearable = true,
+    this.elevation,
+    this.error,
+    // this.onValidate,
+  }) : super(key: key);
   final IconData icon;
-  final String placeholder;
+  final String label;
   final int maxLength;
-  final double fontSize;
+  final TextStyle textStyle;
   final TextAlign textAlign;
   final String info;
-  final String prefiks;
+  final String prefix;
   final bool showLabel;
   final TextStyle labelStyle;
   final double height;
+  final EdgeInsetsGeometry contentPadding;
   final Color color;
   final Color borderColor;
   final double borderWidth;
@@ -44,13 +81,13 @@ class UiInput extends StatefulWidget {
   final TextCapitalization caps;
   final TextEditingController controller;
   final FocusNode focusNode;
-  final bool autofocus;
+  final bool autoFocus;
   final dynamic initialValue;
   final bool isRequired;
   final bool isClearable;
   final bool readOnly;
-  final void Function(String) aksi;
-  final void Function() klik;
+  final void Function(String) onSubmit;
+  final void Function() onTap;
   final void Function() cancelAction;
   final void Function(dynamic) onChanged;
   final EdgeInsets margin;
@@ -58,35 +95,98 @@ class UiInput extends StatefulWidget {
   final double elevation;
   final String dateFormat;
   final String error;
+  // final void Function(String) onValidate;
 
   @override
   _UiInputState createState() => _UiInputState();
 }
 
 class _UiInputState extends State<UiInput> {
-  EdgeInsetsGeometry _contentPadding = EdgeInsets.symmetric(vertical: 10.0);
-  bool _viewText;
+  EdgeInsetsGeometry _contentPadding;
+  TextStyle _prefixStyle;
+  TextStyle _textStyle;
+  TextCapitalization _textCapitalization;
+  String Function(String) _validator;
+  String Function(DateTime) _validatorDate;
   Widget _input;
+  double _fontSize;
+  FontWeight _fontWeight;
+  Color _fontColor;
+  double _iconSize;
+  Widget _icon;
+  bool _viewText;
+  int _maxLength;
+  VoidCallback _onTap;
 
   @override
   void initState() {
     super.initState();
+    _contentPadding = widget.contentPadding ?? EdgeInsets.zero;
+    _textStyle = widget.textStyle ?? style.textInput;
+    _fontSize = _textStyle.fontSize;
+    _fontWeight = _textStyle.fontWeight;
+    _fontColor = _textStyle.color;
     _viewText = widget.type != UiInputType.PASSWORD && widget.type != UiInputType.PIN;
+    _iconSize = _fontSize * 1.3;
+    _maxLength = widget.maxLength;
+    _textCapitalization = widget.caps;
+    _onTap = widget.onTap == null ? null : () {
+      FocusScope.of(context).requestFocus(FocusNode());
+      widget.onTap();
+    };
+    switch (widget.type) {
+      case UiInputType.NAME:
+        if (_textCapitalization == null) _textCapitalization = TextCapitalization.words;
+        break;
+      case UiInputType.CURRENCY:
+        if (_maxLength == null || _maxLength > 15) _maxLength = 15;
+        break;
+      case UiInputType.TAG:
+        if (_textCapitalization == null) _textCapitalization = TextCapitalization.words;
+        if (_maxLength == null) _maxLength = 50;
+        break;
+      case UiInputType.NOTE:
+        if (_textCapitalization == null) _textCapitalization = TextCapitalization.sentences;
+        break;
+      default:
+        if (_textCapitalization == null) _textCapitalization = TextCapitalization.none;
+    }
+    _validatorDate = (val) {
+      DateTime date = val;
+      String result;
+      switch (widget.type) {
+        case UiInputType.DATE_OF_BIRTH:
+          var now = DateTime.now();
+          var min = now.subtract(Duration(days: SETUP_MAX_PERSON_AGE * 365));
+          var max = now.subtract(Duration(days: SETUP_MIN_PERSON_AGE * 365));
+          if (date.isBefore(min) || date.isAfter(max)) {
+            result = "Tanggal lahir tidak valid";
+          }
+          break;
+        default:
+      }
+      return result;
+    };
+    _validator = (val) {
+      String value = val;
+      String result;
+      if (widget.isRequired && value.isEmpty) {
+        result = "${widget.label ?? 'Kolom ini'} harus diisi";
+      }
+      if (widget.type == UiInputType.EMAIL && value.isNotEmpty && !value.isValidEmail) {
+        result = "${widget.label ?? 'Alamat email'} tidak valid";
+      }
+      // widget.onValidate(result);
+      return result;
+      // return null;
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    final _prefixStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: widget.fontSize);
-    final _validator = (value) {
-      if (widget.isRequired && value.isEmpty) {
-        return "Harap isi ${widget.placeholder ?? "kolom ini"}";
-      }
-      return null;
-    };
-    double _iconSize = widget.fontSize * 1.3;
-    Widget _icon = widget.icon == null ? null : Padding(padding: EdgeInsets.only(left: 20), child: Icon(widget.icon, size: _iconSize, color: Colors.grey));
-    int _maxLength = widget.maxLength;
-
+    _textStyle = TextStyle(color: widget.readOnly ? Colors.white : _fontColor, fontSize: _fontSize, fontWeight: _fontWeight);
+    _prefixStyle = TextStyle(color: widget.readOnly ? Colors.white : _fontColor, fontSize: _fontSize, fontWeight: FontWeight.bold);
+    _icon = widget.icon == null ? SizedBox() : Padding(padding: EdgeInsets.only(left: 20), child: Icon(widget.icon, size: _iconSize, color: widget.readOnly ? Colors.white70 : Colors.grey));
     switch (widget.type) {
       case UiInputType.TEXT:
       case UiInputType.NAME:
@@ -94,19 +194,24 @@ class _UiInputState extends State<UiInput> {
       case UiInputType.SEARCH:
       case UiInputType.EMAIL:
       case UiInputType.TAG:
-        var _textCapitalization = [UiInputType.NAME, UiInputType.TAG].contains(widget.type) ? TextCapitalization.words : TextCapitalization.none;
-        if (widget.type == UiInputType.TAG && _maxLength == null) _maxLength = 50;
         _input = Stack(alignment: Alignment.topRight, children: <Widget>[
           Padding(
             padding: EdgeInsets.only(right: widget.cancelAction == null ? 16.0 : 40.0),
             child: TextFormField(
               // initialValue: widget.initialValue,
               keyboardType: widget.type == UiInputType.EMAIL ? TextInputType.emailAddress : TextInputType.text,
-              textCapitalization: widget.caps ?? _textCapitalization,
-              style: TextStyle(fontSize: widget.fontSize),
+              textCapitalization: _textCapitalization,
+              style: _textStyle,
               textAlign: widget.textAlign,
               readOnly: widget.readOnly,
-              decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding: _contentPadding,
+                hintStyle: style.textHint,
+                hintText: widget.label,
+                icon: _icon,
+                border: InputBorder.none
+              ),
               textInputAction: TextInputAction.go,
               controller: widget.controller,
               focusNode: widget.focusNode,
@@ -114,12 +219,9 @@ class _UiInputState extends State<UiInput> {
                 LengthLimitingTextInputFormatter(_maxLength),
               ] : null,
               maxLines: widget.type == UiInputType.NOTE ? null : 1,
-              enableInteractiveSelection: widget.klik == null,
-              onTap: widget.klik == null ? null : () {
-                FocusScope.of(context).requestFocus(FocusNode());
-                widget.klik();
-              },
-              // onSubmitted: widget.aksi,
+              enableInteractiveSelection: _onTap == null,
+              onTap: _onTap,
+              onFieldSubmitted: widget.onSubmit,
               // onChanged: widget.onChanged,
               onChanged: (val) {
                 if (widget.controller != null) {
@@ -140,13 +242,21 @@ class _UiInputState extends State<UiInput> {
           padding: EdgeInsets.only(right: 20.0),
           child: TextFormField(
             keyboardType: TextInputType.phone,
-            style: TextStyle(fontSize: widget.fontSize),
-            decoration: InputDecoration(contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefiks ?? "+62  ", style: _prefixStyle), hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
+            maxLines: 1,
+            style: _textStyle,
+            readOnly: widget.readOnly,
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: _contentPadding,
+              prefixStyle: _prefixStyle,
+              prefix: Text(widget.prefix ?? "+62  ", style: _prefixStyle),
+              hintStyle: style.textHint, hintText: widget.label, icon: _icon, border: InputBorder.none
+            ),
             textInputAction: TextInputAction.go,
             controller: widget.controller,
             focusNode: widget.focusNode,
-            //onSubmitted: widget.aksi,
-            autofocus: widget.autofocus,
+            //onSubmitted: widget.onSubmit,
+            autofocus: widget.autoFocus,
             onChanged: (val) {
               if (widget.controller != null) {
                 if (val[0] == '0') {
@@ -160,62 +270,64 @@ class _UiInputState extends State<UiInput> {
         );
         break;
       case UiInputType.CURRENCY:
-        if (_maxLength != null && _maxLength > 15) _maxLength = 15;
         _input = Padding(
           padding: EdgeInsets.only(right: 20.0),
           child: TextFormField(
             initialValue: widget.initialValue,
             keyboardType: TextInputType.number,
-            style: TextStyle(fontSize: widget.fontSize),
+            maxLines: 1,
+            style: _textStyle,
             textAlign: widget.textAlign,
             readOnly: widget.readOnly,
-            decoration: InputDecoration(contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefiks ?? "Rp  ", style: _prefixStyle), hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
+            decoration: InputDecoration(isDense: true, contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefix ?? "Rp  ", style: _prefixStyle), hintStyle: style.textHint, hintText: widget.label, icon: _icon, border: InputBorder.none),
             textInputAction: TextInputAction.go,
             controller: widget.controller,
             focusNode: widget.focusNode,
-            enableInteractiveSelection: widget.klik == null,
-            onTap: widget.klik == null ? null : () {
-              FocusScope.of(context).requestFocus(FocusNode());
-              widget.klik();
-            },
+            enableInteractiveSelection: _onTap == null,
+            onTap: _onTap,
             inputFormatters: <TextInputFormatter>[
               WhitelistingTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(_maxLength),
               CurrencyInputFormatter()
             ],
             onChanged: widget.onChanged,
-            //onSubmitted: widget.aksi,
+            //onSubmitted: widget.onSubmit,
             validator: _validator,
           ),
         );
         break;
       case UiInputType.PASSWORD:
       case UiInputType.PIN:
-        _input = Stack(alignment: Alignment.topRight, children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(right: 40.0),
-            child: TextFormField(
-              obscureText: !_viewText,
-              enableInteractiveSelection: false,
-              keyboardType: widget.type == UiInputType.PIN ? TextInputType.number : null,
-              inputFormatters: widget.type == UiInputType.PIN ? <TextInputFormatter>[
-                LengthLimitingTextInputFormatter(_maxLength ?? 6),
-                WhitelistingTextInputFormatter.digitsOnly,
-              ] : <TextInputFormatter>[
-                LengthLimitingTextInputFormatter(_maxLength ?? 32),
-              ],
-              maxLines: 1,
-              style: TextStyle(fontSize: widget.fontSize),
-              decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
-              textInputAction: TextInputAction.go,
-              controller: widget.controller,
-              focusNode: widget.focusNode,
-              validator: _validator,
+        _input = Stack(children: <Widget>[
+          Center(
+            child: Padding(
+              padding: EdgeInsets.only(right: 40.0),
+              child: TextFormField(
+                obscureText: !_viewText,
+                enableInteractiveSelection: false,
+                keyboardType: widget.type == UiInputType.PIN ? TextInputType.number : null,
+                inputFormatters: widget.type == UiInputType.PIN ? <TextInputFormatter>[
+                  LengthLimitingTextInputFormatter(_maxLength ?? 6),
+                  WhitelistingTextInputFormatter.digitsOnly,
+                ] : <TextInputFormatter>[
+                  LengthLimitingTextInputFormatter(_maxLength ?? 32),
+                ],
+                maxLines: 1,
+                style: _textStyle,
+                decoration: InputDecoration(isDense: true, contentPadding: _contentPadding, hintStyle: style.textHint, hintText: widget.label, icon: _icon, border: InputBorder.none),
+                textInputAction: TextInputAction.go,
+                controller: widget.controller,
+                focusNode: widget.focusNode,
+                validator: _validator,
+              ),
             ),
           ),
-          IconButton(icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility), iconSize: _iconSize, color: Colors.grey, onPressed: () {
-            setState(() { _viewText = !_viewText; });
-          },),
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility), iconSize: _iconSize, color: Colors.grey, onPressed: () {
+              setState(() { _viewText = !_viewText; });
+            },),
+          ),
         ],);
         break;
       case UiInputType.DATE:
@@ -226,9 +338,17 @@ class _UiInputState extends State<UiInput> {
           showCursor: false,
           format: DateFormat(widget.dateFormat, APP_LOCALE),
           initialValue: widget.initialValue == null ? null : (widget.initialValue is DateTime ? widget.initialValue : DateTime.parse(widget.initialValue.toString())),
-          style: TextStyle(fontSize: widget.fontSize),
-          decoration: InputDecoration(contentPadding: _contentPadding, hintText: widget.placeholder, icon: _icon, border: InputBorder.none),
-          resetIcon: widget.isClearable ? Icon(LineIcons.close, size: widget.fontSize,) : null,
+          style: _textStyle,
+          maxLines: 1,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: _contentPadding,
+            hintStyle: style.textHint,
+            hintText: widget.label,
+            icon: _icon,
+            border: InputBorder.none,
+          ),
+          resetIcon: widget.isClearable ? Icon(LineIcons.close, size: _fontSize,) : null,
           onShowPicker: (context, currentValue) {
             DateTime now = DateTime.now();
             DateTime min = DateTime(2020);
@@ -253,7 +373,7 @@ class _UiInputState extends State<UiInput> {
             );
           },
           onChanged: widget.onChanged,
-          validator: _validator,
+          validator: _validatorDate,
         );
         break;
     }
@@ -264,21 +384,20 @@ class _UiInputState extends State<UiInput> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           widget.showLabel
-            ? Padding(padding: EdgeInsets.only(bottom: 8.0), child: Text(widget.placeholder + ((widget.info ?? "").isEmpty ? ":" : " (${widget.info}):"), style: widget.labelStyle ?? style.textLabel,),)
+            ? Padding(padding: EdgeInsets.only(bottom: 8.0), child: Text(widget.label + ((widget.info ?? "").isEmpty ? ":" : " (${widget.info}):"), style: widget.labelStyle ?? style.textLabel,),)
             : SizedBox(),
-          Card(
-            color: widget.color ?? Theme.of(context).cardColor,
-            shape: RoundedRectangleBorder(
-              // side: BorderSide(color: widget.borderColor ?? Colors.grey[350], width: 1.0,),
-              borderRadius: widget.borderRadius ?? BorderRadius.circular(50.0),
+          IgnorePointer(
+            ignoring: widget.readOnly,
+            child: Card(
+              color: (widget.color ?? Theme.of(context).cardColor).withOpacity(widget.readOnly ? 0.8 : 1),
+              shape: RoundedRectangleBorder(borderRadius: widget.borderRadius ?? BorderRadius.circular(50.0),),
+              elevation: widget.elevation ?? 1.0,
+              margin: EdgeInsets.zero,
+              // TODO input note autosize height
+              child: widget.height == null ? _input : SizedBox(height: widget.height, child: Padding(padding: EdgeInsets.symmetric(vertical: 15), child: _input,),),
             ),
-            elevation: widget.elevation ?? 1.0,
-            margin: EdgeInsets.zero,
-            // TODO input note autosize height
-            child: widget.height == null ? _input : SizedBox(height: widget.height, child: Center(child: _input,),),
-            // child: _input,
           ),
-          (widget.error ?? '').isEmpty ? SizedBox() : ErrorText(widget.error)
+          widget.error.isEmptyOrNull ? SizedBox() : ErrorText(widget.error)
         ],
       ),
     );
@@ -454,7 +573,7 @@ class UiButton extends StatelessWidget {
   UiButton({
     this.btnKey,
     this.color = THEME_COLOR,
-    this.borderColor,
+    // this.borderColor,
     this.icon,
     this.iconSize,
     this.iconPadding = 8.0,
@@ -468,7 +587,7 @@ class UiButton extends StatelessWidget {
     this.padding
   });
   final Color color;
-  final Color borderColor;
+  // final Color borderColor;
   final IconData icon;
   final String label;
   final TextStyle textStyle;
@@ -485,7 +604,7 @@ class UiButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var _textStyle = textStyle ?? style.textButton;
-    var _borderColor = borderColor ?? color;
+    // var _borderColor = borderColor ?? color;
     var _fontSize = _textStyle.fontSize;
     var _fontColor = _textStyle.color;
     var _fontWeight = _textStyle.fontWeight;
@@ -503,7 +622,7 @@ class UiButton extends StatelessWidget {
           focusElevation: elevation,
           highlightElevation: elevation,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: _borderColor, width: 2),
+            // side: BorderSide(color: _borderColor, width: 2),
             borderRadius: borderRadius ?? BorderRadius.circular(30)
           ),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: alignment ?? MainAxisAlignment.center, children: <Widget>[

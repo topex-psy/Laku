@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
@@ -19,7 +20,15 @@ import 'profil.dart';
 import 'splash.dart';
 import 'tambah.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.teal[700],
+    systemNavigationBarIconBrightness: Brightness.light,
+    statusBarColor: Colors.teal[800],
+    statusBarIconBrightness: Brightness.light,
+  ));
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
 

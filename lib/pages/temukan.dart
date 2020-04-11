@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:line_icons/line_icons.dart';
 import '../utils/styles.dart' as style;
-import '../utils/helpers.dart';
 
 class Iklan {
   Iklan({this.judul, this.pic, this.x, this.y});
@@ -106,7 +105,7 @@ class _TemukanState extends State<Temukan> {
                             //   image: NetworkImage(item.pic),
                             //   fit: BoxFit.cover,
                             // ),
-                            Container(width: double.infinity, height: h.screenSize.width / 6, decoration: BoxDecoration(
+                            Container(width: double.infinity, height: MediaQuery.of(context).size.width / 6, decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: FractionalOffset.topCenter,
                                 end: FractionalOffset.bottomCenter,

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 const FONT_SIZE_TITLE = 22.0;
 const FONT_SIZE_BODY = 16.0;
 
-class Page extends StatelessWidget {
+class OnboardingPage extends StatelessWidget {
   final PageViewModel viewModel;
   final double percentVisible;
 
-  Page({this.viewModel, this.percentVisible = 1.0});
+  OnboardingPage({this.viewModel, this.percentVisible = 1.0});
 
   @override
   Widget build(BuildContext context) {

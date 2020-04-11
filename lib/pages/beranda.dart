@@ -212,7 +212,7 @@ class _CardBoxState extends State<CardBox> {
   @override
   Widget build(BuildContext context) {
     var notification = Provider.of<NotificationsProvider>(context);
-    var size = (h.screenSize.width - 38) / 2;
+    var size = (MediaQuery.of(context).size.width - 38) / 2;
     int angka;
     VoidCallback buka;
     Color color;

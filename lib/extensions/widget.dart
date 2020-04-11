@@ -61,6 +61,11 @@ extension WidgetExtension on Widget {
     return shimmer ? ShimmerIt(child: this, opacity: opacity,) : this;
   }
 
+  // fungsi untuk animasi pulse pada widget
+  Widget pulseIt({bool pulse = true, double scaleBegin = 1.0, double scaleEnd = 1.2, int duration = 500}) {
+    return pulse ? PulseIt(child: this, scaleBegin: scaleBegin, scaleEnd: scaleEnd, duration: duration) : this;
+  }
+
   // fungsi untuk menampilkan widget hanya jika kondisi terpenuhi
   // jangan gunakan untuk widget yang besar, karena cara kerjanya
   // adalah widget benar-benar dimuat sebelum disembunyikan, tapi
@@ -111,6 +116,47 @@ class _ShimmerItState extends State<ShimmerIt> with SingleTickerProviderStateMix
     return widget.shimmer ? AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) => Opacity(opacity: _animation.value, child: widget.child,),
+    ) : widget.child;
+  }
+}
+
+class PulseIt extends StatefulWidget {
+  PulseIt({Key key, this.child, this.pulse = true, this.scaleBegin = 1.0, this.scaleEnd = 1.2, this.duration = 500}) : super(key: key);
+  final Widget child;
+  final bool pulse;
+  final double scaleBegin;
+  final double scaleEnd;
+  final int duration;
+
+  @override
+  _PulseItState createState() => _PulseItState();
+}
+
+class _PulseItState extends State<PulseIt> with SingleTickerProviderStateMixin {
+  AnimationController _animationController;
+  Animation _animation;
+
+  @override
+  void initState() {
+    _animationController = AnimationController(duration: Duration(milliseconds: widget.duration), vsync: this)..repeat(reverse: true);
+    _animation = Tween(begin: widget.scaleBegin, end: widget.scaleEnd).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    ));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.pulse ? AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) => Transform.scale(scale: _animation.value, child: widget.child,),
     ) : widget.child;
   }
 }

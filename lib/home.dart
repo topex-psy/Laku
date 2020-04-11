@@ -72,7 +72,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    initializeHelpers(context, "after init _HomeState");
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
@@ -96,7 +95,7 @@ class _HomeState extends State<Home> {
                   bottomLeft: Radius.circular(20),
                 ),
                 child: SizedBox(
-                  width: h.screenSize.width * 0.69,
+                  width: MediaQuery.of(context).size.width * 0.69,
                   child: Drawer(semanticLabel: "Menu samping", child: Column(children: <Widget>[
                     Container(
                       color: THEME_COLOR,
@@ -113,7 +112,7 @@ class _HomeState extends State<Home> {
                                 imageUrl: Uri.encodeFull(foto),
                                 placeholder: (context, url) => SizedBox(width: 100, height: 100, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
                                 errorWidget: (context, url, error) => fotoDefault,
-                                width: 69, height: 69,
+                                width: 100, height: 100,
                                 fit: BoxFit.cover,
                               ),
                               // onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => Profil())),
@@ -155,7 +154,6 @@ class _HomeState extends State<Home> {
           transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
           child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
             onPressed: () async {
-              // Map results = await Navigator.of(context).push(MaterialPageRoute(builder: (_) => Tambah()));
               final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH);
               print(results);
             },
