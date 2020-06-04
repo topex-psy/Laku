@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -105,19 +104,7 @@ class _HomeState extends State<Home> {
                         Selector<PersonProvider, String>(
                           selector: (buildContext, person) => person.foto,
                           builder: (context, foto, child) {
-                            var fotoDefault = Image.asset("images/anon.png", width: 100, height: 100, fit: BoxFit.cover);
-                            return UiAvatar(
-                              strokeWidth: 3,
-                              image: foto == null ? fotoDefault : CachedNetworkImage(
-                                imageUrl: Uri.encodeFull(foto),
-                                placeholder: (context, url) => SizedBox(width: 100, height: 100, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
-                                errorWidget: (context, url, error) => fotoDefault,
-                                width: 100, height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                              // onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => Profil())),
-                              onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),
-                            );
+                            return UiAvatar(foto, onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),);
                           },
                         ),
                         SizedBox(width: 12,),

@@ -39,6 +39,8 @@ class FormatHelper {
 
   int randomNumber(int min, int max) => min + Random().nextInt(max - min);
   String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
+  String formatDate(DateTime date, {String format = 'dd/MM/yyyy'}) => date == null ? null : DateFormat(format).format(date);
+  String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => nominal == null ? null : NumberFormat.currency(locale: APP_LOCALE, symbol: symbol).format(nominal);
 }
 
 class UserHelper {
@@ -55,10 +57,8 @@ class UserHelper {
     person.setPerson(isSignedIn: false);
     Future.delayed(Duration.zero, () {
       Navigator.of(context).popUntil((route) => route.isFirst);
-      // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_INTRO));
-      // Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_INTRO, (route) => route.isFirst, arguments: {'noSplash': true});
-      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_INTRO);
-      // Navigator.of(context).pop();
+      // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_LOGIN));
+      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
     });
   }
 }

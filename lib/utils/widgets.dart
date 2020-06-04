@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -58,7 +59,7 @@ class UiInput extends StatefulWidget {
     this.borderRadius,
     this.dateFormat = "dd/MM/yyyy",
     this.isClearable = true,
-    this.elevation,
+    this.elevation = THEME_ELEVATION_INPUT,
     this.error,
     // this.onValidate,
   }) : super(key: key);
@@ -390,7 +391,8 @@ class _UiInputState extends State<UiInput> {
             child: Card(
               color: (widget.color ?? Theme.of(context).cardColor).withOpacity(widget.readOnly ? 0.8 : 1),
               shape: RoundedRectangleBorder(borderRadius: widget.borderRadius ?? BorderRadius.circular(50.0),),
-              elevation: widget.elevation ?? 1.0,
+              elevation: widget.elevation,
+              clipBehavior: Clip.antiAlias,
               margin: EdgeInsets.zero,
               // TODO input note autosize height
               child: widget.height == null ? _input : SizedBox(height: widget.height, child: Padding(padding: EdgeInsets.symmetric(vertical: 15), child: _input,),),
@@ -580,7 +582,7 @@ class UiButton extends StatelessWidget {
     this.label,
     this.onPressed,
     this.borderRadius,
-    this.elevation = 2.0,
+    this.elevation = THEME_ELEVATION_BUTTON,
     this.textStyle,
     this.alignment,
     this.padding
@@ -668,15 +670,24 @@ class UiMenuList extends StatelessWidget {
 }
 
 class UiAvatar extends StatelessWidget {
-  UiAvatar({Key key, @required this.image, this.heroTag, this.onPressed, this.strokeWidth = 4}) : super(key: key);
-  final Widget image;
+  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.onPressed, this.strokeWidth = 3}) : super(key: key);
+  final String pic;
+  final double size;
   final String heroTag;
   final void Function() onPressed;
   final double strokeWidth;
 
   @override
   Widget build(BuildContext context) {
-    var _image = ClipOval(child: InkWell(onTap: onPressed, child: image));
+    final _imageDefault = Image.asset(DEFAULT_USER_IMAGE, width: size, height: size, fit: BoxFit.cover);
+    final _imageWidget = pic == null ? _imageDefault : CachedNetworkImage(
+      imageUrl: Uri.encodeFull(pic),
+      placeholder: (context, url) => SizedBox(width: size, height: size, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+      errorWidget: (context, url, error) => _imageDefault,
+      width: size, height: size,
+      fit: BoxFit.cover,
+    );
+    final _image = ClipOval(child: InkWell(onTap: onPressed, child: _imageWidget));
     return Card(
       elevation: 1,
       color: Colors.white,

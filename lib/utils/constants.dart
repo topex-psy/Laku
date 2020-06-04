@@ -15,6 +15,8 @@ const APP_ABOUT_URL        = "${APP_HOST}about";
 const DEBUG_TOUR           = false;
 const DEBUG_ONBOARDING     = false;
 
+const DEFAULT_USER_IMAGE   = "images/anon.png";
+
 const ROUTE_SPLASH         = '/Splash';
 const ROUTE_INTRO          = '/Intro';
 const ROUTE_LOGIN          = '/Login';
@@ -29,6 +31,8 @@ const SETUP_MIN_PERSON_AGE = 10;
 const THEME_BACKGROUND     = Color(0XFFDEFFF3);
 const THEME_BORDER_RADIUS  = 12.0;
 const THEME_COLOR          = Colors.teal;
+const THEME_ELEVATION_INPUT  = 1.0;
+const THEME_ELEVATION_BUTTON = 2.0;
 const THEME_INPUT_HEIGHT   = 50.0;
 const THEME_PADDING        = 15.0;
 const THEME_FONT_MAIN      = 'Quicksand';

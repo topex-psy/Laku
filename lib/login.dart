@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
 import 'package:dio/dio.dart';
-import 'package:intl/intl.dart';
 import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
@@ -60,8 +59,7 @@ class _LoginState extends State<Login> {
       } else {
         Map userRes = userApi['result'][0];
         if (userRes['IS_BANNED'] == null || userRes['IS_BANNED'].isEmpty) {
-          var hingga = DateFormat('dd/mm/YYYY').format(DateTime.parse(userRes['BAN_UNTIL']));
-          h.failAlert("Akun Terblokir", "Akunmu diblokir hingga $hingga karena ${userRes['BAN_REASON']}");
+          h.failAlert("Akun Terblokir", "Akunmu diblokir hingga ${f.formatDate(DateTime.parse(userRes['BAN_UNTIL']))} karena ${userRes['BAN_REASON']}");
           setState(() { _isLoading = false; });
         } else {
           var person = Provider.of<PersonProvider>(context, listen: false);
