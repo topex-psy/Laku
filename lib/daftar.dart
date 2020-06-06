@@ -196,7 +196,7 @@ class _DaftarState extends State<Daftar> {
                           SizedBox(
                             height: 45.0,
                             child: ToggleButtons(
-                              borderRadius: BorderRadius.circular(50.0),
+                              borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
                               children: <Widget>[
                                 Row(children: <Widget>[
                                   SizedBox(width: 20.0),
@@ -225,7 +225,7 @@ class _DaftarState extends State<Daftar> {
                             ),
                           ),
                           SizedBox(height: 30,),
-                          Center(child: SizedBox(width: 150, height: 46, child: UiButton(color: Colors.green, label: "Lanjut", icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),)),
+                          Center(child: UiButton("Lanjut", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
                         ],),
                         // register step 2: buat pin
                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
@@ -242,27 +242,39 @@ class _DaftarState extends State<Daftar> {
                           ],),
                           SizedBox(height: 20,),
                           _lakuTag.isEmpty
-                            ? UiInput("LakuTag", info: "Tanpa spasi", isRequired: true, icon: LineIcons.at, type: UiInputType.TAG, controller: _lakuTagController, focusNode: _lakuTagFocusNode, error: _errorText["tag"],)
-                            : Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-                                // TODO FIXME wrap text
-                                Text("@$_lakuTag", style: style.textHeadline),
-                                SizedBox(width: 0,),
-                                IconButton(icon: Icon(LineIcons.edit), onPressed: () {
-                                  setState(() {
-                                    _lakuTag = '';
-                                  });
-                                },),
+                            ? UiInput("LakuTag", info: "Tanpa spasi", textStyle: style.textInputL, isRequired: true, icon: LineIcons.at, type: UiInputType.TAG, controller: _lakuTagController, focusNode: _lakuTagFocusNode, error: _errorText["tag"],)
+                            : Column(children: [
+                                // Card(
+                                //   clipBehavior: Clip.antiAlias,
+                                //   margin: EdgeInsets.zero,
+                                //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS)),
+                                //   child: 
+                                // ),
+                                Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+                                  // SizedBox(width: 12),
+                                  Expanded(child: Text("@$_lakuTag", style: style.textTitle)),
+                                  // SizedBox(width: 0,),
+                                  // IconButton(icon: Icon(LineIcons.pencil, color: Colors.grey,), onPressed: () {
+                                  //   setState(() {
+                                  //     _lakuTag = '';
+                                  //   });
+                                  // },),
+                                  UiButton("Ganti", width: 100, color: Colors.blue[400], onPressed: () {
+                                    setState(() {
+                                      _lakuTag = '';
+                                    });
+                                  },),
+                                ],),
+                                SizedBox(height: 8,),
+                                Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+                                  Icon(Icons.check_circle, color: Colors.greenAccent[700], size: 30,),
+                                  SizedBox(width: 8,),
+                                  Text("Selamat, LakuTag tersedia!"),
+                                ],),
+                                SizedBox(height: 20,)
                               ],),
-                          _lakuTag.isEmpty ? SizedBox() : Padding(
-                            padding: EdgeInsets.only(bottom: 20),
-                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-                              Icon(Icons.check_circle, color: Colors.green, size: 16,),
-                              SizedBox(width: 8,),
-                              Text("Selamat, LakuTag tersedia!"),
-                            ],),
-                          ),
                           SizedBox(height: 12,),
-                          Center(child: SizedBox(width: 150, height: 46, child: UiButton(color: Colors.green, label: _lakuTag.isEmpty ? "Daftar" : "Mulai", icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),),
+                          Center(child: UiButton(_lakuTag.isEmpty ? "Daftar" : "Mulai", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
                         ],),
                       ],
                     ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
@@ -102,6 +103,7 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
       PageViewModel(
         color: Colors.purple[400],
         hero: Image.asset('images/onboarding/1.png', width: imageWidth,),
+        // hero: SvgPicture.asset('images/onboarding/1.svg', width: imageWidth,),
         icon: LineIcons.tags,
         title: 'Banyak Barang',
         body: 'Apakah kamu sering buang duit untuk berbelanja barang-barang yang gak penting?',
@@ -109,6 +111,7 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
       PageViewModel(
         color: Colors.green[400],
         hero: Image.asset('images/onboarding/2.png', width: imageWidth,),
+        // hero: SvgPicture.asset('images/onboarding/2.svg', width: imageWidth,),
         icon: LineIcons.mobile_phone,
         title: 'Jangan Bingung',
         body: 'Beritahu orang-orang kalau kamu punya barang-barang itu. Mungkin mereka lebih butuh.',
@@ -116,8 +119,9 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
       PageViewModel(
         color: Colors.teal[400],
         hero: Image.asset('images/onboarding/3.png', width: imageWidth,),
+        // hero: SvgPicture.asset('images/onboarding/3.svg', width: imageWidth,),
         icon: LineIcons.cloud,
-        title: 'Jadi Duit!',
+        title: 'Jadikan Duit!',
         body: 'Pasang iklan apa saja seperti produk baru, bekas, bisnis, jasa, loker, kos-kosan. Semua bisa!',
       ),
     ];
@@ -148,7 +152,6 @@ class _IntroState extends State<Intro> with TickerProviderStateMixin {
           children: [
             _activeIndex == pages.length ? Container() : GestureDetector(
               onTap: () {
-                print("HALAMAN SLIDE: $_activeIndex");
                 if (_activeIndex < pages.length - 1) {
                   setState(() {
                     animatedPageDragger = AnimatedPageDragger(

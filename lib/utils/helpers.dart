@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/src/material_rounded_date_picker_style.dart';
 import 'package:flutter_rounded_date_picker/src/material_rounded_year_picker_style.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -254,10 +255,23 @@ class UIHelper {
   }
 
   /// fungsi yang mengembalikan teks versi html
-  Html html(String htmlString, {TextStyle textStyle}) => Html(
-    data: htmlString,
-    defaultTextStyle: textStyle,
-  );
+  Html html(String htmlString, {TextStyle textStyle}) {
+    textStyle ??= Theme.of(context).textTheme.bodyText1;
+    return Html(
+      data: htmlString,
+      style: {
+        "body": Style(
+          fontFamily: textStyle.fontFamily,
+          fontSize: FontSize(textStyle.fontSize),
+          fontStyle: textStyle.fontStyle,
+          fontWeight: textStyle.fontWeight,
+          color: textStyle.color,
+          textAlign: TextAlign.start,
+          margin: EdgeInsets.zero
+        ),
+      },
+    );
+  }
 
   MaterialRoundedDatePickerStyle get datePickerStyle {
     return MaterialRoundedDatePickerStyle(

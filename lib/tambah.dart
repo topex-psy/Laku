@@ -39,10 +39,9 @@ class _TambahState extends State<Tambah> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      PermissionStatus permission = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
-      setState(() {
-        _isGranted = permission == PermissionStatus.granted;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() async {
+        _isGranted = await Permission.location.request().isGranted;
         _maxImageSelect = 3; // TODO ambil dari data user
         _isLoading = false;
       });
@@ -106,9 +105,9 @@ class _FormBarangState extends State<FormBarang> {
         Text("Foto:", style: style.textLabel,),
         Text("Ukuran iklan:", style: style.textLabel,),
         // TODO 5 token tersisa
-        SizedBox(height: style.heightButtonL, child: UiButton(color: Colors.green, label: "Pasang!", textStyle: style.textButtonL, icon: LineIcons.check, onPressed: () {
+        UiButton("Pasang!", height: style.heightButtonL, color: Colors.green, textStyle: style.textButtonL, icon: LineIcons.check, onPressed: () {
           // TODO post item
-        },),),
+        },),
       ],)
     );
   }

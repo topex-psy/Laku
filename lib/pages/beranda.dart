@@ -108,7 +108,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
                     IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {
                       screenScaffoldKey.currentState.openEndDrawer();
                     },),
-                    Expanded(child: Container(),),
+                    // Expanded(child: Container(),),
+                    Spacer(),
                     IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
                     IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
                   ],),
@@ -140,9 +141,9 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
                                   SizedBox(height: 12,),
                                   Text("Artinya, barang-barang Anda hanya bisa ditemukan oleh pengguna yang berada di radius tersebut.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12),),
                                   SizedBox(height: 15,),
-                                  SizedBox(height: style.heightButton, child: UiButton(color: Colors.blue, label: "Upgrade Akun", icon: LineIcons.user_plus, onPressed: () {
+                                  UiButton("Upgrade Akun", color: Colors.blue, icon: LineIcons.user_plus, onPressed: () {
                                     // TODO upgrade akun
-                                  }))
+                                  }),
                                 ],));
                               },
                               child: Text("Malang, Indonesia", style: style.textHeadlineWhite),
@@ -177,9 +178,9 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
                       Text("Ingin jangkauan lebih luas?", style: style.textLabel),
                       SizedBox(height: 12,),
-                      SizedBox(width: 200, height: style.heightButton, child: UiButton(label: "Upgrade akunmu", color: Colors.teal[300], textStyle: style.textButton, icon: LineIcons.certificate, iconRight: true, onPressed: () {
+                      UiButton("Upgrade akunmu", width: 200, color: Colors.teal[300], textStyle: style.textButton, icon: LineIcons.certificate, iconRight: true, onPressed: () {
                         // TODO upgrade akun
-                      }),),
+                      }),
 
                       SizedBox(height: SECTION_MARGIN,),
                     ],),
@@ -283,7 +284,8 @@ class _CardBoxState extends State<CardBox> {
                 //   ),
                 //   child: Center(child: Icon(icon, color: Colors.white, size: 18,))
                 // ),
-                Expanded(child: Container(),),
+                // Expanded(child: Container(),),
+                Spacer(),
                 SizedBox(width: 8,),
                 Icon(LineIcons.arrow_up, color: Colors.white, size: 12,),
                 SizedBox(width: 4,),
@@ -366,7 +368,7 @@ class _CardListState extends State<CardList> {
           Text(f.formatNumber(angka) ?? '-', style: style.textHeadline,),
           SizedBox(width: 8,),
           Expanded(child: Text(label)),
-          SizedBox(width: buttonWidth, height: style.heightButton, child: UiButton(label: buttonLabel, color: Colors.teal[300], textStyle: style.textButton, icon: buttonIcon, iconRight: true, onPressed: buka).shimmerIt(buttonShimmer, 1.0),),
+          UiButton(buttonLabel, width: buttonWidth, color: Colors.teal[300], textStyle: style.textButton, icon: buttonIcon, iconRight: true, onPressed: buka).shimmerIt(buttonShimmer, 1.0),
         ],),
       ),
     );

@@ -270,7 +270,7 @@ class _LoginFormState extends State<LoginForm> {
         ),
       ),
       SizedBox(height: 12,),
-      SizedBox(height: style.heightButtonL, child: UiButton(label: "OK", color: Colors.teal[300], textStyle: style.textButtonXL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),),
+      UiButton("OK", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonXL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),
       SizedBox(height: 12,),
       Center(child: _showResend ? GestureDetector(
         onTap: () {
@@ -280,11 +280,11 @@ class _LoginFormState extends State<LoginForm> {
         },
         child: Padding(
           padding: EdgeInsets.all(4),
-          child: Text("Tidak menerima SMS?", style: style.textWhiteS,),
+          child: Text("Tidak menerima SMS?", style: style.textWhite,),
         ),
       ) : Padding(
         padding: EdgeInsets.all(4),
-        child: Detik("Mengirim SMS ...", duration: RESEND_CODE_TIMEOUT, onFinish: () {
+        child: Detik("Mengirim SMS", duration: RESEND_CODE_TIMEOUT, onFinish: () {
           setState(() {
             _showResend = true;
           });
@@ -298,11 +298,23 @@ class _LoginFormState extends State<LoginForm> {
         Icon(LineIcons.user, color: Colors.white, size: 60,),
       ],),
       SizedBox(height: 20,),
-      UiInput("Nomor ponsel", isRequired: true, autoFocus: true, icon: LineIcons.mobile_phone, labelStyle: style.textLabelWhite, type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _nomorPonselError,),
+      UiInput(
+        "Nomor ponsel",
+        isRequired: true,
+        autoFocus: true,
+        icon: LineIcons.mobile_phone,
+        labelStyle: style.textLabelWhite,
+        textStyle: style.textInputXL,
+        type: UiInputType.PHONE,
+        controller: _nomorPonselController,
+        focusNode: _nomorPonselFocusNode,
+        error: _nomorPonselError,
+        height: 55.0,
+      ),
       SizedBox(height: 12,),
-      SizedBox(height: style.heightButtonL, child: UiButton(label: "Lanjut", color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconRight: true, onPressed: () {
+      UiButton("Lanjut", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconRight: true, onPressed: () {
         _verifyPhoneNumber(context);
-      },),),
+      },),
       SizedBox(height: 42,),
       Copyright()
     ];
@@ -355,6 +367,13 @@ class _DetikState extends State<Detik> {
 
   @override
   Widget build(BuildContext context) {
-    return Text("${widget.label} $_detik", style: style.textWhiteS,);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(widget.label, style: style.textWhite,),
+        SizedBox(width: 8,),
+        ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  $_detik  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white38, fontWeight: FontWeight.bold),),),
+      ],
+    );
   }
 }

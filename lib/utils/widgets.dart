@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
@@ -35,6 +36,7 @@ class UiInput extends StatefulWidget {
     this.textStyle,
     this.textAlign = TextAlign.start,
     this.showLabel = true,
+    this.showHint = true,
     this.labelStyle,
     this.info,
     this.prefix,
@@ -71,6 +73,7 @@ class UiInput extends StatefulWidget {
   final String info;
   final String prefix;
   final bool showLabel;
+  final bool showHint;
   final TextStyle labelStyle;
   final double height;
   final EdgeInsetsGeometry contentPadding;
@@ -112,6 +115,8 @@ class _UiInputState extends State<UiInput> {
   double _fontSize;
   FontWeight _fontWeight;
   Color _fontColor;
+  String _hintText;
+  TextStyle _hintStyle;
   double _iconSize;
   Widget _icon;
   bool _viewText;
@@ -127,6 +132,8 @@ class _UiInputState extends State<UiInput> {
     _fontWeight = _textStyle.fontWeight;
     _fontColor = _textStyle.color;
     _viewText = widget.type != UiInputType.PASSWORD && widget.type != UiInputType.PIN;
+    _hintText = widget.showHint ? widget.label : '';
+    _hintStyle = TextStyle(fontSize: _fontSize, color: style.textHint.color, fontWeight: FontWeight.normal);
     _iconSize = _fontSize * 1.3;
     _maxLength = widget.maxLength;
     _textCapitalization = widget.caps;
@@ -207,8 +214,8 @@ class _UiInputState extends State<UiInput> {
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: _contentPadding,
-                hintStyle: style.textHint,
-                hintText: widget.label,
+                hintStyle: _hintStyle,
+                hintText: _hintText,
                 icon: _icon,
                 border: InputBorder.none
               ),
@@ -246,11 +253,14 @@ class _UiInputState extends State<UiInput> {
             style: _textStyle,
             readOnly: widget.readOnly,
             decoration: InputDecoration(
-              isDense: true,
               contentPadding: _contentPadding,
               prefixStyle: _prefixStyle,
-              prefix: Text(widget.prefix ?? "+62  ", style: _prefixStyle),
-              hintStyle: style.textHint, hintText: widget.label, icon: _icon, border: InputBorder.none
+              prefix: Text(widget.prefix ?? "+62 ", style: _prefixStyle),
+              hintStyle: _hintStyle,
+              hintText: _hintText,
+              icon: _icon,
+              border: InputBorder.none,
+              isDense: true,
             ),
             textInputAction: TextInputAction.go,
             controller: widget.controller,
@@ -279,7 +289,17 @@ class _UiInputState extends State<UiInput> {
             style: _textStyle,
             textAlign: widget.textAlign,
             readOnly: widget.readOnly,
-            decoration: InputDecoration(isDense: true, contentPadding: _contentPadding, prefixStyle: _prefixStyle, prefix: Text(widget.prefix ?? "Rp  ", style: _prefixStyle), hintStyle: style.textHint, hintText: widget.label, icon: _icon, border: InputBorder.none),
+            decoration: InputDecoration(
+              contentPadding: _contentPadding,
+              prefixStyle: _prefixStyle,
+              prefix: Text(widget.prefix ?? "Rp ",
+              style: _prefixStyle),
+              hintStyle: _hintStyle,
+              hintText: _hintText,
+              icon: _icon,
+              border: InputBorder.none,
+              isDense: true,
+            ),
             textInputAction: TextInputAction.go,
             controller: widget.controller,
             focusNode: widget.focusNode,
@@ -314,7 +334,14 @@ class _UiInputState extends State<UiInput> {
                 ],
                 maxLines: 1,
                 style: _textStyle,
-                decoration: InputDecoration(isDense: true, contentPadding: _contentPadding, hintStyle: style.textHint, hintText: widget.label, icon: _icon, border: InputBorder.none),
+                decoration: InputDecoration(
+                  contentPadding: _contentPadding,
+                  hintStyle: _hintStyle,
+                  hintText: _hintText,
+                  icon: _icon,
+                  border: InputBorder.none,
+                  isDense: true,
+                ),
                 textInputAction: TextInputAction.go,
                 controller: widget.controller,
                 focusNode: widget.focusNode,
@@ -341,12 +368,12 @@ class _UiInputState extends State<UiInput> {
           style: _textStyle,
           maxLines: 1,
           decoration: InputDecoration(
-            isDense: true,
             contentPadding: _contentPadding,
-            hintStyle: style.textHint,
-            hintText: widget.label,
+            hintStyle: _hintStyle,
+            hintText: _hintText,
             icon: _icon,
             border: InputBorder.none,
+            isDense: true,
           ),
           resetIcon: widget.isClearable ? Icon(LineIcons.close, size: _fontSize,) : null,
           onShowPicker: (context, currentValue) {
@@ -390,7 +417,7 @@ class _UiInputState extends State<UiInput> {
             ignoring: widget.readOnly,
             child: Card(
               color: (widget.color ?? Theme.of(context).cardColor).withOpacity(widget.readOnly ? 0.8 : 1),
-              shape: RoundedRectangleBorder(borderRadius: widget.borderRadius ?? BorderRadius.circular(50.0),),
+              shape: RoundedRectangleBorder(borderRadius: widget.borderRadius ?? BorderRadius.circular(THEME_BORDER_RADIUS),),
               elevation: widget.elevation,
               clipBehavior: Clip.antiAlias,
               margin: EdgeInsets.zero,
@@ -571,7 +598,7 @@ class UiLoader extends StatelessWidget {
 }
 
 class UiButton extends StatelessWidget {
-  UiButton({
+  UiButton(this.label, {
     this.btnKey,
     this.color = THEME_COLOR,
     // this.borderColor,
@@ -579,13 +606,14 @@ class UiButton extends StatelessWidget {
     this.iconSize,
     this.iconPadding = 8.0,
     this.iconRight = false,
-    this.label,
     this.onPressed,
     this.borderRadius,
     this.elevation = THEME_ELEVATION_BUTTON,
     this.textStyle,
     this.alignment,
-    this.padding
+    this.padding,
+    this.width,
+    this.height
   });
   final Color color;
   // final Color borderColor;
@@ -601,6 +629,8 @@ class UiButton extends StatelessWidget {
   final MainAxisAlignment alignment;
   final void Function() onPressed;
   final EdgeInsetsGeometry padding;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -614,24 +644,27 @@ class UiButton extends StatelessWidget {
       ignoring: onPressed == null,
       child: Opacity(
         opacity: onPressed == null ? 0.5 : 1,
-        child: RaisedButton(
-          padding: padding ?? Theme.of(context).buttonTheme.padding,
-          key: btnKey,
-          color: color,
-          elevation: elevation,
-          hoverElevation: elevation,
-          focusElevation: elevation,
-          highlightElevation: elevation,
-          shape: RoundedRectangleBorder(
-            // side: BorderSide(color: _borderColor, width: 2),
-            borderRadius: borderRadius ?? BorderRadius.circular(30)
+        child: SizedBox(
+          width: width ?? double.infinity,
+          height: height ?? style.heightButton,
+          child: RaisedButton(
+            padding: padding ?? Theme.of(context).buttonTheme.padding,
+            key: btnKey,
+            color: color,
+            elevation: elevation,
+            hoverElevation: elevation,
+            focusElevation: elevation,
+            highlightElevation: elevation,
+            shape: RoundedRectangleBorder(
+              borderRadius: borderRadius ?? BorderRadius.circular(THEME_BORDER_RADIUS)
+            ),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: alignment ?? MainAxisAlignment.center, children: <Widget>[
+              icon == null || iconRight ? SizedBox() : Padding(padding: EdgeInsets.only(right: iconPadding), child: _icon,),
+              label == null ? SizedBox() : Text(label, style: TextStyle(color: _fontColor, fontWeight: _fontWeight, fontSize: _fontSize),),
+              icon != null && iconRight ? Padding(padding: EdgeInsets.only(left: iconPadding), child: _icon,) : SizedBox(),
+            ],),
+            onPressed: onPressed ?? () {},
           ),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: alignment ?? MainAxisAlignment.center, children: <Widget>[
-            icon == null || iconRight ? SizedBox() : Padding(padding: EdgeInsets.only(right: iconPadding), child: _icon,),
-            label == null ? SizedBox() : Text(label, style: TextStyle(color: _fontColor, fontWeight: _fontWeight, fontSize: _fontSize),),
-            icon != null && iconRight ? Padding(padding: EdgeInsets.only(left: iconPadding), child: _icon,) : SizedBox(),
-          ],),
-          onPressed: onPressed ?? () {},
         ),
       ),
     );
@@ -711,8 +744,19 @@ class Copyright extends StatelessWidget {
       Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS),
       SizedBox(height: 12,),
       Html(
-        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="${APP_TERMS_URL}">syarat penggunaan</a> dan <a href="${APP_PRIVACY_URL}">kebijakan privasi</a>.',
-        defaultTextStyle: style.textWhite70S,
+        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="${APP_TERMS_URL}">Syarat penggunaan</a> & <a href="${APP_PRIVACY_URL}">Kebijakan privasi</a>.',
+        style: {
+          "body": Style(
+            margin: EdgeInsets.zero,
+            fontSize: FontSize(13.0),
+            textAlign: TextAlign.start,
+            color: Colors.white70,
+          ),
+          "a": Style(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        },
         onLinkTap: (url) async {
           print("OPENING URL: $url");
           print("OPENING PAGE: ${url.replaceAll(APP_HOST, '')}");
