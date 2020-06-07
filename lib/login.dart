@@ -39,7 +39,9 @@ class _LoginState extends State<Login> {
 
   _getCurrentUser() async {
     FocusScope.of(context).requestFocus(FocusNode());
-    if (!_isLoading) setState(() { _isLoading = true; });
+    if (!_isLoading) setState(() {
+      _isLoading = true;
+    });
     final user = await firebaseAuth.currentUser();
     if (user == null) {
       print(" ==> FIREBASE USER: NOT LOGGED IN");
@@ -114,6 +116,7 @@ class _LoginState extends State<Login> {
               reverse: true,
               padding: EdgeInsets.all(30),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+
                 SizedBox(height: 30,),
                 Center(child: Hero(
                   tag: "SplashLogo",
@@ -124,6 +127,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),),
                 SizedBox(height: 30,),
+
                 IndexedStack(
                   index: _isLoading ? 0 : 1,
                   alignment: Alignment.center,
@@ -132,7 +136,8 @@ class _LoginState extends State<Login> {
                     Selector<PersonProvider, bool>(
                       selector: (buildContext, person) => person.isSignedIn,
                       builder: (context, isSignedIn, child) {
-                        return (isSignedIn ?? false) ? Container() : LoginForm(
+                        // return (isSignedIn ?? false) ? Container() : LoginForm(
+                        return LoginForm(
                           key: _loginFormKey,
                           getCurrentUser: _getCurrentUser,
                           setLoading: (val) {
@@ -144,7 +149,7 @@ class _LoginState extends State<Login> {
                       },
                     ),
                   ],
-                )
+                ),
               ],),
             ),
           ),
@@ -283,7 +288,7 @@ class _LoginFormState extends State<LoginForm> {
         ),
       ),
       SizedBox(height: 12,),
-      UiButton("OK", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonXL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),
+      UiButton("OK", height: style.heightButtonXL, color: Colors.teal[300], textStyle: style.textButtonXL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: () {},),
       SizedBox(height: 12,),
       Center(child: _showResend ? GestureDetector(
         onTap: () {
@@ -325,7 +330,7 @@ class _LoginFormState extends State<LoginForm> {
         height: 55.0,
       ),
       SizedBox(height: 12,),
-      UiButton("Lanjut", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconRight: true, onPressed: () {
+      UiButton("Lanjut", height: style.heightButtonXL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconRight: true, onPressed: () {
         _verifyPhoneNumber(context);
       },),
       SizedBox(height: 42,),

@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+// import 'package:pull_to_refresh/pull_to_refresh.dart';
 // import 'services/firestore_service.dart';
 // import 'models/report.dart';
 import 'providers/notifications.dart';
@@ -16,6 +16,7 @@ import 'daftar.dart';
 import 'home.dart';
 import 'login.dart';
 import 'intro.dart';
+import 'peta.dart';
 import 'profil.dart';
 import 'splash.dart';
 import 'tambah.dart';
@@ -59,7 +60,7 @@ class MyApp extends StatelessWidget {
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
-          RefreshLocalizations.delegate,
+          // RefreshLocalizations.delegate,
         ],
         supportedLocales: [
           Locale('id', 'ID'),
@@ -81,6 +82,8 @@ class MyApp extends StatelessWidget {
             case ROUTE_DAFTAR: page = Daftar(); break;
             case ROUTE_PROFIL: page = Profil(); break;
             case ROUTE_TAMBAH: page = Tambah(); break;
+            // case ROUTE_PETA:   page = Peta(arguments['lat'], arguments['lng']); break;
+            case ROUTE_PETA:   page = Peta(arguments); break;
             case ROUTE_HOME:
             case '/':
             default: page = Home(analytics: analytics, observer: observer,); break;

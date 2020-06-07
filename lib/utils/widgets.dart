@@ -640,13 +640,13 @@ class UiButton extends StatelessWidget {
     var _fontColor = _textStyle.color;
     var _fontWeight = _textStyle.fontWeight;
     var _icon = Icon(icon, color: _fontColor, size: iconSize ?? (_fontSize * 1.2),);
-    return IgnorePointer(
-      ignoring: onPressed == null,
-      child: Opacity(
-        opacity: onPressed == null ? 0.5 : 1,
-        child: SizedBox(
-          width: width ?? double.infinity,
-          height: height ?? style.heightButton,
+    return SizedBox(
+      width: width ?? double.infinity,
+      height: height ?? style.heightButton,
+      child: IgnorePointer(
+        ignoring: onPressed == null,
+        child: Opacity(
+          opacity: onPressed == null ? 0.5 : 1,
           child: RaisedButton(
             padding: padding ?? Theme.of(context).buttonTheme.padding,
             key: btnKey,
@@ -667,6 +667,71 @@ class UiButton extends StatelessWidget {
             ),
             onPressed: onPressed ?? () {},
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class UiButtonIcon extends StatelessWidget {
+  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed}) : super(key: key);
+  final IconData icon;
+  final double size;
+  final double iconSize;
+  final double radius;
+  final Color color;
+  final double elevation;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return UiButton("", width: size, height: size, elevation: elevation, borderRadius: BorderRadius.circular(radius ?? (size / 2)), padding: EdgeInsets.zero, icon: icon, iconPadding: 0, iconSize: iconSize, color: color, onPressed: onPressed,);
+  }
+}
+
+class UiMapMarker extends StatefulWidget {
+  UiMapMarker({Key key, this.size = 50.0, this.onTap}) : super(key: key);
+  final double size;
+  final VoidCallback onTap;
+
+  @override
+  _UiMapMarkerState createState() => _UiMapMarkerState();
+}
+
+class _UiMapMarkerState extends State<UiMapMarker> with SingleTickerProviderStateMixin {
+  AnimationController _animationController;
+  Animation _animation;
+
+  @override
+  void initState() {
+    _animationController = AnimationController(duration: Duration(milliseconds: 1500), vsync: this)..repeat(reverse: true);
+    _animation = Tween(begin: 1.0, end: 0.0).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.bounceOut,
+    ));
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration(milliseconds: 1000), () {
+        if (mounted) _animationController.forward();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(0, widget.size * -0.5 + -100.0 * _animation.value),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Image.asset("images/marker.png", width: widget.size, height: widget.size,)
         ),
       ),
     );
@@ -774,11 +839,11 @@ class Copyright extends StatelessWidget {
 }
 
 class UiCaption extends StatelessWidget {
-  UiCaption({Key key, this.no, this.total, this.icon, this.teks, this.stepAction, this.tool}) : super(key: key);
+  UiCaption(this.title, {Key key, this.no, this.total, this.icon, this.stepAction, this.tool}) : super(key: key);
   final int no;
   final int total;
   final Widget icon;
-  final String teks;
+  final String title;
   final void Function(int) stepAction;
   final Widget tool;
 
@@ -789,7 +854,7 @@ class UiCaption extends StatelessWidget {
         icon ?? SizedBox(),
         Expanded(child: Container(
           child: Row(children: <Widget>[
-            Text("$teks", style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
+            Text(title, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
             Expanded(child: Container(height: 60,),),
             no == null ? SizedBox() : Padding(
               padding: EdgeInsets.only(right: 12),
@@ -804,7 +869,7 @@ class UiCaption extends StatelessWidget {
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       icon: CircleAvatar(backgroundColor: _backgroundColor, child: Text("${index + 1}", style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),),),
-                      onPressed: () => stepAction(index),
+                      onPressed: stepAction == null ? null : () => stepAction(index),
                     ),
                   );
                 }),

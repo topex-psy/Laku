@@ -118,8 +118,10 @@ class _DaftarState extends State<Daftar> {
         if (_tanggalLahir.isEmpty) _errorText["dob"] = "Harap masukkan tanggal lahirmu!";
       });
       if (_errorText.isEmpty) {
-        setState(() { _registerIndex++; });
-        _registerScrollController.jumpTo(0);
+        setState(() {
+          _registerIndex++;
+          _registerScrollController.jumpTo(0);
+        });
       }
     }
   }
@@ -151,17 +153,19 @@ class _DaftarState extends State<Daftar> {
                 elevation: 4,
                 color: THEME_COLOR,
                 child: UiCaption(
+                  ["Identitas Saya", "Buat LakuTag"][_registerIndex],
                   no: _registerIndex + 1,
                   total: 2,
                   icon: Padding(
                     padding: EdgeInsets.only(left: 12, right: 12),
                     child: Icon([LineIcons.user, LineIcons.at][_registerIndex], color: Colors.white, size: 32.0,),
                   ),
-                  teks: ["Identitas Saya", "Buat LakuTag"][_registerIndex],
-                  stepAction: (page) {
-                    setState(() { _registerIndex = page; });
-                    _registerScrollController.jumpTo(0);
-                  },
+                  // stepAction: (page) {
+                  //   setState(() {
+                  //     _registerIndex = page;
+                  //     _registerScrollController.jumpTo(0);
+                  //   });
+                  // },
                 ),
               ),
               Expanded(

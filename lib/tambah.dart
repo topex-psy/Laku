@@ -39,9 +39,10 @@ class _TambahState extends State<Tambah> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() async {
-        _isGranted = await Permission.location.request().isGranted;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      var isGranted = await Permission.location.request().isGranted;
+      setState(() {
+        _isGranted = isGranted;
         _maxImageSelect = 3; // TODO ambil dari data user
         _isLoading = false;
       });
@@ -54,35 +55,42 @@ class _TambahState extends State<Tambah> {
       body: SafeArea(
         child: _isLoading ? Container(child: Center(child: UiLoader())) : SingleChildScrollView(
           padding: EdgeInsets.all(THEME_PADDING),
-          child: Content(isGranted: _isGranted,),
+          // child: Content(isGranted: _isGranted,),
+          child: _isGranted ? FormBarang() : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Icon(LineIcons.info_circle, color: THEME_COLOR, size: 40,),
+              SizedBox(height: 20,),
+              Text("Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini."),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class Content extends StatefulWidget {
-  Content({Key key, @required this.isGranted}) : super(key: key);
-  final bool isGranted;
+// class Content extends StatefulWidget {
+//   Content({Key key, @required this.isGranted}) : super(key: key);
+//   final bool isGranted;
 
-  @override
-  _ContentState createState() => _ContentState();
-}
+//   @override
+//   _ContentState createState() => _ContentState();
+// }
 
-class _ContentState extends State<Content> {
-  @override
-  Widget build(BuildContext context) {
-    if (widget.isGranted) return FormBarang();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Icon(LineIcons.info_circle, color: THEME_COLOR, size: 40,),
-        SizedBox(height: 20,),
-        Text("Harap izinkan aplikasi untuk mengkakses lokasi Anda saat ini."),
-      ],
-    );
-  }
-}
+// class _ContentState extends State<Content> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return widget.isGranted ? FormBarang() : Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: <Widget>[
+//         Icon(LineIcons.info_circle, color: THEME_COLOR, size: 40,),
+//         SizedBox(height: 20,),
+//         Text("Harap izinkan aplikasi untuk mengkakses lokasi Anda saat ini."),
+//       ],
+//     );
+//   }
+// }
 
 class FormBarang extends StatefulWidget {
   @override

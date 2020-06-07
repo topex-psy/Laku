@@ -21,11 +21,14 @@ var textWhiteS     = TextStyle(fontSize: 12, color: Colors.white);
 var textWhite54S   = TextStyle(fontSize: 12, color: Colors.white54);
 var textWhite70S   = TextStyle(fontSize: 12, color: Colors.white70);
 var textS          = TextStyle(fontSize: 12);
+var textM          = TextStyle(fontSize: 14);
+var textL          = TextStyle(fontSize: 16);
 var textLink       = TextStyle(color: THEME_COLOR);
 var textInput      = TextStyle(fontSize: 15, color: Colors.grey[850]);
 var textInputL     = TextStyle(fontSize: 17, color: Colors.grey[850]);
 var textInputXL    = TextStyle(fontSize: 20, color: Colors.grey[850]);
 var textHint       = TextStyle(fontSize: 15, color: Colors.grey);
 
-var heightButton   = 44.0;
-var heightButtonL  = 50.0;
+var heightButton   = 40.0;
+var heightButtonL  = 44.0;
+var heightButtonXL = 50.0;

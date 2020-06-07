@@ -139,7 +139,7 @@ class _HomeState extends State<Home> {
           transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
           child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
             onPressed: () async {
-              final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH);
+              final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH) as Map;
               print(results);
             },
             tooltip: 'Tambah Barang',

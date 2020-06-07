@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:laku/providers/settings.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import '../extensions/widget.dart';
+// import '../extensions/widget.dart';
 import '../providers/notifications.dart';
 import '../utils/constants.dart';
 import '../utils/curves.dart';
@@ -22,12 +25,17 @@ class Beranda extends StatefulWidget {
   _BerandaState createState() => _BerandaState();
 }
 
-class _BerandaState extends State<Beranda> with MainPageStateMixin {
+class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProviderStateMixin {
   final _refreshController = RefreshController(initialRefresh: false);
   final _scrollController = ScrollController();
+  AnimationController _spinController;
+  var _isGranted = false;
   var _isGPSOn = true;
   var _isLoading = true;
   Timer _timer;
+
+  var _isGettingLocation = false;
+  Address _address;
 
   @override
   void onPageVisible() {
@@ -41,13 +49,18 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
   @override
   void initState() {
+    _spinController = AnimationController(
+      duration: Duration(milliseconds: 500),
+      vsync: this,
+    );
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _scrollController.addListener(() {
         print("_scrollController.offset = ${_scrollController.offset}");
-        Provider.of<SettingsProvider>(context, listen: false).scrollPosition = _scrollController.offset;
+        // Provider.of<SettingsProvider>(context, listen: false).scrollPosition = _scrollController.offset;
       });
       // TODO load gps status
+      _getMyLocation();
       _runTimer();
     });
   }
@@ -62,6 +75,53 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
   _runTimer() {
     _getAllData();
     _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getAllData());
+  }
+
+  _getMyLocation() async {
+    var isGranted = await Permission.location.request().isGranted;
+    if (_isGranted != isGranted) setState(() {
+      _isGranted = isGranted;
+    });
+    if (!isGranted) return;
+
+    if (_isGettingLocation) return;
+    setState(() {
+      _isGettingLocation = true;
+    });
+    _spinController.forward();
+
+    print("... GETTING MY LOCATION");
+    var address = _address;
+    try {
+      var position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      var coordinates = Coordinates(position.latitude, position.longitude);
+      print("... GETTING MY LOCATION result: $coordinates");
+
+      var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      address = addresses.first;
+      print(
+        "... GET ADDRESS result"
+        "\n name: ${address.featureName}"
+        "\n address: ${address.addressLine}"
+        "\n streetName: ${address.thoroughfare}"
+        "\n streetNo: ${address.subThoroughfare}"
+        "\n kelurahan: ${address.subLocality}"
+        "\n kecamatan: ${address.locality}"
+        "\n city: ${address.subAdminArea}"
+        "\n zip: ${address.postalCode}"
+        "\n province: ${address.adminArea}"
+        "\n countryName: ${address.countryName}"
+        "\n countryCode: ${address.countryCode}"
+      );
+
+    } catch(e) {
+      print("... GETTING MY LOCATION error: $e");
+    }
+    _spinController.reset();
+    setState(() {
+      _address = address;
+      _isGettingLocation = false;
+    });
   }
 
   _getAllData() {
@@ -87,16 +147,33 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // var _scrollPosition = _scrollController.offset;
+    final imageWidth = MediaQuery.of(context).size.width * 0.69;
+
+    return !_isGranted ? Container(
+      padding: EdgeInsets.all(THEME_PADDING),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Image.asset('images/onboarding/2.png', width: imageWidth,),
+          SizedBox(height: 20,),
+          Text("Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.", textAlign: TextAlign.center,),
+          SizedBox(height: 20,),
+          UiButton("Izinkan", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: _getMyLocation,),
+        ],
+      ),
+    ) : Container(
       child: Stack(
         alignment: Alignment.topCenter,
         children: <Widget>[
-          Selector<SettingsProvider, double>(
-            selector: (buildContext, settings) => settings.scrollPosition,
-            builder: (context, scrollPosition, child) {
-              return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
-            }
-          ),
+          // Selector<SettingsProvider, double>(
+          //   selector: (buildContext, settings) => settings.scrollPosition,
+          //   builder: (context, scrollPosition, child) {
+          //     return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
+          //   }
+          // ),
+          Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
           Positioned.fill(child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +185,6 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
                     IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {
                       screenScaffoldKey.currentState.openEndDrawer();
                     },),
-                    // Expanded(child: Container(),),
                     Spacer(),
                     IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
                     IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
@@ -125,48 +201,68 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
                     controller: _scrollController,
                     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      SizedBox(height: 10,),
                       Row(children: <Widget>[
                         Icon(LineIcons.map_marker, color: _isGPSOn ? Colors.white : Colors.white54, size: 50,),
                         SizedBox(width: 12,),
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                             Text("Kamu berada di:", style: style.textWhite),
-                            GestureDetector(
-                              onTap: () {
-                                h.showAlert(title: "Radius Anda", showButton: false, body: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                  Text("Radius Anda saat ini adalah:", textAlign: TextAlign.center,),
-                                  SizedBox(height: 12,),
-                                  Text("5 KM", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40,),),
-                                  SizedBox(height: 12,),
-                                  Text("Artinya, barang-barang Anda hanya bisa ditemukan oleh pengguna yang berada di radius tersebut.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12),),
-                                  SizedBox(height: 15,),
-                                  UiButton("Upgrade Akun", color: Colors.blue, icon: LineIcons.user_plus, onPressed: () {
-                                    // TODO upgrade akun
-                                  }),
-                                ],));
+                            _isGettingLocation || _address == null ? Container(
+                              width: 50.0,
+                              height: 46.0,
+                              child: SpinKitThreeBounce(
+                                color: Colors.white,
+                                size: 30.0,
+                              ),
+                            )
+                            : GestureDetector(
+                              onTap: () async {
+                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA, arguments: {
+                                  'address': _address,
+                                }) as Map;
+                                print(results);
                               },
-                              child: Text("Malang, Indonesia", style: style.textHeadlineWhite),
+                              child: Container(
+                                height: 46.0,
+                                child: RichText(text: TextSpan(
+                                  style: Theme.of(context).textTheme.bodyText1,
+                                  children: <TextSpan>[
+                                    TextSpan(text: '${_address.subAdminArea},\n', style: style.textHeadlineWhite),
+                                    TextSpan(text: _address.countryName, style: style.textTitleWhite,)
+                                  ],
+                                ),),
+                              ),
                             ),
                           ],),
                         ),
                         SizedBox(width: 12,),
-                        IconButton(icon: Icon(LineIcons.refresh, color: Colors.white,), onPressed: () {
-                          // TODO reload location
-                        },),
+                        Material(
+                          color: Colors.transparent,
+                          shape: CircleBorder(),
+                          clipBehavior: Clip.antiAlias,
+                          child: IconButton(
+                            highlightColor: Colors.white10,
+                            splashColor: Colors.white10,
+                            onPressed: _getMyLocation,
+                            icon: RotationTransition(
+                              turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
+                              child: Icon(LineIcons.refresh, color: Colors.white,),
+                            ),
+                          ),
+                        ),
                       ],),
 
                       SizedBox(height: SECTION_MARGIN,),
 
-                      Text("Kamu punya:", style: style.textLabelWhite),
-                      SizedBox(height: 8,),
+                      Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                      SizedBox(height: 12,),
                       CardList('iklanTerpasang'),
                       CardList('pencarianTerpasang'),
                       CardList('pesanMasuk'),
 
                       SizedBox(height: SECTION_MARGIN,),
 
-                      Text("Di sekitarmu ada:", style: style.textLabel),
+                      Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
                       SizedBox(height: 12,),
                       Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
                         CardBox('iklan'),
@@ -176,13 +272,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin {
 
                       SizedBox(height: SECTION_MARGIN,),
 
-                      Text("Ingin jangkauan lebih luas?", style: style.textLabel),
-                      SizedBox(height: 12,),
-                      UiButton("Upgrade akunmu", width: 200, color: Colors.teal[300], textStyle: style.textButton, icon: LineIcons.certificate, iconRight: true, onPressed: () {
-                        // TODO upgrade akun
-                      }),
+                      // Text("Ingin jangkauan lebih luas?", style: style.textLabel),
+                      // SizedBox(height: 12,),
+                      // UiButton("Upgrade akunmu", width: 200, color: Colors.teal[300], textStyle: style.textButton, icon: LineIcons.certificate, iconRight: true, onPressed: () {
+                      //   // TODO upgrade akun
+                      // }),
 
-                      SizedBox(height: SECTION_MARGIN,),
+                      // SizedBox(height: SECTION_MARGIN,),
                     ],),
                   ),
                 ),),
@@ -253,54 +349,38 @@ class _CardBoxState extends State<CardBox> {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: buka,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: FractionalOffset.topLeft,
-                end: FractionalOffset.bottomCenter,
-                colors: [
-                  Colors.white.withOpacity(0.0),
-                  Colors.white.withOpacity(0.1),
-                ],
-                stops: [
-                  0.0,
-                  1.0,
-                ]
+          child: Stack(
+            alignment: Alignment.topRight,
+            children: [
+              Icon(icon, color: Colors.white30, size: 80,),
+              Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: FractionalOffset.topLeft,
+                    end: FractionalOffset.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.0),
+                      Colors.white.withOpacity(0.1),
+                    ],
+                    stops: [
+                      0.0,
+                      1.0,
+                    ]
+                  ),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                  Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,),
+                  Text(label, style: style.textTitleWhite,),
+                  SizedBox(height: 14,),
+                  Row(children: <Widget>[
+                    Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
+                    SizedBox(width: 8,),
+                    Icon(LineIcons.chevron_circle_right, color: Colors.white70, size: 15,)
+                  ],)
+                ],),
               ),
-            ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-              Row(children: <Widget>[
-                Icon(icon, color: Colors.white, size: 18,),
-                // Container(
-                //   width: 30,
-                //   height: 30,
-                //   decoration: BoxDecoration(
-                //     border: Border.all(
-                //       color: Colors.white54,
-                //       width: 1.0,
-                //     ),
-                //     borderRadius: BorderRadius.circular(50),
-                //   ),
-                //   child: Center(child: Icon(icon, color: Colors.white, size: 18,))
-                // ),
-                // Expanded(child: Container(),),
-                Spacer(),
-                SizedBox(width: 8,),
-                Icon(LineIcons.arrow_up, color: Colors.white, size: 12,),
-                SizedBox(width: 4,),
-                Text("0.5", style: style.textWhiteS,)
-              ]),
-              SizedBox(height: 8,),
-              Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,),
-              Text(label, style: style.textTitleWhite,),
-              SizedBox(height: 14,),
-              Row(children: <Widget>[
-                Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
-                SizedBox(width: 8,),
-                Icon(LineIcons.chevron_circle_right, color: Colors.white70, size: 12,)
-              ],)
-            ],),
+            ],
           ),
         ),
       ),
@@ -325,7 +405,6 @@ class _CardListState extends State<CardList> {
     String buttonLabel, label;
     IconData buttonIcon;
     double buttonWidth;
-    var buttonShimmer = false;
     switch (widget.notif) {
       case 'iklanTerpasang':
         angka = notification.iklanTerpasang;
@@ -333,7 +412,6 @@ class _CardListState extends State<CardList> {
         buttonLabel = angka == 0 ? "Buat" : "Kelola";
         buttonWidth = angka == 0 ? 96 : 110;
         buttonIcon = angka == 0 ? LineIcons.plus_circle : LineIcons.dropbox;
-        // buttonShimmer = angka == 0;
         buka = () {
           // TODO buka kelola iklan
         };
@@ -342,6 +420,7 @@ class _CardListState extends State<CardList> {
         angka = notification.pencarianTerpasang;
         label = "Pencarian terpasang";
         buttonLabel = "Lihat";
+        buttonWidth = 100;
         buttonIcon = LineIcons.binoculars;
         buka = () {
           // TODO buka kelola pencarian
@@ -365,10 +444,18 @@ class _CardListState extends State<CardList> {
         padding: EdgeInsets.all(12),
         child: Row(children: <Widget>[
           SizedBox(width: 8,),
-          Text(f.formatNumber(angka) ?? '-', style: style.textHeadline,),
+          Text(f.formatNumber(angka) ?? '0', style: style.textHeadline,),
           SizedBox(width: 8,),
           Expanded(child: Text(label)),
-          UiButton(buttonLabel, width: buttonWidth, color: Colors.teal[300], textStyle: style.textButton, icon: buttonIcon, iconRight: true, onPressed: buka).shimmerIt(buttonShimmer, 1.0),
+          UiButton(
+            buttonLabel,
+            width: buttonWidth,
+            color: Colors.teal[300],
+            textStyle: style.textButton,
+            icon: buttonIcon,
+            iconRight: true,
+            onPressed: buka
+          ),
         ],),
       ),
     );

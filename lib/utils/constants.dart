@@ -21,9 +21,10 @@ const ROUTE_SPLASH         = '/Splash';
 const ROUTE_INTRO          = '/Intro';
 const ROUTE_LOGIN          = '/Login';
 const ROUTE_DAFTAR         = '/Daftar';
+const ROUTE_HOME           = '/Home';
 const ROUTE_PROFIL         = '/Profil';
 const ROUTE_TAMBAH         = '/Tambah';
-const ROUTE_HOME           = '/Home';
+const ROUTE_PETA           = '/Peta';
 
 const SETUP_MAX_PERSON_AGE = 100;
 const SETUP_MIN_PERSON_AGE = 10;

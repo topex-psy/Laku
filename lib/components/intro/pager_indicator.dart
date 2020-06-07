@@ -55,7 +55,6 @@ class PagerIndicator extends StatelessWidget {
 
     return Column(
       children: <Widget>[
-        // Expanded(child: Container()),
         Spacer(),
         Transform(
           transform: Matrix4.translationValues(translation / 2.0, 0.0, 0.0),
