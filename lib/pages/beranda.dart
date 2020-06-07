@@ -331,7 +331,7 @@ class _CardListState extends State<CardList> {
         angka = notification.iklanTerpasang;
         label = "Iklan terpasang";
         buttonLabel = angka == 0 ? "Buat" : "Kelola";
-        buttonWidth = angka == 0 ? 96 : 100;
+        buttonWidth = angka == 0 ? 96 : 110;
         buttonIcon = angka == 0 ? LineIcons.plus_circle : LineIcons.dropbox;
         // buttonShimmer = angka == 0;
         buka = () {

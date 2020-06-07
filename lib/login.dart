@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
+import 'extensions/string.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -26,6 +27,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   var _isLoading = true;
   var _isWillExit = false;
+  var _loginFormKey = Key('key');
 
   @override
   void initState() {
@@ -41,27 +43,35 @@ class _LoginState extends State<Login> {
     final user = await firebaseAuth.currentUser();
     if (user == null) {
       print(" ==> FIREBASE USER: NOT LOGGED IN");
-      setState(() { _isLoading = false; });
+      setState(() {
+        // _smsVerificationCode = '';
+        _loginFormKey = Key(DateTime.now().millisecondsSinceEpoch.toString());
+        _isLoading = false;
+      });
     } else {
       print(" ==> FIREBASE USER: EXIST");
-      Map userApi = await api('user', data: {'uid': user.uid});
+      currentPerson.uid = user.uid;
+      currentPerson.phone = user.phoneNumber;
+      Map userApi = await api('user', data: {'uid': currentPerson.uid});
       if (userApi == null) {
-        setState(() { _isLoading = false; });
+        setState(() {
+          _isLoading = false;
+        });
         return;
       }
       Map userGet = userApi['get'];
       if (userGet['TOTAL'] == 0) {
+        // user belum register
         final results = await Navigator.of(context).pushNamed(ROUTE_DAFTAR) as Map;
-        if (results != null && results.containsKey('email')) {
-          await auth('register', results);
-        }
+        // if (results != null && results.containsKey('email')) {
+        //   await auth('register', results);
+        // }
+        print("REGISTER RESULT: $results");
         _getCurrentUser();
       } else {
-        Map userRes = userApi['result'][0];
-        if (userRes['IS_BANNED'] == null || userRes['IS_BANNED'].isEmpty) {
-          h.failAlert("Akun Terblokir", "Akunmu diblokir hingga ${f.formatDate(DateTime.parse(userRes['BAN_UNTIL']))} karena ${userRes['BAN_REASON']}");
-          setState(() { _isLoading = false; });
-        } else {
+        // user sudah register
+        Map<String, String> userRes = Map.from(userApi['result'][0]);
+        if (userRes['IS_BANNED'].isEmptyOrNull) {
           var person = Provider.of<PersonProvider>(context, listen: false);
           person.setPerson(
             namaDepan: userRes['NAMA_DEPAN'],
@@ -69,11 +79,13 @@ class _LoginState extends State<Login> {
             foto: userRes['FOTO'],
             isSignedIn: true,
           );
-          currentPersonUid = user.uid;
           await Navigator.of(context).pushNamed(ROUTE_HOME);
           setState(() {
             _isLoading = false;
           });
+        } else {
+          h.failAlert("Akun Terblokir", "Akunmu diblokir hingga ${f.formatDate(DateTime.parse(userRes['BAN_UNTIL']))} karena ${userRes['BAN_REASON']}");
+          setState(() { _isLoading = false; });
         }
       }
     }
@@ -121,14 +133,15 @@ class _LoginState extends State<Login> {
                       selector: (buildContext, person) => person.isSignedIn,
                       builder: (context, isSignedIn, child) {
                         return (isSignedIn ?? false) ? Container() : LoginForm(
+                          key: _loginFormKey,
+                          getCurrentUser: _getCurrentUser,
                           setLoading: (val) {
                             if (_isLoading != val) setState(() {
                               _isLoading = val;
                             });
                           },
-                          getCurrentUser: _getCurrentUser
                         );
-                      }
+                      },
                     ),
                   ],
                 )
@@ -372,7 +385,7 @@ class _DetikState extends State<Detik> {
       children: [
         Text(widget.label, style: style.textWhite,),
         SizedBox(width: 8,),
-        ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  $_detik  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white38, fontWeight: FontWeight.bold),),),
+        ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  $_detik  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white30, fontWeight: FontWeight.bold),),),
       ],
     );
   }

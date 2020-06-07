@@ -655,14 +655,16 @@ class UiButton extends StatelessWidget {
             hoverElevation: elevation,
             focusElevation: elevation,
             highlightElevation: elevation,
-            shape: RoundedRectangleBorder(
-              borderRadius: borderRadius ?? BorderRadius.circular(THEME_BORDER_RADIUS)
+            shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(THEME_BORDER_RADIUS)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: alignment ?? MainAxisAlignment.center,
+              children: <Widget>[
+                icon == null || iconRight ? SizedBox() : Padding(padding: EdgeInsets.only(right: iconPadding), child: _icon,),
+                label == null ? SizedBox() : Text(label, style: TextStyle(color: _fontColor, fontWeight: _fontWeight, fontSize: _fontSize),),
+                icon == null || !iconRight ? SizedBox() : Padding(padding: EdgeInsets.only(left: iconPadding), child: _icon,),
+              ],
             ),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: alignment ?? MainAxisAlignment.center, children: <Widget>[
-              icon == null || iconRight ? SizedBox() : Padding(padding: EdgeInsets.only(right: iconPadding), child: _icon,),
-              label == null ? SizedBox() : Text(label, style: TextStyle(color: _fontColor, fontWeight: _fontWeight, fontSize: _fontSize),),
-              icon != null && iconRight ? Padding(padding: EdgeInsets.only(left: iconPadding), child: _icon,) : SizedBox(),
-            ],),
             onPressed: onPressed ?? () {},
           ),
         ),
@@ -672,7 +674,7 @@ class UiButton extends StatelessWidget {
 }
 
 class UiMenuList extends StatelessWidget {
-  UiMenuList({Key key, this.menuPaddingVertical = 12, this.menuPaddingHorizontal = 16, this.isFirst = false, this.isLast = false, this.isLocked = false, this.icon, @required this.teks, @required this.value, @required this.aksi}): super(key: key);
+  UiMenuList({Key key, this.menuPaddingVertical = 16, this.menuPaddingHorizontal = 16, this.isFirst = false, this.isLast = false, this.isLocked = false, this.icon, @required this.teks, @required this.value, @required this.aksi}): super(key: key);
   final double menuPaddingVertical;
   final double menuPaddingHorizontal;
   final bool isFirst;
@@ -692,9 +694,9 @@ class UiMenuList extends StatelessWidget {
       child: InkWell(onTap: isLocked || aksi == null ? null : () => aksi(value), child: Padding(
         padding: EdgeInsets.symmetric(vertical: menuPaddingVertical, horizontal: menuPaddingHorizontal),
         child: Row(children: <Widget>[
-          Icon(icon, color: isLocked || aksi == null ? Colors.grey : Colors.blueGrey, size: 17,),
+          Icon(icon, color: isLocked || aksi == null ? Colors.grey : Colors.blueGrey, size: 24,),
           SizedBox(width: 8,),
-          Expanded(child: Text(teks, style: TextStyle(fontSize: _textTheme.bodyText1.fontSize, color: isLocked || aksi == null ? Colors.grey : _textTheme.bodyText1.color),),),
+          Expanded(child: Text(teks, style: TextStyle(fontSize: 16, color: isLocked || aksi == null ? Colors.grey : _textTheme.bodyText1.color),),),
           isLocked ? Icon(LineIcons.lock, color: THEME_COLOR, size: 17,) : SizedBox(),
         ],),
       )),
@@ -744,7 +746,7 @@ class Copyright extends StatelessWidget {
       Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS),
       SizedBox(height: 12,),
       Html(
-        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="${APP_TERMS_URL}">Syarat penggunaan</a> & <a href="${APP_PRIVACY_URL}">Kebijakan privasi</a>.',
+        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="${APP_TERMS_URL}">Syarat Penggunaan</a> & <a href="${APP_PRIVACY_URL}">Kebijakan Privasi</a>.',
         style: {
           "body": Style(
             margin: EdgeInsets.zero,

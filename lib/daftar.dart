@@ -80,14 +80,17 @@ class _DaftarState extends State<Daftar> {
     if (_registerIndex > 0) {
       if (_lakuTag.isNotEmpty) {
         final registerData = <String, String>{
-          'uid': currentPersonUid,
+          'uid': currentPerson.uid,
+          'phone': currentPerson.phone,
           'namaLengkap': _namaLengkapController.text,
           'gender': _jenisKelamin,
           'tanggalLahir': _tanggalLahir,
           'email': _emailController.text,
           'tag': _lakuTag,
         };
-        Navigator.of(context).pop(registerData);
+        h.loadAlert();
+        await auth('register', registerData);
+        Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
         return;
       }
       setState(() {
@@ -96,13 +99,15 @@ class _DaftarState extends State<Daftar> {
       });
       if (_errorText.isEmpty) {
         h.loadAlert("Memeriksa ...");
-        var cekApi = await auth('tag_check', {'tag': _lakuTagController.text});
-        print("cekApi = $cekApi");
+        var tag = _lakuTagController.text;
+        var cekApi = await auth('tag_check', {'tag': tag});
         h.closeDialog();
         if (cekApi != null && cekApi["status"] == 1) {
           setState(() {
             _lakuTag = _lakuTagController.text;
           });
+        } else {
+          h.failAlert("Tidak Tersedia", "LakuTag <strong>@$tag</strong> sudah dipakai oleh pengguna lain.");
         }
       }
     } else {
@@ -121,17 +126,19 @@ class _DaftarState extends State<Daftar> {
 
   Future<bool> _batal() async {
     if (_registerIndex > 0) {
-      setState(() { _registerIndex--; });
-      _registerScrollController.jumpTo(0);
+      setState(() {
+        _registerIndex--;
+        _registerScrollController.jumpTo(0);
+      });
     } else {
-      bool confirm = await h.showConfirm("Batal Daftar?", "Apakah kamu yakin ingin membatalkan pendaftaran?") ?? false;
-      if (confirm) a.signOut();
+      if (await h.showConfirm("Batal Daftar?", "Apakah kamu yakin ingin membatalkan pendaftaran?")) a.signOut();
     }
     return false;
   }
 
   @override
   Widget build(BuildContext context) {
+    bool _isReady = _lakuTag.isNotEmpty;
     return WillPopScope(
       onWillPop: _batal,
       child: Scaffold(
@@ -251,9 +258,16 @@ class _DaftarState extends State<Daftar> {
                                 //   child: 
                                 // ),
                                 Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+                                  Icon(Icons.check_circle, color: Colors.greenAccent[700], size: 30,),
+                                  SizedBox(width: 8,),
                                   // SizedBox(width: 12),
-                                  Expanded(child: Text("@$_lakuTag", style: style.textTitle)),
-                                  // SizedBox(width: 0,),
+                                  // Expanded(child: Text("@$_lakuTag", style: style.textTitle)),
+                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text('@$_lakuTag', style: style.textTitle),
+                                    SizedBox(height: 4),
+                                    Text('LakuTag ini tersedia!')
+                                  ],),),
+                                  SizedBox(width: 12,),
                                   // IconButton(icon: Icon(LineIcons.pencil, color: Colors.grey,), onPressed: () {
                                   //   setState(() {
                                   //     _lakuTag = '';
@@ -265,16 +279,16 @@ class _DaftarState extends State<Daftar> {
                                     });
                                   },),
                                 ],),
-                                SizedBox(height: 8,),
-                                Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-                                  Icon(Icons.check_circle, color: Colors.greenAccent[700], size: 30,),
-                                  SizedBox(width: 8,),
-                                  Text("Selamat, LakuTag tersedia!"),
-                                ],),
+                                // SizedBox(height: 8,),
+                                // Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+                                //   Icon(Icons.check_circle, color: Colors.greenAccent[700], size: 30,),
+                                //   SizedBox(width: 8,),
+                                //   Text("Selamat, LakuTag tersedia!"),
+                                // ],),
                                 SizedBox(height: 20,)
                               ],),
                           SizedBox(height: 12,),
-                          Center(child: UiButton(_lakuTag.isEmpty ? "Daftar" : "Mulai", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
+                          Center(child: UiButton(_isReady ? "Mulai" : "Daftar", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
                         ],),
                       ],
                     ),

@@ -17,3 +17,13 @@ class UserModel {
     lng = double.parse(parsedJson['lng']),
     timee = int.parse(parsedJson['timee']);
 }
+
+class CurrentUserModel {
+  String uid;
+  String phone;
+
+  clear() {
+    uid = null;
+    phone = null;
+  }
+}

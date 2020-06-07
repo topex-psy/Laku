@@ -9,19 +9,23 @@ Dio dio = Dio(BaseOptions(
   connectTimeout: 5000,
   receiveTimeout: 3000,
 ));
+
 // Response<Map> response;
 Response<String> response;
 Map responseBody;
 dynamic err;
 
 Future<Map> api(String what, {String type = 'get', Map<String, dynamic> data = const {}}) async {
-  String url = "/data/$what";
+  var url = "/data/$what";
+  response = null;
+  responseBody = null;
+  err = null;
   try {
     switch (what) {
       case 'user':
         switch (type) {
           case 'get':  response = await dio.get(url, queryParameters: data); break;
-          case 'post': response = await dio.post(url, data: data); break;
+          case 'post': response = await dio.post(url, data: data, options: Options(contentType: "application/x-www-form-urlencoded",)); break;
         }
         break;
       case 'page':
@@ -35,29 +39,43 @@ Future<Map> api(String what, {String type = 'get', Map<String, dynamic> data = c
     // responseBody = response?.data;
     responseBody = json.decode(response?.data);
   } catch (e) {
-    responseBody = null;
     err = e;
   }
-  print(" ==> API $what URL: $url $data");
-  print(" ==> API $what RESPONSE: $response");
-  print(" ==> API $what STATUS CODE: ${response?.statusCode}");
-  print(" ==> API $what ERROR: $err");
+  log("API", what, url, data);
   if (responseBody == null) h.failAlertInternet();
   return responseBody;
 }
 
 Future<Map> auth(String what, Map<String, dynamic> data) async {
   final url = "/auth/$what";
+  response = null;
+  responseBody = null;
+  err = null;
   try {
-    response = await dio.post(url, data: data);
+    // response = await dio.post(url, data: data);
+    response = await dio.post(url, data: data, options: Options(
+      contentType: "application/x-www-form-urlencoded",
+      // responseType: ResponseType.json,
+      // headers: {
+      //   HttpHeaders.contentTypeHeader: "application/json"
+      // }
+    ));
     responseBody = json.decode(response?.data);
   } catch (e) {
-    responseBody = null;
     err = e;
   }
-  print(" ==> AUTH $what RESPONSE: $response");
-  print(" ==> AUTH $what STATUS CODE: ${response?.statusCode}");
-  print(" ==> AUTH $what ERROR: $err");
+  log("AUTH", what, url, data);
   if (responseBody == null) h.failAlertInternet();
   return responseBody;
+}
+
+log(String type, String what, String url, Map<String, dynamic> data) {
+  print(" ==> $type $what URL: ${dio.options.baseUrl}$url");
+  print(" ==> $type $what PARAMS: $data");
+  if (err == null) {
+    print(" ==> $type $what RESPONSE: $response");
+    print(" ==> $type $what STATUS CODE: ${response?.statusCode}");
+    return;
+  }
+  print(" ==> $type $what ERROR: $err");
 }

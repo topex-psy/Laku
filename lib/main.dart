@@ -22,9 +22,9 @@ import 'tambah.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.teal[700],
+    // systemNavigationBarColor: Colors.teal[700],
     systemNavigationBarIconBrightness: Brightness.light,
-    statusBarColor: Colors.teal[800],
+    // statusBarColor: Colors.teal[800],
     statusBarIconBrightness: Brightness.light,
   ));
   runApp(MyApp());

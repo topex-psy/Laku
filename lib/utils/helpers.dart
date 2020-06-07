@@ -11,6 +11,7 @@ import 'package:flash/flash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../models/user.dart';
 import '../plugins/toast.dart';
 import '../providers/person.dart';
 import '../utils/api.dart' as api;
@@ -18,7 +19,7 @@ import 'constants.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
 final screenScaffoldKey = GlobalKey<ScaffoldState>();
-String currentPersonUid;
+CurrentUserModel currentPerson = CurrentUserModel();
 bool isTour1Completed = false;
 bool isTour2Completed = false;
 bool isTour3Completed = false;
@@ -56,10 +57,11 @@ class UserHelper {
     }
     final person = Provider.of<PersonProvider>(context, listen: false);
     person.setPerson(isSignedIn: false);
+    currentPerson.clear();
     Future.delayed(Duration.zero, () {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
       // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_LOGIN));
-      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
+      // Navigator.of(context).popUntil((route) => route.isFirst);
     });
   }
 }
@@ -155,7 +157,7 @@ class UIHelper {
       barrierLabel: '',
       context: context,
       pageBuilder: (context, animation1, animation2) => Container()
-    );
+    ) ?? false;
   }
 
   /// fungsi untuk menutup popup dialog

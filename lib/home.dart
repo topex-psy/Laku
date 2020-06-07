@@ -103,15 +103,13 @@ class _HomeState extends State<Home> {
                       child: Row(children: <Widget>[
                         Selector<PersonProvider, String>(
                           selector: (buildContext, person) => person.foto,
-                          builder: (context, foto, child) {
-                            return UiAvatar(foto, onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),);
-                          },
+                          builder: (context, foto, child) => UiAvatar(foto, size: 70, onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),),
                         ),
                         SizedBox(width: 12,),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                           Selector<PersonProvider, String>(
                             selector: (buildContext, person) => person.namaDepan,
-                            builder: (context, namaDepan, child) => Text("Halo, ${namaDepan}!", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),),
+                            builder: (context, namaDepan, child) => Text("Halo, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
                           ),
                         ],),)
                       ],),

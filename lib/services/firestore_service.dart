@@ -7,7 +7,7 @@ class FirestoreService {
 
   Stream<List<UserModel>> getReports() {
     return _firestore.collection('users')
-      .where('uid', isEqualTo: currentPersonUid)
+      .where('uid', isEqualTo: currentPerson.uid)
       .orderBy('timee', descending: true)
       .snapshots()
       .map((snapshot) => snapshot
@@ -19,7 +19,7 @@ class FirestoreService {
   Stream<UserModel> getUser() {
     print(" ==> FIRESTORE GETTING USER ...............");
     return _firestore.collection('users')
-      .where('uid', isEqualTo: currentPersonUid)
+      .where('uid', isEqualTo: currentPerson.uid)
       .orderBy('timee', descending: true)
       .limit(1)
       .snapshots()
@@ -37,7 +37,7 @@ class FirestoreService {
   listenUser(dynamic Function(dynamic) listener) {
     _firestore
       .collection('users')
-      .where('uid', isEqualTo: currentPersonUid)
+      .where('uid', isEqualTo: currentPerson.uid)
       .snapshots()
       .listen(listener);
   }
