@@ -33,8 +33,6 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Future.microtask(() => _getCurrentUser());
-      // Future.delayed(Duration.zero, () => _getCurrentUser());
       _getCurrentUser();
     });
   }

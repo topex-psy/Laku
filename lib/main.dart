@@ -23,11 +23,12 @@ import 'tambah.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    // systemNavigationBarColor: Colors.teal[700],
     systemNavigationBarIconBrightness: Brightness.light,
-    // statusBarColor: Colors.teal[800],
     statusBarIconBrightness: Brightness.light,
+    // systemNavigationBarColor: Colors.teal[700],
+    statusBarColor: Colors.teal[800],
   ));
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -82,7 +83,6 @@ class MyApp extends StatelessWidget {
             case ROUTE_DAFTAR: page = Daftar(); break;
             case ROUTE_PROFIL: page = Profil(); break;
             case ROUTE_TAMBAH: page = Tambah(); break;
-            // case ROUTE_PETA:   page = Peta(arguments['lat'], arguments['lng']); break;
             case ROUTE_PETA:   page = Peta(arguments); break;
             case ROUTE_HOME:
             case '/':

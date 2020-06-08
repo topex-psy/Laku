@@ -1,69 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:debounce_throttle/debounce_throttle.dart';
+// import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:geocoder/geocoder.dart';
-// import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:line_icons/line_icons.dart';
 // import 'package:permission_handler/permission_handler.dart';
+import 'models/iklan.dart';
 // import 'utils/helpers.dart';
 import 'utils/constants.dart';
 // import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
 
+const DEFAULT_RADIUS = 10000;
+const DEFAULT_ZOOM = 16.34;
+
 class Peta extends StatefulWidget {
   Peta(Map arguments, {Key key})
   : address = arguments['address'],
-    radius = arguments['radius'],
+    radius = arguments['radius'] ?? DEFAULT_RADIUS,
+    zoom = arguments['zoom'] ?? DEFAULT_ZOOM,
     super(key: key);
 
   final Address address;
   final int radius;
+  final double zoom;
 
   @override
-  _PetaState createState() => _PetaState(address, radius);
+  _PetaState createState() => _PetaState(address, radius, zoom);
 }
 
 class _PetaState extends State<Peta> {
-  _PetaState(this._initialAddress, this._initialRadius)
-  : _initialLocation = LatLng(_initialAddress.coordinates.latitude, _initialAddress.coordinates.longitude),
-    _address = _initialAddress;
+  _PetaState(this._address, this._radius, this._zoom) : _location = LatLng(_address.coordinates.latitude, _address.coordinates.longitude);
   
-  final LatLng _initialLocation;
-  final Address _initialAddress;
-  final int _initialRadius;
-
-  final _cameraPositionDebouncer = Debouncer<CameraPosition>(Duration(milliseconds: 1000));
-  final _initialZoom = 18.0;
+  // final _cameraPositionDebouncer = Debouncer<CameraPosition>(Duration(milliseconds: 1000));
 
   GoogleMapController _mapController;
-  BitmapDescriptor _markerIcon;
-  CameraPosition _location;
+  LatLng _location;
+  var _listMarkers = <int, Marker>{};
+  // var _listMarkersIcon = <int, BitmapDescriptor>{};
+  var _listIklan = <IklanModel>[];
   var _isLoading = true;
   Address _address;
+  double _zoom;
+  int _radius;
+  KategoriIklanModel _kategori;
+  final _listKategori = <KategoriIklanModel>[
+    KategoriIklanModel('Semua', LineIcons.at),
+    KategoriIklanModel('Jual-Beli', LineIcons.at),
+    KategoriIklanModel('Event', LineIcons.at),
+    KategoriIklanModel('Loker', LineIcons.at),
+    KategoriIklanModel('Jodoh', LineIcons.at),
+    KategoriIklanModel('Lainnya', LineIcons.at),
+  ];
 
-  _goToLocation(dynamic location, {double zoom, bool animate = true}) async {
-    var cameraUpdate;
-    if (location is LatLng) {
-      cameraUpdate = zoom == null ? CameraUpdate.newLatLng(location) : CameraUpdate.newLatLngZoom(location, zoom);
-    } else if (location is CameraPosition) {
-      cameraUpdate = CameraUpdate.newCameraPosition(location);
-    }
-    if (cameraUpdate == null) return;
-    if (animate) _mapController.animateCamera(cameraUpdate);
-    else _mapController.moveCamera(cameraUpdate);
+  Future<LatLng> _myLocation() async {
+    print("... GETTING MY LOCATION");
+    var position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    var latLng = LatLng(position.latitude, position.longitude);
+    print("... GETTING MY LOCATION result: $latLng");
+    return latLng;
   }
 
-  _setLocation(CameraPosition cameraPosition) async {
-    if (!mounted) return;
-    print("... SET LOCATION: $cameraPosition");
+  _moveLocation(LatLng latLng) async {
     setState(() {
-      _location = cameraPosition;
+      _location = latLng;
     });
-    // _goToLocation(_location, false);
-    // _goToLocation(_location.target, _location.zoom, false);
-    _goToLocation(_location, animate: false);
-    var address = await _getAddress(_location.target);
+    _mapController.animateCamera(CameraUpdate.newLatLng(_location));
+    _createMyMarker();
+    _getIklan();
+    var address = await _getAddress(_location);
     setState(() {
       _address = address;
     });
@@ -85,40 +91,71 @@ class _PetaState extends State<Peta> {
     return address;
   }
 
-  Set<Marker> _createMarker() {
-    return <Marker>[
-      Marker(
-        markerId: MarkerId("marker_1"),
-        position: LatLng(-7.9279722, 112.637929),
-        icon: _markerIcon,
-      ),
-      Marker(
-        markerId: MarkerId("marker_2"),
-        position: LatLng(-7.9280678, 112.6383046),
-        icon: _markerIcon,
-      ),
-    ].toSet();
+  _getIklan() {
+    // TODO api get iklan by _location
+    setState(() {
+      _listIklan = <IklanModel>[
+        IklanModel(id: 1, judul: "Pet Shop Bagus", lat: -7.9279722, lng: 112.637929),
+        IklanModel(id: 2, judul: "Warung Bagus", lat: -7.9280678, lng: 112.6383046),
+      ];
+    });
+
+    // create ad marker
+    _listIklan.forEach((ad) {
+      _createAdMarker(context, ad, color: "red");
+    });
   }
 
-  Future<void> _createMarkerImageFromAsset(BuildContext context) async {
-    if (_markerIcon != null) return;
+  _createAdMarker(BuildContext context, IklanModel ad, {String color = 'original'}) async {
     final ImageConfiguration imageConfiguration = createLocalImageConfiguration(context);
-    BitmapDescriptor.fromAssetImage(imageConfiguration, 'images/pin.png').then((bitmap) {
-      setState(() {
-        _markerIcon = bitmap;
-      });
+    var bitmap = await BitmapDescriptor.fromAssetImage(imageConfiguration, 'images/pin/$color.png');
+    setState(() {
+      _listMarkers[ad.id] = Marker(
+        markerId: MarkerId("marker_${ad.id}"),
+        position: LatLng(ad.lat, ad.lng),
+        icon: bitmap,
+        infoWindow: InfoWindow(
+          title: ad.judul,
+          snippet: ad.deskripsi,
+          onTap: () {
+            // TODO buka iklan
+          }
+        ),
+      );
+    });
+  }
+
+  _createMyMarker() async {
+    // create my marker
+    final ImageConfiguration imageConfiguration = createLocalImageConfiguration(context);
+    var bitmap = await BitmapDescriptor.fromAssetImage(imageConfiguration, 'images/pin/original.png');
+    var marker = Marker(
+      markerId: MarkerId("marker_me"),
+      position: _location,
+      icon: bitmap,
+      draggable: true,
+      onDragEnd: _moveLocation,
+      onTap: () async {
+        var zoom = await _mapController.getZoomLevel();
+        print("... CURRENT ZOOM = $zoom");
+      }
+    );
+    
+    setState(() {
+      _listMarkers[0] = marker;
     });
   }
 
   @override
   void initState() {
-    _location = CameraPosition(target: _initialLocation, zoom: _initialZoom);
-    _cameraPositionDebouncer.values.listen((cameraPosition) {
-      _setLocation(cameraPosition);
-    });
+    _kategori = _listKategori[0];
+    // _cameraPositionDebouncer.values.listen((cameraPosition) {
+    //   _setLocation(cameraPosition);
+    // });
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _createMarkerImageFromAsset(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _createMyMarker();
+      _getIklan();
     });
   }
 
@@ -127,10 +164,10 @@ class _PetaState extends State<Peta> {
     final Circle circle = Circle(
       circleId: CircleId('radius'),
       strokeColor: Colors.teal[300].withOpacity(0.6),
-      fillColor: Colors.teal[300].withOpacity(0.2),
+      fillColor: Colors.teal[300].withOpacity(0.1),
       strokeWidth: 1,
-      center: _location.target,
-      radius: _initialRadius.toDouble(), // meter
+      center: _location,
+      radius: _radius.toDouble(), // meter
       // consumeTapEvents: true,
       // onTap: () {
       //   _onCircleTapped(circleId);
@@ -145,13 +182,13 @@ class _PetaState extends State<Peta> {
               child: GoogleMap(
                 padding: EdgeInsets.only(bottom: THEME_BORDER_RADIUS),
                 initialCameraPosition: CameraPosition(
-                  target: _location?.target ?? _initialLocation,
-                  zoom: _location?.zoom ?? _initialZoom,
+                  target: _location,
+                  zoom: _zoom,
                   bearing: 0.0,
                   tilt: 0.0,
                 ),
                 mapType: MapType.normal,
-                markers: _createMarker(),
+                markers: _listMarkers.values.toSet(),
                 circles: Set<Circle>.of([circle]),
                 onMapCreated: (googleMapController) {
                   _mapController = googleMapController;
@@ -164,35 +201,58 @@ class _PetaState extends State<Peta> {
                     });
                   });
                 },
-                onCameraMove: (cameraPosition) {
-                  _cameraPositionDebouncer.value = cameraPosition;
-                },
-                onTap: (latLng) {
-                  _goToLocation(latLng);
+                // onCameraMove: (cameraPosition) {
+                //   _cameraPositionDebouncer.value = cameraPosition;
+                // },
+                onTap: (latLng) async {
+                  // _goToLocation(latLng);
+                  _moveLocation(latLng);
                 },
               ),
             ),
-            _isLoading ? Container() : Container(
-              padding: EdgeInsets.only(bottom: 90.0 - THEME_BORDER_RADIUS),
-              child: Center(
-                child: UiMapMarker(size: 50.0, onTap: () {
-                  _goToLocation(_initialLocation, zoom: _initialZoom);
-                  setState(() {
-                    _address = _initialAddress;
-                  });
-                },),
-              ),
-            ),
+            // _isLoading ? Container() : Container(
+            //   padding: EdgeInsets.only(bottom: 90.0 - THEME_BORDER_RADIUS),
+            //   child: Center(
+            //     child: UiMapMarker(size: 50.0, onTap: () {
+            //       _goToLocation(_initialLocation, zoom: _zoom);
+            //       setState(() {
+            //         _address = _initialAddress;
+            //       });
+            //     },),
+            //   ),
+            // ),
             // TODO address box pake bottom sheet
-            _address == null ? Container() : Align(alignment: Alignment.bottomCenter, child: AddressBox(_address.addressLine),),
-            _isLoading ? Container(child: Center(child: UiLoader())) : Container(),
-            Align(alignment: Alignment.topLeft, child: Material(
-              color: Colors.transparent,
-              shape: CircleBorder(),
-              clipBehavior: Clip.antiAlias,
-              child: IconButton(padding: EdgeInsets.all(15), icon: Icon(LineIcons.arrow_left), color: Colors.black, iconSize: 30, onPressed: () {
-                Navigator.of(context).pop();
-              },),
+            _address == null ? Container() : Align(alignment: Alignment.bottomCenter, child: AddressBox(_address.addressLine, onMyLocation: () async {
+              var myLocation = await _myLocation();
+              _moveLocation(myLocation);
+            }),),
+            // _isLoading ? Container(color: Colors.white, child: Center(child: UiLoader())) : Container(),
+            IgnorePointer(
+              ignoring: !_isLoading,
+              child: AnimatedOpacity(
+                opacity: _isLoading ? 1 : 0,
+                duration: Duration(milliseconds: 1000),
+                child: Container(color: Colors.white, child: Center(child: _isLoading ? UiLoader() : SizedBox())),
+              ),
+            ),
+            Align(alignment: Alignment.topCenter, child: Row(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  shape: CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: IconButton(padding: EdgeInsets.all(15), icon: Icon(LineIcons.arrow_left), color: Colors.black, iconSize: 30, onPressed: () {
+                    Navigator.of(context).pop();
+                  },),
+                ),
+                Spacer(),
+                UiSelect(simple: true, icon: _kategori.icon, listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
+                  setState(() { _kategori = val; });
+                },),
+                SizedBox(width: 8)
+              ],
             ),)
           ],
         ),
@@ -202,8 +262,10 @@ class _PetaState extends State<Peta> {
 }
 
 class AddressBox extends StatelessWidget {
-  AddressBox(this.address, {Key key}) : super(key: key);
+  AddressBox(this.address, {Key key, this.onMyLocation}) : super(key: key);
   final String address;
+  final void Function() onMyLocation;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -218,6 +280,7 @@ class AddressBox extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () {
+            // TODO cari nama tempat atau lokasi
           },
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 8, horizontal: 15),
@@ -225,6 +288,7 @@ class AddressBox extends StatelessWidget {
               Icon(LineIcons.map_marker, size: 30, color: THEME_COLOR,),
               SizedBox(width: 8,),
               Expanded(child: Text(address)),
+              onMyLocation == null ? SizedBox() : UiButtonIcon(LineIcons.location_arrow, iconColor: THEME_COLOR, size: 60, onPressed: onMyLocation)
             ],),
           ),
         ),

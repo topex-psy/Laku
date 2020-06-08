@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -30,11 +33,12 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   final _scrollController = ScrollController();
   AnimationController _spinController;
   var _isGranted = false;
-  var _isGPSOn = true;
   var _isLoading = true;
   Timer _timer;
 
   var _isGettingLocation = false;
+  var _isChartExpand = false;
+  var _isChartButton = true;
   Address _address;
 
   @override
@@ -49,17 +53,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
 
   @override
   void initState() {
+    // _scrollController.addListener(_scrollListener);
     _spinController = AnimationController(
       duration: Duration(milliseconds: 500),
       vsync: this,
     );
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _scrollController.addListener(() {
-        print("_scrollController.offset = ${_scrollController.offset}");
-        // Provider.of<SettingsProvider>(context, listen: false).scrollPosition = _scrollController.offset;
-      });
-      // TODO load gps status
       _getMyLocation();
       _runTimer();
     });
@@ -71,6 +71,11 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     _timer.cancel();
     super.dispose();
   }
+
+  // _scrollListener() {
+  //   var opacity = min(1, _scrollController.offset / (200 - kToolbarHeight));
+  //   print("_scrollController.offset = ${_scrollController.offset}");
+  // }
 
   _runTimer() {
     _getAllData();
@@ -125,7 +130,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   }
 
   _getAllData() {
-    print(" ==> GET ALL DATA ..................");
+    // print(" ==> GET ALL DATA ..................");
     var notification = Provider.of<NotificationsProvider>(context, listen: false);
     Future.delayed(Duration(milliseconds: 2000), () {
       _refreshController.refreshCompleted();
@@ -145,10 +150,151 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     });
   }
 
+  List<LineChartBarData> _getLineChartBarData() {
+    final LineChartBarData lineChartBarData1 = LineChartBarData(
+      spots: [
+        FlSpot(1, 1),
+        FlSpot(3, 1.5),
+        FlSpot(5, 1.4),
+        FlSpot(7, 3.4),
+        FlSpot(10, 2),
+        FlSpot(12, 2.2),
+        FlSpot(13, 1.8),
+      ],
+      isCurved: true,
+      colors: [
+        Color(0xff4af699),
+      ],
+      barWidth: 8,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: false,
+      ),
+      belowBarData: BarAreaData(
+        show: false,
+      ),
+    );
+    final LineChartBarData lineChartBarData2 = LineChartBarData(
+      spots: [
+        FlSpot(1, 1),
+        FlSpot(3, 2.8),
+        FlSpot(7, 1.2),
+        FlSpot(10, 2.8),
+        FlSpot(12, 2.6),
+        FlSpot(13, 3.9),
+      ],
+      isCurved: true,
+      colors: [
+        Color(0xffaa4cfc),
+      ],
+      barWidth: 6,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: true,
+      ),
+      belowBarData: BarAreaData(show: false, colors: [
+        Color(0x00aa4cfc),
+      ]),
+    );
+    final LineChartBarData lineChartBarData3 = LineChartBarData(
+      spots: [
+        FlSpot(1, 2.8),
+        FlSpot(3, 1.9),
+        FlSpot(6, 3),
+        FlSpot(10, 1.3),
+        FlSpot(13, 2.5),
+      ],
+      isCurved: true,
+      colors: const [
+        Color(0xff27b6fc),
+      ],
+      barWidth: 8,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: false,
+      ),
+      belowBarData: BarAreaData(
+        show: false,
+      ),
+    );
+    return [
+      lineChartBarData1,
+      lineChartBarData2,
+      lineChartBarData3,
+    ];
+  }
+
+  LineChartData _getLineChartData() {
+    return LineChartData(
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+        ),
+        touchCallback: (LineTouchResponse touchResponse) {},
+        handleBuiltInTouches: true,
+      ),
+      gridData: FlGridData(show: false,),
+      titlesData: FlTitlesData(
+        bottomTitles: SideTitles(
+          showTitles: true,
+          reservedSize: 22,
+          textStyle: TextStyle(
+            color: Colors.white70,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+          margin: 10,
+          getTitles: (value) {
+            switch (value.toInt()) {
+              case 2:
+                return 'SEPT';
+              case 7:
+                return 'OCT';
+              case 12:
+                return 'DEC';
+            }
+            return '';
+          },
+        ),
+        leftTitles: SideTitles(
+          showTitles: true,
+          textStyle: TextStyle(
+            color: Colors.white70,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          getTitles: (value) {
+            switch (value.toInt()) {
+              case 1:
+                return '1m';
+              case 2:
+                return '2m';
+              case 3:
+                return '3m';
+              case 4:
+                return '5m';
+            }
+            return '';
+          },
+          margin: 8,
+          reservedSize: 30,
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: Border(bottom: BorderSide(color: Colors.white54, width: 1,),),
+      ),
+      minX: 0,
+      maxX: 14,
+      maxY: 4,
+      minY: 0,
+      lineBarsData: _getLineChartBarData(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // var _scrollPosition = _scrollController.offset;
-    final imageWidth = MediaQuery.of(context).size.width * 0.69;
+    final _mediaQuery = MediaQuery.of(context);
 
     return !_isGranted ? Container(
       padding: EdgeInsets.all(THEME_PADDING),
@@ -156,58 +302,100 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Image.asset('images/onboarding/2.png', width: imageWidth,),
+          Image.asset('images/onboarding/2.png', width: _mediaQuery.size.width * .69,),
           SizedBox(height: 20,),
           Text("Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.", textAlign: TextAlign.center,),
           SizedBox(height: 20,),
           UiButton("Izinkan", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: _getMyLocation,),
         ],
       ),
-    ) : Container(
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: <Widget>[
-          // Selector<SettingsProvider, double>(
-          //   selector: (buildContext, settings) => settings.scrollPosition,
-          //   builder: (context, scrollPosition, child) {
-          //     return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
-          //   }
-          // ),
-          Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
-          Positioned.fill(child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  child: Row(children: <Widget>[
-                    IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {
-                      screenScaffoldKey.currentState.openEndDrawer();
-                    },),
-                    Spacer(),
-                    IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
-                    IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
-                  ],),
+    ) : SafeArea(
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification is ScrollStartNotification) {
+            if (_isChartButton && !_isChartExpand) setState(() {
+              _isChartButton = false;
+            });
+          } else if (scrollNotification is ScrollUpdateNotification) {
+          } else if (scrollNotification is ScrollEndNotification) {
+            if (!_isChartButton && _scrollController.offset == 0) setState(() {
+              _isChartButton = true;
+            });
+          }
+          return true;
+        },
+        child: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                iconTheme: IconThemeData(color: Colors.white),
+                leading: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: IconButton(
+                    icon: Icon(Icons.sort, color: Colors.white),
+                    onPressed: () => screenScaffoldKey.currentState.openEndDrawer(),
+                  ),
                 ),
+                actions: [
+                  IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
+                  IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
+                  SizedBox(width: 8,)
+                ],
+                backgroundColor: THEME_COLOR,
+                expandedHeight: kToolbarHeight,
+                floating: false,
+                pinned: false,
+                // flexibleSpace: FlexibleSpaceBar(
+                  // centerTitle: false,
+                  // title: Text("Pengaturan", style: TextStyle(
+                  //   color: Colors.white,
+                  //   fontFamily: THEME_FONT_MAIN,
+                  //   fontWeight: FontWeight.bold,
+                  //   fontSize: 17,
+                  //   height: 1.0,
+                  // )), //.withOpacity(_titleOpacity),
+                  // background: Stack(children: <Widget>[
+                  //   Positioned.fill(child: CachedNetworkImage(
+                  //     imageUrl: Uri.encodeFull('https://img.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148258092.jpg?size=626&ext=jpg'),
+                  //     placeholder: (context, url) => Container(child: Center(child: SizedBox(width: 100, height: 100, child: Padding(padding: EdgeInsets.all(50), child: CircularProgressIndicator())))),
+                  //     errorWidget: (context, url, error) => Container(child: Center(child: SizedBox(width: 100, height: 100, child: Icon(Icons.error, color: Colors.grey,)))),
+                  //     fit: BoxFit.cover,
+                  //   ),),
+                  //   Positioned.fill(child: IgnorePointer(child: Container(
+                  //     decoration: BoxDecoration(
+                  //       color: Colors.white,
+                  //       gradient: LinearGradient(
+                  //         begin: FractionalOffset.bottomCenter,
+                  //         end: FractionalOffset.topCenter,
+                  //         colors: [
+                  //           h.cardColor().withOpacity(1.0),
+                  //           h.cardColor().withOpacity(0.0),
+                  //         ],
+                  //         stops: [
+                  //           0.0,
+                  //           0.65,
+                  //         ]
+                  //       ),
+                  //     ),
+                  //   ),),),
+                  //   Align(alignment: Alignment.center, child: Image.asset("images/logo.png", width: 150, height: 150, fit: BoxFit.cover,),),
+                  // ],),
+                // ),
+              ),
+              SliverPersistentHeader(
+                delegate: _SliverAppBarDelegate(
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                    SizedBox(width: 10,),
+                    Icon(LineIcons.map_marker, color: Colors.white, size: 50,),
+                    SizedBox(width: 12,),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Text("Kamu berada di:", style: style.textWhite),
 
-                Expanded(child: SmartRefresher(
-                  enablePullDown: true,
-                  enablePullUp: false,
-                  header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR,),
-                  controller: _refreshController,
-                  onRefresh: _getAllData,
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      Row(children: <Widget>[
-                        Icon(LineIcons.map_marker, color: _isGPSOn ? Colors.white : Colors.white54, size: 50,),
-                        SizedBox(width: 12,),
-                        Expanded(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                            Text("Kamu berada di:", style: style.textWhite),
-                            _isGettingLocation || _address == null ? Container(
+                        Builder(
+                          builder: (context) {
+                            return _isGettingLocation || _address == null ? Container(
                               width: 50.0,
                               height: 46.0,
                               child: SpinKitThreeBounce(
@@ -223,6 +411,19 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                               },
                               child: Container(
                                 height: 46.0,
+                                // child: Selector<PersonProvider, Address>(
+                                //   selector: (buildContext, person) => person.address,
+                                //   builder: (context, address, child) {
+                                //     return RichText(text: TextSpan(
+                                //       style: Theme.of(context).textTheme.bodyText1,
+                                //       children: <TextSpan>[
+                                //         TextSpan(text: '${address.subAdminArea},\n', style: style.textHeadlineWhite),
+                                //         TextSpan(text: address.countryName, style: style.textTitleWhite,)
+                                //       ],
+                                //     ),);
+                                //   }
+                                // ),
+
                                 child: RichText(text: TextSpan(
                                   style: Theme.of(context).textTheme.bodyText1,
                                   children: <TextSpan>[
@@ -230,68 +431,213 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                                     TextSpan(text: _address.countryName, style: style.textTitleWhite,)
                                   ],
                                 ),),
+
                               ),
-                            ),
-                          ],),
-                        ),
-                        // SizedBox(width: 12,),
-                        Material(
-                          color: Colors.transparent,
-                          shape: CircleBorder(),
-                          clipBehavior: Clip.antiAlias,
-                          child: IconButton(
-                            highlightColor: Colors.white24,
-                            splashColor: Colors.white24,
-                            padding: EdgeInsets.all(15),
-                            onPressed: _getMyLocation,
-                            icon: RotationTransition(
-                              turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
-                              child: Icon(LineIcons.refresh, color: Colors.white,),
-                            ),
-                          ),
-                        ),
+                            );
+                          }
+                        )
+
+
+
+                        
                       ],),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: IconButton(
+                        highlightColor: Colors.white24,
+                        splashColor: Colors.white24,
+                        padding: EdgeInsets.all(15),
+                        onPressed: _getMyLocation,
+                        icon: RotationTransition(
+                          turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
+                          child: Icon(LineIcons.refresh, color: Colors.white,),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10,),
+                  ],),
+                ),
+                pinned: true,
+              ),
+            ];
+          },
+          body: Stack(
+            alignment: Alignment.topCenter,
+            children: <Widget>[
+              // Selector<SettingsProvider, double>(
+              //   selector: (buildContext, settings) => settings.scrollPosition,
+              //   builder: (context, scrollPosition, child) {
+              //     return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
+              //   }
+              // ),
+              Container(width: double.infinity, height: 350.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
+              Positioned.fill(child: SmartRefresher(
+                enablePullDown: true,
+                enablePullUp: false,
+                header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR,),
+                controller: _refreshController,
+                onRefresh: _getAllData,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      // Padding(
+                      //   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                      //   child: Row(children: <Widget>[
+                      //     IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {
+                      //       screenScaffoldKey.currentState.openEndDrawer();
+                      //     },),
+                      //     Spacer(),
+                      //     IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
+                      //     IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
+                      //   ],),
+                      // ),
 
-                      SizedBox(height: SECTION_MARGIN,),
-
-                      Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
-                      SizedBox(height: 12,),
-                      CardList('iklanTerpasang'),
-                      CardList('pencarianTerpasang'),
-                      CardList('pesanMasuk'),
-
-                      SizedBox(height: SECTION_MARGIN,),
-
-                      Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
-                      SizedBox(height: 12,),
-                      Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
-                        CardBox('iklan'),
-                        CardBox('pengguna'),
-                        CardBox('pencari'),
-                      ],),
-
-                      SizedBox(height: SECTION_MARGIN,),
-
-                      // Text("Ingin jangkauan lebih luas?", style: style.textLabel),
-                      // SizedBox(height: 12,),
-                      // UiButton("Upgrade akunmu", width: 200, color: Colors.teal[300], textStyle: style.textButton, icon: LineIcons.certificate, iconRight: true, onPressed: () {
-                      //   // TODO upgrade akun
-                      // }),
+                      // Row(children: <Widget>[
+                      //   SizedBox(width: 10,),
+                      //   Icon(LineIcons.map_marker, color: _isGPSOn ? Colors.white : Colors.white54, size: 50,),
+                      //   SizedBox(width: 12,),
+                      //   Expanded(
+                      //     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                      //       Text("Kamu berada di:", style: style.textWhite),
+                      //       _isGettingLocation || _address == null ? Container(
+                      //         width: 50.0,
+                      //         height: 46.0,
+                      //         child: SpinKitThreeBounce(
+                      //           color: Colors.white,
+                      //           size: 30.0,
+                      //         ),
+                      //       )
+                      //       : GestureDetector(
+                      //         onTap: () async {
+                      //           final results = await Navigator.of(context).pushNamed(ROUTE_PETA, arguments: { 'address': _address, 'radius': 10000 }) as Map;
+                      //           print(results);
+                      //           // TODO set latest selected radius
+                      //         },
+                      //         child: Container(
+                      //           height: 46.0,
+                      //           child: RichText(text: TextSpan(
+                      //             style: Theme.of(context).textTheme.bodyText1,
+                      //             children: <TextSpan>[
+                      //               TextSpan(text: '${_address.subAdminArea},\n', style: style.textHeadlineWhite),
+                      //               TextSpan(text: _address.countryName, style: style.textTitleWhite,)
+                      //             ],
+                      //           ),),
+                      //         ),
+                      //       ),
+                      //     ],),
+                      //   ),
+                      //   Material(
+                      //     color: Colors.transparent,
+                      //     shape: CircleBorder(),
+                      //     clipBehavior: Clip.antiAlias,
+                      //     child: IconButton(
+                      //       highlightColor: Colors.white24,
+                      //       splashColor: Colors.white24,
+                      //       padding: EdgeInsets.all(15),
+                      //       onPressed: _getMyLocation,
+                      //       icon: RotationTransition(
+                      //         turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
+                      //         child: Icon(LineIcons.refresh, color: Colors.white,),
+                      //       ),
+                      //     ),
+                      //   ),
+                      //   SizedBox(width: 10,),
+                      // ],),
 
                       // SizedBox(height: SECTION_MARGIN,),
-                    ],),
+
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+
+                          AnimatedSize(
+                            duration: Duration(milliseconds: 800),
+                            curve: Curves.easeOut,
+                            vsync: this,
+                            child: _isChartExpand ? Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: Container(
+                                width: double.infinity,
+                                height: 150,
+                                child: LineChart(
+                                  _getLineChartData(),
+                                  swapAnimationDuration: Duration(milliseconds: 500),
+                                ),
+                              ),
+                            ) : Container(width: double.infinity,),
+                          ),
+
+                          Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: SECTION_MARGIN),
+                              child: AnimatedOpacity(
+                                opacity: _isChartButton ? 1 : 0,
+                                duration: Duration(milliseconds: 400),
+                                child: UiButton(
+                                  _isChartExpand ? "Hide chart" : "Show chart",
+                                  icon: _isChartExpand ? LineIcons.chevron_circle_up : LineIcons.chevron_circle_down,
+                                  width: 118,
+                                  height: 30,
+                                  textStyle: style.textWhiteS,
+                                  color: Colors.teal[300],
+                                  onPressed: () {
+                                    setState(() {
+                                      _isChartExpand = !_isChartExpand;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                          SizedBox(height: 12,),
+                          CardList('iklanTerpasang'),
+                          CardList('pencarianTerpasang'),
+                          CardList('pesanMasuk'),
+
+                          SizedBox(height: SECTION_MARGIN,),
+
+                          Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                          SizedBox(height: 12,),
+                          Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
+                            CardBox('iklan'),
+                            CardBox('pengguna'),
+                            CardBox('pencari'),
+                          ],),
+
+                          SizedBox(height: SECTION_MARGIN,),
+
+                          // Container(
+                          //   width: double.infinity,
+                          //   height: 150,
+                          //   child: LineChart(
+                          //     _getLineChartData(),
+                          //     swapAnimationDuration: Duration(milliseconds: 500),
+                          //   ),
+                          // ),
+
+                          // SizedBox(height: 100,),
+
+                        ],),
+                      ),
+                    ],
                   ),
-                ),),
-              ],
-            ),
-          ),),
-          _isLoading ? Positioned.fill(child: SafeArea(
-            child: Container(
-              color: Colors.white,
-              child: Center(child: UiLoader(),),
-            ),
-          ),) : SizedBox()
-        ],
+                ),
+              ),),
+              _isLoading ? Positioned.fill(child: SafeArea(
+                child: Container(
+                  color: Colors.white,
+                  child: Center(child: UiLoader(),),
+                ),
+              ),) : SizedBox()
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -459,5 +805,38 @@ class _CardListState extends State<CardList> {
         ],),
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._widget);
+  final Widget _widget;
+
+  @override
+  double get minExtent => 104.0;
+  @override
+  double get maxExtent => 104.0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    // double statusBarHeight = MediaQuery.of(context).padding.top;
+    return Container(
+      decoration: BoxDecoration(
+        // border: Border.all(
+        //   color: Colors.white,
+        //   width: 1.0,
+        // ),
+        color: THEME_COLOR,
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: 20, bottom: 20),
+        child: _widget,
+      )
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }

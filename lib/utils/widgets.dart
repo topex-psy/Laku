@@ -433,7 +433,7 @@ class _UiInputState extends State<UiInput> {
 }
 
 class UiSelect extends StatefulWidget {
-  UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.margin, this.onSelect, this.error = ''}) : super(key: key);
+  UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.margin, this.onSelect, this.error = '', this.simple = false}) : super(key: key);
   final IconData icon;
   final List<dynamic> listMenu;
   final dynamic initialValue;
@@ -443,6 +443,7 @@ class UiSelect extends StatefulWidget {
   final EdgeInsetsGeometry margin;
   final void Function(dynamic) onSelect;
   final String error;
+  final bool simple;
 
   @override
   _UiSelectState createState() => _UiSelectState();
@@ -465,44 +466,43 @@ class _UiSelectState extends State<UiSelect> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    Widget card = Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50.0),),
+      elevation: 1.0,
+      margin: widget.margin ?? EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SizedBox(width: 4,),
+            widget.icon == null ? SizedBox() : Icon(widget.icon, size: 19.5, color: Colors.grey,),
+            widget.icon == null ? SizedBox() : SizedBox(width: 14,),
+            DropdownButton<dynamic>(
+              isDense: true,
+              underline: SizedBox(),
+              value: widget.value ?? _val,
+              hint: Text(widget.placeholder),
+              style: TextStyle(fontSize: widget.fontSize ?? 16, color: Theme.of(context).textTheme.bodyText1.color),
+              onChanged: (dynamic val) {
+                setState(() { _val = val; });
+                widget.onSelect(val);
+              },
+              items: widget.listMenu.map<DropdownMenuItem<dynamic>>((dynamic val) {
+                return DropdownMenuItem<dynamic>(
+                  value: val,
+                  child: Text(val.toString(), style: TextStyle(fontWeight: FontWeight.normal),),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+    return widget.simple ? card : Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50.0),),
-          elevation: 1.0,
-          margin: widget.margin ?? EdgeInsets.only(bottom: 8),
-          child: Padding(
-            padding: EdgeInsets.all(10),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                SizedBox(width: 4,),
-                widget.icon == null ? SizedBox() : Icon(widget.icon, size: 19.5, color: Colors.grey,),
-                widget.icon == null ? SizedBox() : SizedBox(width: 14,),
-                DropdownButtonHideUnderline(
-                  child: DropdownButton<dynamic>(
-                    isDense: true,
-                    underline: null,
-                    value: widget.value ?? _val,
-                    hint: Text(widget.placeholder),
-                    style: TextStyle(fontSize: widget.fontSize ?? 16, color: Theme.of(context).textTheme.bodyText1.color),
-                    onChanged: (dynamic val) {
-                      setState(() { _val = val; });
-                      widget.onSelect(val);
-                    },
-                    items: widget.listMenu.map<DropdownMenuItem<dynamic>>((dynamic val) {
-                      return DropdownMenuItem<dynamic>(
-                        value: val,
-                        child: Text(val.toString(), style: TextStyle(fontWeight: FontWeight.normal),),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        card,
         (widget.error ?? '').isEmpty ? SizedBox() : ErrorText(widget.error)
       ],
     );
@@ -604,6 +604,7 @@ class UiButton extends StatelessWidget {
     // this.borderColor,
     this.icon,
     this.iconSize,
+    this.iconColor,
     this.iconPadding = 8.0,
     this.iconRight = false,
     this.onPressed,
@@ -621,6 +622,7 @@ class UiButton extends StatelessWidget {
   final String label;
   final TextStyle textStyle;
   final double iconSize;
+  final Color iconColor;
   final double iconPadding;
   final bool iconRight;
   final BorderRadius borderRadius;
@@ -639,7 +641,7 @@ class UiButton extends StatelessWidget {
     var _fontSize = _textStyle.fontSize;
     var _fontColor = _textStyle.color;
     var _fontWeight = _textStyle.fontWeight;
-    var _icon = Icon(icon, color: _fontColor, size: iconSize ?? (_fontSize * 1.2),);
+    var _icon = Icon(icon, color: iconColor ?? _fontColor, size: iconSize ?? (_fontSize * 1.2),);
     return SizedBox(
       width: width ?? double.infinity,
       height: height ?? style.heightButton,
@@ -674,18 +676,19 @@ class UiButton extends StatelessWidget {
 }
 
 class UiButtonIcon extends StatelessWidget {
-  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed}) : super(key: key);
+  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color, this.iconColor, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed}) : super(key: key);
   final IconData icon;
   final double size;
   final double iconSize;
   final double radius;
   final Color color;
+  final Color iconColor;
   final double elevation;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return UiButton("", width: size, height: size, elevation: elevation, borderRadius: BorderRadius.circular(radius ?? (size / 2)), padding: EdgeInsets.zero, icon: icon, iconPadding: 0, iconSize: iconSize, color: color, onPressed: onPressed,);
+    return UiButton("", width: size, height: size, elevation: elevation, borderRadius: BorderRadius.circular(radius ?? (size / 2)), padding: EdgeInsets.zero, icon: icon, iconPadding: 0, iconSize: iconSize, iconColor: iconColor, color: color, onPressed: onPressed,);
   }
 }
 

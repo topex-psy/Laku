@@ -51,6 +51,7 @@ dependencies:
   # ui
   cached_network_image: ^2.2.0+1
   code_input: ^1.0.3
+  fl_chart: ^0.10.0
   flash: ^1.2.0
   flutter_rounded_date_picker: ^1.0.4
   flutter_spinkit: "^4.1.2"
@@ -81,6 +82,7 @@ flutter:
     - assets/
     - images/
     - images/onboarding/
+    - images/pin/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
