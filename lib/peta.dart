@@ -14,32 +14,42 @@ import 'utils/widgets.dart';
 class Peta extends StatefulWidget {
   Peta(Map arguments, {Key key})
   : address = arguments['address'],
+    radius = arguments['radius'],
     super(key: key);
 
   final Address address;
+  final int radius;
 
   @override
-  _PetaState createState() => _PetaState(address);
+  _PetaState createState() => _PetaState(address, radius);
 }
 
 class _PetaState extends State<Peta> {
-  _PetaState(this._initialAddress)
+  _PetaState(this._initialAddress, this._initialRadius)
   : _initialLocation = LatLng(_initialAddress.coordinates.latitude, _initialAddress.coordinates.longitude),
     _address = _initialAddress;
   
   final LatLng _initialLocation;
   final Address _initialAddress;
+  final int _initialRadius;
+
   final _cameraPositionDebouncer = Debouncer<CameraPosition>(Duration(milliseconds: 1000));
   final _initialZoom = 18.0;
 
   GoogleMapController _mapController;
+  BitmapDescriptor _markerIcon;
   CameraPosition _location;
   var _isLoading = true;
-  // var _isGranted = false;
   Address _address;
 
-  _goToLocation(CameraPosition newPosition, [bool animate = true]) async {
-    var cameraUpdate = CameraUpdate.newCameraPosition(newPosition);
+  _goToLocation(dynamic location, {double zoom, bool animate = true}) async {
+    var cameraUpdate;
+    if (location is LatLng) {
+      cameraUpdate = zoom == null ? CameraUpdate.newLatLng(location) : CameraUpdate.newLatLngZoom(location, zoom);
+    } else if (location is CameraPosition) {
+      cameraUpdate = CameraUpdate.newCameraPosition(location);
+    }
+    if (cameraUpdate == null) return;
     if (animate) _mapController.animateCamera(cameraUpdate);
     else _mapController.moveCamera(cameraUpdate);
   }
@@ -50,7 +60,9 @@ class _PetaState extends State<Peta> {
     setState(() {
       _location = cameraPosition;
     });
-    _goToLocation(_location, false);
+    // _goToLocation(_location, false);
+    // _goToLocation(_location.target, _location.zoom, false);
+    _goToLocation(_location, animate: false);
     var address = await _getAddress(_location.target);
     setState(() {
       _address = address;
@@ -73,59 +85,105 @@ class _PetaState extends State<Peta> {
     return address;
   }
 
+  Set<Marker> _createMarker() {
+    return <Marker>[
+      Marker(
+        markerId: MarkerId("marker_1"),
+        position: LatLng(-7.9279722, 112.637929),
+        icon: _markerIcon,
+      ),
+      Marker(
+        markerId: MarkerId("marker_2"),
+        position: LatLng(-7.9280678, 112.6383046),
+        icon: _markerIcon,
+      ),
+    ].toSet();
+  }
+
+  Future<void> _createMarkerImageFromAsset(BuildContext context) async {
+    if (_markerIcon != null) return;
+    final ImageConfiguration imageConfiguration = createLocalImageConfiguration(context);
+    BitmapDescriptor.fromAssetImage(imageConfiguration, 'images/pin.png').then((bitmap) {
+      setState(() {
+        _markerIcon = bitmap;
+      });
+    });
+  }
+
   @override
   void initState() {
-    // _address = _initialAddress;
+    _location = CameraPosition(target: _initialLocation, zoom: _initialZoom);
     _cameraPositionDebouncer.values.listen((cameraPosition) {
       _setLocation(cameraPosition);
     });
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // var isGranted = await Permission.location.request().isGranted;
-      // setState(() {
-      //   _isGranted = isGranted;
-      //   _isLoading = false;
-      // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _createMarkerImageFromAsset(context);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final Circle circle = Circle(
+      circleId: CircleId('radius'),
+      strokeColor: Colors.teal[300].withOpacity(0.6),
+      fillColor: Colors.teal[300].withOpacity(0.2),
+      strokeWidth: 1,
+      center: _location.target,
+      radius: _initialRadius.toDouble(), // meter
+      // consumeTapEvents: true,
+      // onTap: () {
+      //   _onCircleTapped(circleId);
+      // },
+    );
     return Scaffold(
       body: SafeArea(
         child: Stack(
-          alignment: Alignment.center,
           children: <Widget>[
-            GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: _location?.target ?? _initialLocation,
-                zoom: _location?.zoom ?? _initialZoom,
-                bearing: 0.0,
-                tilt: 0.0,
-              ),
-              mapType: MapType.normal,
-              onMapCreated: (googleMapController) {
-                _mapController = googleMapController;
-                rootBundle.loadString('assets/map_style.txt').then((json) {
-                  _mapController.setMapStyle(json);
-                  setState(() {
-                    _isLoading = false;
+            Container(
+              padding: EdgeInsets.only(bottom: 90.0 - THEME_BORDER_RADIUS),
+              child: GoogleMap(
+                padding: EdgeInsets.only(bottom: THEME_BORDER_RADIUS),
+                initialCameraPosition: CameraPosition(
+                  target: _location?.target ?? _initialLocation,
+                  zoom: _location?.zoom ?? _initialZoom,
+                  bearing: 0.0,
+                  tilt: 0.0,
+                ),
+                mapType: MapType.normal,
+                markers: _createMarker(),
+                circles: Set<Circle>.of([circle]),
+                onMapCreated: (googleMapController) {
+                  _mapController = googleMapController;
+                  rootBundle.loadString('assets/map_style.txt').then((json) {
+                    _mapController.setMapStyle(json);
+                    Future.delayed(Duration(milliseconds: 1000), () {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                    });
                   });
-                });
-              },
-              onCameraMove: (cameraPosition) {
-                _cameraPositionDebouncer.value = cameraPosition;
-              },
-              onTap: (latLng) {
-                _goToLocation(CameraPosition(target: latLng, zoom: _initialZoom,));
-              },
+                },
+                onCameraMove: (cameraPosition) {
+                  _cameraPositionDebouncer.value = cameraPosition;
+                },
+                onTap: (latLng) {
+                  _goToLocation(latLng);
+                },
+              ),
             ),
-            _isLoading ? Container() : UiMapMarker(size: 50.0, onTap: () {
-              _goToLocation(CameraPosition(target: _initialLocation, zoom: _initialZoom,));
-              setState(() {
-                _address = _initialAddress;
-              });
-            },),
+            _isLoading ? Container() : Container(
+              padding: EdgeInsets.only(bottom: 90.0 - THEME_BORDER_RADIUS),
+              child: Center(
+                child: UiMapMarker(size: 50.0, onTap: () {
+                  _goToLocation(_initialLocation, zoom: _initialZoom);
+                  setState(() {
+                    _address = _initialAddress;
+                  });
+                },),
+              ),
+            ),
+            // TODO address box pake bottom sheet
             _address == null ? Container() : Align(alignment: Alignment.bottomCenter, child: AddressBox(_address.addressLine),),
             _isLoading ? Container(child: Center(child: UiLoader())) : Container(),
             Align(alignment: Alignment.topLeft, child: Material(
@@ -155,7 +213,7 @@ class AddressBox extends StatelessWidget {
         elevation: THEME_ELEVATION_BUTTON,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(THEME_BORDER_RADIUS), topRight: Radius.circular(THEME_BORDER_RADIUS))
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -167,9 +225,6 @@ class AddressBox extends StatelessWidget {
               Icon(LineIcons.map_marker, size: 30, color: THEME_COLOR,),
               SizedBox(width: 8,),
               Expanded(child: Text(address)),
-              // Expanded(child: Text(address.addressLine, style: style.textM,)),
-              // SizedBox(width: 8,),
-              // Icon(LineIcons.edit, size: 20, color: THEME_COLOR,),
             ],),
           ),
         ),

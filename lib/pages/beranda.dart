@@ -217,10 +217,9 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                             )
                             : GestureDetector(
                               onTap: () async {
-                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA, arguments: {
-                                  'address': _address,
-                                }) as Map;
+                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA, arguments: { 'address': _address, 'radius': 10000 }) as Map;
                                 print(results);
+                                // TODO set latest selected radius
                               },
                               child: Container(
                                 height: 46.0,
@@ -235,14 +234,15 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                             ),
                           ],),
                         ),
-                        SizedBox(width: 12,),
+                        // SizedBox(width: 12,),
                         Material(
                           color: Colors.transparent,
                           shape: CircleBorder(),
                           clipBehavior: Clip.antiAlias,
                           child: IconButton(
-                            highlightColor: Colors.white10,
-                            splashColor: Colors.white10,
+                            highlightColor: Colors.white24,
+                            splashColor: Colors.white24,
+                            padding: EdgeInsets.all(15),
                             onPressed: _getMyLocation,
                             icon: RotationTransition(
                               turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
