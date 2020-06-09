@@ -75,7 +75,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     setState(() {
       _isFinished = true;
     });
-    Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
+    Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN, arguments: {'fromSplash': true});
   }
 
   @override

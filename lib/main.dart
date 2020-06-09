@@ -85,16 +85,51 @@ class MyApp extends StatelessWidget {
             default: page = Home(analytics: analytics, observer: observer,); break;
           }
           // return MaterialPageRoute(settings: settings, builder: (_) => page);
+          var _isFromSplash = arguments['fromSplash'] ?? false;
           return PageTransition(
             type: PageTransitionType.fade,
-            duration: Duration(milliseconds: 5000),
+            duration: Duration(milliseconds: _isFromSplash ? 2000 : 500),
             settings: settings,
             child: page
           );
         },
         initialRoute: ROUTE_SPLASH,
+        navigatorObservers: [MyRouteObserver()],
         home: Splash(),
       ),
     );
+  }
+}
+
+class MyRouteObserver extends RouteObserver<PageRoute<dynamic>> {
+  void _sendScreenView(String what, PageRoute<dynamic> routeTo, PageRoute<dynamic> routeFrom) {
+    var newScreenName = routeTo?.settings?.name;
+    var oldScreenName = routeFrom?.settings?.name;
+    print(' ==> ROUTE DID $what: $oldScreenName => $newScreenName');
+    // do something with it, ie. send it to your analytics service collector
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {
+    super.didPush(route, previousRoute);
+    if (route is PageRoute) {
+      _sendScreenView("push", route, previousRoute);
+    }
+  }
+
+  @override
+  void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    if (newRoute is PageRoute) {
+      _sendScreenView("replace", newRoute, oldRoute);
+    }
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic> previousRoute) {
+    super.didPop(route, previousRoute);
+    if (previousRoute is PageRoute && route is PageRoute) {
+      _sendScreenView("pop", route, previousRoute);
+    }
   }
 }
