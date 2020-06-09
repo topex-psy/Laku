@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
@@ -14,6 +15,7 @@ import 'pages/temukan.dart';
 import 'providers/person.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
+// import 'utils/localizations.dart';
 import 'utils/widgets.dart';
 
 class Page {
@@ -41,10 +43,14 @@ class _HomeState extends State<Home> {
   var _isWillExit = false;
   PreloadPageController _pageController;
   final _pages = <Page>[
-    Page(title: 'Beranda', icon: LineIcons.home, content: Beranda()),
-    Page(title: 'Temukan', icon: LineIcons.search, content: Temukan()),
-    Page(title: 'Favorit', icon: LineIcons.heart_o, content: Favorit()),
-    Page(title: 'Akun', icon: LineIcons.user, content: Akun()),
+    Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
+    Page(title: 'menu_find'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, koleksi
+    Page(title: 'menu_favorites'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
+    Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, pesan masuk, notifikasi
+    // Page(title: 'Beranda', icon: LineIcons.home, content: Beranda()),
+    // Page(title: 'Temukan', icon: LineIcons.search, content: Temukan()),
+    // Page(title: 'Favorit', icon: LineIcons.heart_o, content: Favorit()),
+    // Page(title: 'Akun', icon: LineIcons.user, content: Akun()),
   ];
 
   @override

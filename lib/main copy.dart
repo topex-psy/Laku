@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:easy_localization/easy_localization.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:provider/provider.dart';
 // import 'package:pull_to_refresh/pull_to_refresh.dart';
+// import 'services/firestore_service.dart';
 // import 'models/report.dart';
 import 'providers/notifications.dart';
 import 'providers/person.dart';
 import 'providers/settings.dart';
 import 'routes/fade.dart';
-// import 'services/firestore_service.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
-// import 'utils/localizations.dart';
+import 'utils/localizations.dart';
 import 'daftar.dart';
 import 'home.dart';
 import 'login.dart';
@@ -32,12 +31,7 @@ void main() {
     statusBarColor: Colors.teal[800],
   ));
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(EasyLocalization(
-    supportedLocales: [Locale('id', 'ID'), Locale('en', 'US')],
-    path: 'assets/translations',
-    fallbackLocale: Locale('id', 'ID'),
-    child: MyApp()
-  ),);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -53,11 +47,11 @@ class MyApp extends StatelessWidget {
 
     // final _firestore = FirestoreService();
 
-    // final supportedLocales = [
-    //   Locale('id', 'ID'),
-    //   Locale('en', 'US'),
-    // ];
-    // final defaultLocale = supportedLocales.first;
+    final supportedLocales = [
+      Locale('id', 'ID'),
+      Locale('en', 'US'),
+    ];
+    final defaultLocale = supportedLocales.first;
 
     return MultiProvider(
       providers: [
@@ -70,27 +64,24 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: APP_NAME,
         debugShowCheckedModeBanner: false,
-        // supportedLocales: supportedLocales,
-        // locale: defaultLocale,
-        // localizationsDelegates: [
-        //   AppLocalizations.delegate,
-        //   GlobalMaterialLocalizations.delegate,
-        //   GlobalCupertinoLocalizations.delegate,
-        //   GlobalWidgetsLocalizations.delegate,
-        //   RefreshLocalizations.delegate,
-        // ],
-        // localeResolutionCallback: (locale, supportedLocales) {
-        //   for (var supportedLocale in supportedLocales) {
-        //     if (
-        //       supportedLocale.languageCode == locale.languageCode &&
-        //       supportedLocale.countryCode == locale.countryCode
-        //     ) return supportedLocale;
-        //   }
-        //   return defaultLocale;
-        // },
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
+        supportedLocales: supportedLocales,
+        locale: defaultLocale,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          // RefreshLocalizations.delegate,
+        ],
+        localeResolutionCallback: (locale, supportedLocales) {
+          for (var supportedLocale in supportedLocales) {
+            if (
+              supportedLocale.languageCode == locale.languageCode &&
+              supportedLocale.countryCode == locale.countryCode
+            ) return supportedLocale;
+          }
+          return defaultLocale;
+        },
         theme: ThemeData(
           scaffoldBackgroundColor: THEME_BACKGROUND,
           primarySwatch: THEME_COLOR,
