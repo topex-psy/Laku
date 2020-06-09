@@ -1,4 +1,5 @@
 {
+  "action_create_ad": "Buat Iklan",
   "menu_account": "Akun",
   "menu_browse": "Temukan",
   "menu_favorites": "Favorit",
@@ -6,5 +7,7 @@
   "menu_home": "Beranda",
   "menu_logout": "Keluar",
   "menu_manage": "Iklan Saya",
-  "menu_settings": "Pengaturan"
+  "menu_settings": "Pengaturan",
+  "prompt_exit": "Ketuk sekali lagi untuk menutup aplikasi.",
+  "prompt_hello": "Halo"
 }

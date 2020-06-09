@@ -8,25 +8,30 @@ const DEFAULT_ZOOM = 16.34;
 class SettingsProvider with ChangeNotifier {
   Address _address;
   bool _isGettingLocation;
+  bool _isShowGraphics;
   int _radius;
 
   SettingsProvider() {
     _isGettingLocation = false;
+    _isShowGraphics = false;
     _radius = DEFAULT_RADIUS;
     // loadPreferences();
   }
 
   Address get address => _address;
   bool get isGettingLocation => _isGettingLocation;
+  bool get isShowGraphics => _isShowGraphics;
   int get radius => _radius;
 
   setSettings({
     Address address,
     bool isGettingLocation,
+    bool isShowGraphics,
     int radius,
   }) {
     if (address != null) _address = address;
     if (isGettingLocation != null) _isGettingLocation = isGettingLocation;
+    if (isShowGraphics != null) _isShowGraphics = isShowGraphics;
     if (radius != null) _radius = radius;
     notifyListeners();
     // savePreferences();

@@ -135,19 +135,14 @@ class _LoginState extends State<Login> {
                   alignment: Alignment.center,
                   children: <Widget>[
                     UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
-                    Selector<PersonProvider, bool>(
-                      selector: (buildContext, person) => person.isSignedIn,
-                      builder: (context, isSignedIn, child) {
-                        // return (isSignedIn ?? false) ? Container() : LoginForm(
-                        return LoginForm(
-                          key: _loginFormKey,
-                          getCurrentUser: _getCurrentUser,
-                          setLoading: (val) {
-                            if (_isLoading != val) setState(() {
-                              _isLoading = val;
-                            });
-                          },
-                        );
+                    LoginForm(
+                      key: _loginFormKey,
+                      getCurrentUser: _getCurrentUser,
+                      setLoading: (val) {
+                        Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
+                        if (_isLoading != val) setState(() {
+                          _isLoading = val;
+                        });
                       },
                     ),
                   ],
@@ -242,7 +237,8 @@ class _LoginFormState extends State<LoginForm> {
   _signInWithCode(String smsCode) async {
     if (smsCode.length < SMS_CODE_LENGTH) return;
     print(" ==> _signInWithCode ...\n$_smsVerificationCode\n$smsCode");
-    FocusScope.of(context).requestFocus(FocusNode());
+    // Future.delayed(Duration(milliseconds: 500), () => FocusScope.of(context).requestFocus(FocusNode()));
+    // FocusScope.of(context).requestFocus(FocusNode());
     widget.setLoading(true);
     var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
     try {

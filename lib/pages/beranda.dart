@@ -1,5 +1,5 @@
 import 'dart:async';
-// import 'dart:math';
+import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -33,12 +33,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   final _refreshController = RefreshController(initialRefresh: false);
   final _scrollController = ScrollController();
   AnimationController _spinController;
+  var _isFabButton = false;
   var _isGranted = false;
   var _isLoading = true;
   Timer _timer;
 
-  var _isChartExpand = false;
-  var _isChartButton = true;
+  // var _isChartExpand = false;
+  // var _isChartButton = true;
 
   @override
   void onPageVisible() {
@@ -154,7 +155,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       colors: [
         Color(0xff4af699),
       ],
-      barWidth: 8,
+      barWidth: 7,
       isStrokeCapRound: true,
       dotData: FlDotData(show: false,),
       belowBarData: BarAreaData(show: false,),
@@ -204,9 +205,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   LineChartData _getLineChartData() {
     return LineChartData(
       lineTouchData: LineTouchData(
-        touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-        ),
+        touchTooltipData: LineTouchTooltipData(tooltipBgColor: Colors.teal[900],),
         touchCallback: (LineTouchResponse touchResponse) {},
         handleBuiltInTouches: true,
       ),
@@ -215,11 +214,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         bottomTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          textStyle: TextStyle(
-            color: Colors.white70,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          textStyle: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 16,),
           margin: 10,
           getTitles: (value) {
             switch (value.toInt()) {
@@ -235,11 +230,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         ),
         leftTitles: SideTitles(
           showTitles: true,
-          textStyle: TextStyle(
-            color: Colors.white70,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
+          textStyle: TextStyle(color: Colors.white70, fontSize: 12,),
           getTitles: (value) {
             switch (value.toInt()) {
               case 1:
@@ -253,8 +244,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
             }
             return '';
           },
-          margin: 8,
-          reservedSize: 30,
+          margin: 4,
+          reservedSize: 40,
         ),
       ),
       borderData: FlBorderData(
@@ -290,13 +281,19 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       child: NotificationListener<ScrollNotification>(
         onNotification: (scrollNotification) {
           if (scrollNotification is ScrollStartNotification) {
-            if (_isChartButton && !_isChartExpand) setState(() {
-              _isChartButton = false;
+            // if (_isChartButton && !_isChartExpand) setState(() {
+            //   _isChartButton = false;
+            // });
+            if (_isFabButton) setState(() {
+              _isFabButton = false;
             });
           } else if (scrollNotification is ScrollUpdateNotification) {
           } else if (scrollNotification is ScrollEndNotification) {
-            if (!_isChartButton && _scrollController.offset <= kToolbarHeight) setState(() {
-              _isChartButton = true;
+            // if (!_isChartButton && _scrollController.offset <= kToolbarHeight) setState(() {
+            //   _isChartButton = true;
+            // });
+            if (!_isFabButton && _scrollController.offset > kToolbarHeight) setState(() {
+              _isFabButton = true;
             });
           }
           return true;
@@ -326,59 +323,77 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
               ),
               SliverPersistentHeader(
                 delegate: _SliverAppBarDelegate(
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                    SizedBox(width: 10,),
-                    Icon(LineIcons.map_marker, color: Colors.white, size: 50,),
-                    SizedBox(width: 12,),
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                        Text("Kamu berada di:", style: style.textWhite),
-
-                        Consumer<SettingsProvider>(
-                          builder: (context, settings, child) {
-                            return settings.isGettingLocation || settings.address == null ? Container(
-                              width: 50.0,
-                              height: 46.0,
-                              child: SpinKitThreeBounce(color: Colors.white, size: 30.0,),
-                            ) : GestureDetector(
-                              onTap: () async {
-                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA) as Map;
-                                print(results);
-                                // TODO set latest selected radius
-                              },
-                              child: Container(
-                                height: 46.0,
-                                child: RichText(text: TextSpan(
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                  children: <TextSpan>[
-                                    TextSpan(text: '${settings.address.subAdminArea},\n', style: style.textHeadlineWhite),
-                                    TextSpan(text: settings.address.countryName, style: style.textTitleWhite,)
-                                  ],
-                                ),),
-                              ),
-                            );
-                          }
+                  Column(
+                    children: [
+                      Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                        SizedBox(width: 10,),
+                        Icon(LineIcons.map_marker, color: Colors.white, size: 50,),
+                        SizedBox(width: 12,),
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                            Text("Kamu berada di:", style: style.textWhite),
+                            Consumer<SettingsProvider>(
+                              builder: (context, settings, child) {
+                                return settings.isGettingLocation || settings.address == null ? Container(
+                                  width: 50.0,
+                                  height: 46.0,
+                                  child: SpinKitThreeBounce(color: Colors.white, size: 30.0,),
+                                ) : GestureDetector(
+                                  onTap: () async {
+                                    final results = await Navigator.of(context).pushNamed(ROUTE_PETA) as Map;
+                                    print(results);
+                                    // TODO set latest selected radius
+                                  },
+                                  child: Container(
+                                    height: 46.0,
+                                    child: RichText(text: TextSpan(
+                                      style: Theme.of(context).textTheme.bodyText1,
+                                      children: <TextSpan>[
+                                        TextSpan(text: '${settings.address.subAdminArea},\n', style: style.textHeadlineWhite),
+                                        TextSpan(text: settings.address.countryName, style: style.textTitleWhite,)
+                                      ],
+                                    ),),
+                                  ),
+                                );
+                              }
+                            ),
+                          ],),
                         ),
-
+                        Material(
+                          color: Colors.transparent,
+                          shape: CircleBorder(),
+                          clipBehavior: Clip.antiAlias,
+                          child: IconButton(
+                            highlightColor: Colors.white24,
+                            splashColor: Colors.white24,
+                            padding: EdgeInsets.all(15),
+                            onPressed: _getMyLocation,
+                            icon: RotationTransition(
+                              turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
+                              child: Icon(LineIcons.refresh, color: Colors.white,),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10,),
                       ],),
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      shape: CircleBorder(),
-                      clipBehavior: Clip.antiAlias,
-                      child: IconButton(
-                        highlightColor: Colors.white24,
-                        splashColor: Colors.white24,
-                        padding: EdgeInsets.all(15),
-                        onPressed: _getMyLocation,
-                        icon: RotationTransition(
-                          turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
-                          child: Icon(LineIcons.refresh, color: Colors.white,),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10,),
-                  ],),
+                      Expanded(child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return constraints.maxHeight < 56 ? SizedBox() : Container(
+                            padding: EdgeInsets.only(top: 10),
+                            width: double.infinity,
+                            height: constraints.maxHeight,
+                            child: Opacity(
+                              opacity: min(1, (constraints.maxHeight - 56) / 100),
+                              child: LineChart(
+                                _getLineChartData(),
+                                swapAnimationDuration: Duration(milliseconds: 500),
+                              ),
+                            ),
+                          );
+                        },
+                      ),)
+                    ],
+                  ),
                 ),
                 pinned: true,
               ),
@@ -387,13 +402,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
           body: Stack(
             alignment: Alignment.topCenter,
             children: <Widget>[
-              // Selector<SettingsProvider, double>(
-              //   selector: (buildContext, settings) => settings.scrollPosition,
-              //   builder: (context, scrollPosition, child) {
-              //     return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
-              //   }
-              // ),
-              Container(width: double.infinity, height: 350.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
+              Container(width: double.infinity, height: 300.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
               Positioned.fill(child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: false,
@@ -404,115 +413,49 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      // Padding(
-                      //   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                      //   child: Row(children: <Widget>[
-                      //     IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {
-                      //       screenScaffoldKey.currentState.openEndDrawer();
-                      //     },),
-                      //     Spacer(),
-                      //     IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
-                      //     IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
-                      //   ],),
-                      // ),
-
-                      // Row(children: <Widget>[
-                      //   SizedBox(width: 10,),
-                      //   Icon(LineIcons.map_marker, color: _isGPSOn ? Colors.white : Colors.white54, size: 50,),
-                      //   SizedBox(width: 12,),
-                      //   Expanded(
-                      //     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      //       Text("Kamu berada di:", style: style.textWhite),
-                      //       _isGettingLocation || _address == null ? Container(
-                      //         width: 50.0,
-                      //         height: 46.0,
-                      //         child: SpinKitThreeBounce(
-                      //           color: Colors.white,
-                      //           size: 30.0,
-                      //         ),
-                      //       )
-                      //       : GestureDetector(
-                      //         onTap: () async {
-                      //           final results = await Navigator.of(context).pushNamed(ROUTE_PETA, arguments: { 'address': _address, 'radius': 10000 }) as Map;
-                      //           print(results);
-                      //           // TODO set latest selected radius
-                      //         },
-                      //         child: Container(
-                      //           height: 46.0,
-                      //           child: RichText(text: TextSpan(
-                      //             style: Theme.of(context).textTheme.bodyText1,
-                      //             children: <TextSpan>[
-                      //               TextSpan(text: '${_address.subAdminArea},\n', style: style.textHeadlineWhite),
-                      //               TextSpan(text: _address.countryName, style: style.textTitleWhite,)
-                      //             ],
-                      //           ),),
-                      //         ),
-                      //       ),
-                      //     ],),
-                      //   ),
-                      //   Material(
-                      //     color: Colors.transparent,
-                      //     shape: CircleBorder(),
-                      //     clipBehavior: Clip.antiAlias,
-                      //     child: IconButton(
-                      //       highlightColor: Colors.white24,
-                      //       splashColor: Colors.white24,
-                      //       padding: EdgeInsets.all(15),
-                      //       onPressed: _getMyLocation,
-                      //       icon: RotationTransition(
-                      //         turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
-                      //         child: Icon(LineIcons.refresh, color: Colors.white,),
-                      //       ),
-                      //     ),
-                      //   ),
-                      //   SizedBox(width: 10,),
-                      // ],),
-
-                      // SizedBox(height: SECTION_MARGIN,),
-
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
 
-                          AnimatedSize(
-                            duration: Duration(milliseconds: 800),
-                            curve: Curves.easeOut,
-                            vsync: this,
-                            child: _isChartExpand ? Padding(
-                              padding: EdgeInsets.only(bottom: 12),
-                              child: Container(
-                                width: double.infinity,
-                                height: 150,
-                                child: LineChart(
-                                  _getLineChartData(),
-                                  swapAnimationDuration: Duration(milliseconds: 500),
-                                ),
-                              ),
-                            ) : Container(width: double.infinity,),
-                          ),
+                          // AnimatedSize(
+                          //   duration: Duration(milliseconds: 800),
+                          //   curve: Curves.easeOut,
+                          //   vsync: this,
+                          //   child: _isChartExpand ? Padding(
+                          //     padding: EdgeInsets.only(bottom: 12),
+                          //     child: Container(
+                          //       width: double.infinity,
+                          //       height: 150,
+                          //       child: LineChart(
+                          //         _getLineChartData(),
+                          //         swapAnimationDuration: Duration(milliseconds: 500),
+                          //       ),
+                          //     ),
+                          //   ) : Container(width: double.infinity,),
+                          // ),
 
-                          Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(bottom: SECTION_MARGIN),
-                              child: AnimatedOpacity(
-                                opacity: _isChartButton ? 1 : 0,
-                                duration: Duration(milliseconds: 400),
-                                child: UiButton(
-                                  _isChartExpand ? "Hide chart" : "Show chart",
-                                  icon: _isChartExpand ? LineIcons.chevron_circle_up : LineIcons.chevron_circle_down,
-                                  width: 118,
-                                  height: 30,
-                                  textStyle: style.textWhiteS,
-                                  color: Colors.teal[300],
-                                  onPressed: () {
-                                    setState(() {
-                                      _isChartExpand = !_isChartExpand;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
+                          // Center(
+                          //   child: Padding(
+                          //     padding: EdgeInsets.only(bottom: SECTION_MARGIN),
+                          //     child: AnimatedOpacity(
+                          //       opacity: _isChartButton ? 1 : 0,
+                          //       duration: Duration(milliseconds: 400),
+                          //       child: UiButton(
+                          //         _isChartExpand ? "Hide chart" : "Show chart",
+                          //         icon: _isChartExpand ? LineIcons.chevron_circle_up : LineIcons.chevron_circle_down,
+                          //         width: 118,
+                          //         height: 30,
+                          //         textStyle: style.textWhiteS,
+                          //         color: Colors.teal[300],
+                          //         onPressed: () {
+                          //           setState(() {
+                          //             _isChartExpand = !_isChartExpand;
+                          //           });
+                          //         },
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
 
                           Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
                           SizedBox(height: 12,),
@@ -735,7 +678,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 104.0;
   @override
-  double get maxExtent => 104.0;
+  double get maxExtent => 274.0;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {

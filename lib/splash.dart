@@ -16,6 +16,7 @@ class Splash extends StatefulWidget {
 class _SplashState extends State<Splash> with TickerProviderStateMixin {
   AnimationController _animation1Controller;
   Animation _animation1;
+  var _isFinished = false;
 
   @override
   void initState() {
@@ -67,12 +68,13 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
     isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
     isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
-    Future.delayed(Duration(milliseconds: SPLASH_DISMISS), () {
-      _lanjut();
-    });
+    Future.delayed(Duration(milliseconds: SPLASH_DISMISS), _dismiss);
   }
 
-  _lanjut() {
+  _dismiss() {
+    setState(() {
+      _isFinished = true;
+    });
     Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
   }
 
@@ -85,7 +87,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
         body: SafeArea(
           child: Center(
             child: GestureDetector(
-              onTap: isDebugMode ? _lanjut : null,
+              onTap: isDebugMode ? _dismiss : null,
               child: Stack(
                 alignment: Alignment.center,
                 children: <Widget>[
@@ -102,7 +104,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                       );
                     }
                   ),
-                  Transform.translate(
+                  _isFinished ? SizedBox() : Transform.translate(
                     offset: Offset(40, -50),
                     child: SpinKitChasingDots(
                       color: Colors.white70,

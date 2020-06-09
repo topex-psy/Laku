@@ -742,7 +742,7 @@ class _UiMapMarkerState extends State<UiMapMarker> with SingleTickerProviderStat
 }
 
 class UiMenuList extends StatelessWidget {
-  UiMenuList({Key key, this.menuPaddingVertical = 16, this.menuPaddingHorizontal = 16, this.isFirst = false, this.isLast = false, this.isLocked = false, this.icon, @required this.teks, @required this.value, @required this.aksi}): super(key: key);
+  UiMenuList({Key key, this.menuPaddingVertical = 14, this.menuPaddingHorizontal = 16, this.isFirst = false, this.isLast = false, this.isLocked = false, this.icon, @required this.teks, @required this.value, @required this.aksi}): super(key: key);
   final double menuPaddingVertical;
   final double menuPaddingHorizontal;
   final bool isFirst;
@@ -762,9 +762,9 @@ class UiMenuList extends StatelessWidget {
       child: InkWell(onTap: isLocked || aksi == null ? null : () => aksi(value), child: Padding(
         padding: EdgeInsets.symmetric(vertical: menuPaddingVertical, horizontal: menuPaddingHorizontal),
         child: Row(children: <Widget>[
-          Icon(icon, color: isLocked || aksi == null ? Colors.grey : Colors.blueGrey, size: 24,),
+          Icon(icon, color: isLocked || aksi == null ? Colors.grey : Colors.blueGrey, size: 22,),
           SizedBox(width: 8,),
-          Expanded(child: Text(teks, style: TextStyle(fontSize: 16, color: isLocked || aksi == null ? Colors.grey : _textTheme.bodyText1.color),),),
+          Expanded(child: Text(teks, style: TextStyle(fontSize: 15, color: isLocked || aksi == null ? Colors.grey : _textTheme.bodyText1.color),),),
           isLocked ? Icon(LineIcons.lock, color: THEME_COLOR, size: 17,) : SizedBox(),
         ],),
       )),

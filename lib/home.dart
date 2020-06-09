@@ -15,7 +15,6 @@ import 'pages/temukan.dart';
 import 'providers/person.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
-// import 'utils/localizations.dart';
 import 'utils/widgets.dart';
 
 class Page {
@@ -42,16 +41,6 @@ class _HomeState extends State<Home> {
   var _selectedIndex = 0;
   var _isWillExit = false;
   PreloadPageController _pageController;
-  final _pages = <Page>[
-    Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
-    Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
-    Page(title: 'menu_manage'.tr(), icon: LineIcons.dropbox, content: Favorit()), // kelola iklan saya
-    Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
-    // Page(title: 'Beranda', icon: LineIcons.home, content: Beranda()),
-    // Page(title: 'Temukan', icon: LineIcons.search, content: Temukan()),
-    // Page(title: 'Favorit', icon: LineIcons.heart_o, content: Favorit()),
-    // Page(title: 'Akun', icon: LineIcons.user, content: Akun()),
-  ];
 
   @override
   void initState() {
@@ -77,12 +66,18 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final _pages = <Page>[
+      Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
+      Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
+      Page(title: 'menu_manage'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
+      Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
+    ];
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
         if (!Provider.of<PersonProvider>(context, listen: false).isSignedIn) return true;
         if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
-        h.showToast("Ketuk sekali lagi untuk menutup aplikasi.");
+        h.showToast('prompt_exit'.tr());
         _isWillExit = true;
         Future.delayed(Duration(milliseconds: 2000), () { _isWillExit = false; });
         return false;
@@ -90,53 +85,48 @@ class _HomeState extends State<Home> {
       child: Scaffold(
         key: screenScaffoldKey,
         resizeToAvoidBottomInset: true,
-          drawerEdgeDragWidth: 20,
-          endDrawer: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  bottomLeft: Radius.circular(20),
-                ),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.69,
-                  child: Drawer(semanticLabel: "Menu samping", child: Column(children: <Widget>[
-                    Container(
-                      color: THEME_COLOR,
-                      width: double.infinity,
-                      padding: EdgeInsets.all(20),
-                      child: Row(children: <Widget>[
+        drawerEdgeDragWidth: 20,
+        endDrawer: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.69,
+                child: Drawer(semanticLabel: "Menu panel", child: Column(children: <Widget>[
+                  Container(
+                    color: THEME_COLOR,
+                    width: double.infinity,
+                    padding: EdgeInsets.all(20),
+                    child: Row(children: <Widget>[
+                      Selector<PersonProvider, String>(
+                        selector: (buildContext, person) => person.foto,
+                        builder: (context, foto, child) => UiAvatar(foto, size: 70, onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),),
+                      ),
+                      SizedBox(width: 12,),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                         Selector<PersonProvider, String>(
-                          selector: (buildContext, person) => person.foto,
-                          builder: (context, foto, child) => UiAvatar(foto, size: 70, onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),),
+                          selector: (buildContext, person) => person.namaDepan,
+                          builder: (context, namaDepan, child) => Text("${'prompt_hello'.tr()}, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
                         ),
-                        SizedBox(width: 12,),
-                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          Selector<PersonProvider, String>(
-                            selector: (buildContext, person) => person.namaDepan,
-                            builder: (context, namaDepan, child) => Text("Halo, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
-                          ),
-                        ],),)
-                      ],),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(10),
-                      child: MenuNavContent(),
-                    ),
-                  ],),),
-                ),
+                      ],),)
+                    ],),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(10),
+                    child: MenuNavContent(),
+                  ),
+                ],),),
               ),
             ),
           ),
-          body: PreloadPageView.builder(
+        ),
+        body: PreloadPageView.builder(
           preloadPagesCount: 2,
           controller: _pageController,
           itemCount: _pages.length,
           itemBuilder: (context, index) => _pages[index].content,
-          onPageChanged: (index) {
-            _openPage(index);
-          },
+          onPageChanged: _openPage,
         ),
         floatingActionButton: AnimatedSwitcher(
           duration: Duration(milliseconds: 500),
@@ -148,7 +138,8 @@ class _HomeState extends State<Home> {
               final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH) as Map;
               print(results);
             },
-            tooltip: 'Tambah Barang',
+            backgroundColor: Colors.teal[400],
+            tooltip: 'action_create_ad'.tr(),
             child: Icon(LineIcons.plus),
           ),
         ),

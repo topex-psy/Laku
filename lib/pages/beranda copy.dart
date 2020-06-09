@@ -1,4 +1,5 @@
 import 'dart:async';
+// import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 // import '../extensions/widget.dart';
 import '../providers/notifications.dart';
+// import '../providers/person.dart';
+import '../providers/settings.dart';
 import '../utils/constants.dart';
 import '../utils/curves.dart';
 import '../utils/helpers.dart';
@@ -31,12 +34,11 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   final _scrollController = ScrollController();
   AnimationController _spinController;
   var _isGranted = false;
-  var _isGPSOn = true;
   var _isLoading = true;
   Timer _timer;
 
-  var _isGettingLocation = false;
-  Address _address;
+  var _isChartExpand = false;
+  var _isChartButton = true;
 
   @override
   void onPageVisible() {
@@ -56,11 +58,6 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     );
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      _scrollController.addListener(() {
-        print("_scrollController.offset = ${_scrollController.offset}");
-        // Provider.of<SettingsProvider>(context, listen: false).scrollPosition = _scrollController.offset;
-      });
-      // TODO load gps status
       _getMyLocation();
       _runTimer();
     });
@@ -85,14 +82,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     });
     if (!isGranted) return;
 
-    if (_isGettingLocation) return;
-    setState(() {
-      _isGettingLocation = true;
-    });
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    if (settings.isGettingLocation) return;
+    settings.setSettings(isGettingLocation: true);
     _spinController.forward();
 
     print("... GETTING MY LOCATION");
-    var address = _address;
+    var address = settings.address;
     try {
       var position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       var coordinates = Coordinates(position.latitude, position.longitude);
@@ -119,15 +115,12 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       print("... GETTING MY LOCATION error: $e");
     }
     _spinController.reset();
-    setState(() {
-      _address = address;
-      _isGettingLocation = false;
-    });
+    settings.setSettings(address: address, isGettingLocation: false);
   }
 
   _getAllData() {
     // print(" ==> GET ALL DATA ..................");
-    var notification = Provider.of<NotificationsProvider>(context, listen: false);
+    final notification = Provider.of<NotificationsProvider>(context, listen: false);
     Future.delayed(Duration(milliseconds: 2000), () {
       _refreshController.refreshCompleted();
       // TODO on error
@@ -163,12 +156,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ],
       barWidth: 8,
       isStrokeCapRound: true,
-      dotData: FlDotData(
-        show: false,
-      ),
-      belowBarData: BarAreaData(
-        show: false,
-      ),
+      dotData: FlDotData(show: false,),
+      belowBarData: BarAreaData(show: false,),
     );
     final LineChartBarData lineChartBarData2 = LineChartBarData(
       spots: [
@@ -181,16 +170,12 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ],
       isCurved: true,
       colors: [
-        Color(0xffaa4cfc),
+        Color(0xffeba434),
       ],
       barWidth: 6,
       isStrokeCapRound: true,
-      dotData: FlDotData(
-        show: true,
-      ),
-      belowBarData: BarAreaData(show: false, colors: [
-        Color(0x00aa4cfc),
-      ]),
+      dotData: FlDotData(show: true,),
+      belowBarData: BarAreaData(show: false,),
     );
     final LineChartBarData lineChartBarData3 = LineChartBarData(
       spots: [
@@ -206,12 +191,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ],
       barWidth: 8,
       isStrokeCapRound: true,
-      dotData: FlDotData(
-        show: false,
-      ),
-      belowBarData: BarAreaData(
-        show: false,
-      ),
+      dotData: FlDotData(show: false,),
+      belowBarData: BarAreaData(show: false,),
     );
     return [
       lineChartBarData1,
@@ -235,7 +216,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
           showTitles: true,
           reservedSize: 22,
           textStyle: TextStyle(
-            color: Color(0xff72719b),
+            color: Colors.white70,
             fontWeight: FontWeight.bold,
             fontSize: 16,
           ),
@@ -255,7 +236,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         leftTitles: SideTitles(
           showTitles: true,
           textStyle: TextStyle(
-            color: Color(0xff75729e),
+            color: Colors.white70,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -278,12 +259,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border(
-          bottom: BorderSide(color: Color(0xff4e4965), width: 2,),
-          left: BorderSide(color: Colors.transparent,),
-          right: BorderSide(color: Colors.transparent,),
-          top: BorderSide(color: Colors.transparent,),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.white54, width: 1,),),
       ),
       minX: 0,
       maxX: 14,
@@ -295,8 +271,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    // var _scrollPosition = _scrollController.offset;
-    final imageWidth = MediaQuery.of(context).size.width * 0.69;
+    final _mediaQuery = MediaQuery.of(context);
 
     return !_isGranted ? Container(
       padding: EdgeInsets.all(THEME_PADDING),
@@ -304,155 +279,217 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Image.asset('images/onboarding/2.png', width: imageWidth,),
+          Image.asset('images/onboarding/2.png', width: _mediaQuery.size.width * .69,),
           SizedBox(height: 20,),
           Text("Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.", textAlign: TextAlign.center,),
           SizedBox(height: 20,),
           UiButton("Izinkan", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: _getMyLocation,),
         ],
       ),
-    ) : Container(
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: <Widget>[
-          // Selector<SettingsProvider, double>(
-          //   selector: (buildContext, settings) => settings.scrollPosition,
-          //   builder: (context, scrollPosition, child) {
-          //     return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
-          //   }
-          // ),
-          Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
-          Positioned.fill(child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  child: Row(children: <Widget>[
-                    IconButton(icon: Icon(Icons.sort, color: Colors.white,), onPressed: () {
-                      screenScaffoldKey.currentState.openEndDrawer();
-                    },),
-                    Spacer(),
-                    IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
-                    IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
-                  ],),
-                ),
-
-                Row(children: <Widget>[
-                  SizedBox(width: 10,),
-                  Icon(LineIcons.map_marker, color: _isGPSOn ? Colors.white : Colors.white54, size: 50,),
-                  SizedBox(width: 12,),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                      Text("Kamu berada di:", style: style.textWhite),
-                      _isGettingLocation || _address == null ? Container(
-                        width: 50.0,
-                        height: 46.0,
-                        child: SpinKitThreeBounce(
-                          color: Colors.white,
-                          size: 30.0,
-                        ),
-                      )
-                      : GestureDetector(
-                        onTap: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_PETA, arguments: { 'address': _address, 'radius': 10000 }) as Map;
-                          print(results);
-                          // TODO set latest selected radius
-                        },
-                        child: Container(
-                          height: 46.0,
-                          child: RichText(text: TextSpan(
-                            style: Theme.of(context).textTheme.bodyText1,
-                            children: <TextSpan>[
-                              TextSpan(text: '${_address.subAdminArea},\n', style: style.textHeadlineWhite),
-                              TextSpan(text: _address.countryName, style: style.textTitleWhite,)
-                            ],
-                          ),),
-                        ),
-                      ),
-                    ],),
+    ) : SafeArea(
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification is ScrollStartNotification) {
+            if (_isChartButton && !_isChartExpand) setState(() {
+              _isChartButton = false;
+            });
+          } else if (scrollNotification is ScrollUpdateNotification) {
+          } else if (scrollNotification is ScrollEndNotification) {
+            if (!_isChartButton && _scrollController.offset <= kToolbarHeight) setState(() {
+              _isChartButton = true;
+            });
+          }
+          return true;
+        },
+        child: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                iconTheme: IconThemeData(color: Colors.white),
+                leading: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: IconButton(
+                    icon: Icon(Icons.sort, color: Colors.white),
+                    onPressed: () => screenScaffoldKey.currentState.openEndDrawer(),
                   ),
-                  Material(
-                    color: Colors.transparent,
-                    shape: CircleBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    child: IconButton(
-                      highlightColor: Colors.white24,
-                      splashColor: Colors.white24,
-                      padding: EdgeInsets.all(15),
-                      onPressed: _getMyLocation,
-                      icon: RotationTransition(
-                        turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
-                        child: Icon(LineIcons.refresh, color: Colors.white,),
+                ),
+                actions: [
+                  IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
+                  IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
+                  SizedBox(width: 8,)
+                ],
+                backgroundColor: THEME_COLOR,
+                expandedHeight: kToolbarHeight,
+                floating: false,
+                pinned: false,
+              ),
+              SliverPersistentHeader(
+                delegate: _SliverAppBarDelegate(
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                    SizedBox(width: 10,),
+                    Icon(LineIcons.map_marker, color: Colors.white, size: 50,),
+                    SizedBox(width: 12,),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                        Text("Kamu berada di:", style: style.textWhite),
+                        Consumer<SettingsProvider>(
+                          builder: (context, settings, child) {
+                            return settings.isGettingLocation || settings.address == null ? Container(
+                              width: 50.0,
+                              height: 46.0,
+                              child: SpinKitThreeBounce(color: Colors.white, size: 30.0,),
+                            ) : GestureDetector(
+                              onTap: () async {
+                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA) as Map;
+                                print(results);
+                                // TODO set latest selected radius
+                              },
+                              child: Container(
+                                height: 46.0,
+                                child: RichText(text: TextSpan(
+                                  style: Theme.of(context).textTheme.bodyText1,
+                                  children: <TextSpan>[
+                                    TextSpan(text: '${settings.address.subAdminArea},\n', style: style.textHeadlineWhite),
+                                    TextSpan(text: settings.address.countryName, style: style.textTitleWhite,)
+                                  ],
+                                ),),
+                              ),
+                            );
+                          }
+                        ),
+                      ],),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: IconButton(
+                        highlightColor: Colors.white24,
+                        splashColor: Colors.white24,
+                        padding: EdgeInsets.all(15),
+                        onPressed: _getMyLocation,
+                        icon: RotationTransition(
+                          turns: Tween(begin: 0.0, end: 1.0).animate(_spinController),
+                          child: Icon(LineIcons.refresh, color: Colors.white,),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 10,),
-                ],),
+                    SizedBox(width: 10,),
+                  ],),
+                ),
+                pinned: true,
+              ),
+            ];
+          },
+          body: Stack(
+            alignment: Alignment.topCenter,
+            children: <Widget>[
+              // Selector<SettingsProvider, double>(
+              //   selector: (buildContext, settings) => settings.scrollPosition,
+              //   builder: (context, scrollPosition, child) {
+              //     return Container(width: double.infinity, height: 320.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),);
+              //   }
+              // ),
+              Container(width: double.infinity, height: 350.0, child: CustomPaint(painter: CurvePainter(color: THEME_COLOR,),),),
+              Positioned.fill(child: SmartRefresher(
+                enablePullDown: true,
+                enablePullUp: false,
+                header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR,),
+                controller: _refreshController,
+                onRefresh: _getAllData,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
 
-                SizedBox(height: SECTION_MARGIN,),
+                          AnimatedSize(
+                            duration: Duration(milliseconds: 800),
+                            curve: Curves.easeOut,
+                            vsync: this,
+                            child: _isChartExpand ? Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: Container(
+                                width: double.infinity,
+                                height: 150,
+                                child: LineChart(
+                                  _getLineChartData(),
+                                  swapAnimationDuration: Duration(milliseconds: 500),
+                                ),
+                              ),
+                            ) : Container(width: double.infinity,),
+                          ),
 
-                Expanded(child: SmartRefresher(
-                  enablePullDown: true,
-                  enablePullUp: false,
-                  header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR,),
-                  controller: _refreshController,
-                  onRefresh: _getAllData,
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: SECTION_MARGIN),
+                              child: AnimatedOpacity(
+                                opacity: _isChartButton ? 1 : 0,
+                                duration: Duration(milliseconds: 400),
+                                child: UiButton(
+                                  _isChartExpand ? "Hide chart" : "Show chart",
+                                  icon: _isChartExpand ? LineIcons.chevron_circle_up : LineIcons.chevron_circle_down,
+                                  width: 118,
+                                  height: 30,
+                                  textStyle: style.textWhiteS,
+                                  color: Colors.teal[300],
+                                  onPressed: () {
+                                    setState(() {
+                                      _isChartExpand = !_isChartExpand;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
 
-                      Container(
-                        width: double.infinity,
-                        height: 150,
-                        child: LineChart(
-                          _getLineChartData(),
-                          swapAnimationDuration: Duration(milliseconds: 500),
-                        ),
+                          Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                          SizedBox(height: 12,),
+                          CardList('iklanTerpasang'),
+                          CardList('pencarianTerpasang'),
+                          CardList('pesanMasuk'),
+
+                          SizedBox(height: SECTION_MARGIN,),
+
+                          Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                          SizedBox(height: 12,),
+                          Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
+                            CardBox('iklan'),
+                            CardBox('pengguna'),
+                            CardBox('pencari'),
+                          ],),
+
+                          SizedBox(height: SECTION_MARGIN,),
+
+                          // Container(
+                          //   width: double.infinity,
+                          //   height: 150,
+                          //   child: LineChart(
+                          //     _getLineChartData(),
+                          //     swapAnimationDuration: Duration(milliseconds: 500),
+                          //   ),
+                          // ),
+
+                          // SizedBox(height: 100,),
+
+                        ],),
                       ),
-
-                      SizedBox(height: SECTION_MARGIN,),
-
-                      Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
-                      SizedBox(height: 12,),
-                      CardList('iklanTerpasang'),
-                      CardList('pencarianTerpasang'),
-                      CardList('pesanMasuk'),
-
-                      SizedBox(height: SECTION_MARGIN,),
-
-                      Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
-                      SizedBox(height: 12,),
-                      Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
-                        CardBox('iklan'),
-                        CardBox('pengguna'),
-                        CardBox('pencari'),
-                      ],),
-
-                      SizedBox(height: SECTION_MARGIN,),
-
-                      // Text("Ingin jangkauan lebih luas?", style: style.textLabel),
-                      // SizedBox(height: 12,),
-                      // UiButton("Upgrade akunmu", width: 200, color: Colors.teal[300], textStyle: style.textButton, icon: LineIcons.certificate, iconRight: true, onPressed: () {
-                      //   // TODO upgrade akun
-                      // }),
-
-                      // SizedBox(height: SECTION_MARGIN,),
-                    ],),
+                    ],
                   ),
-                ),),
-              ],
-            ),
-          ),),
-          _isLoading ? Positioned.fill(child: SafeArea(
-            child: Container(
-              color: Colors.white,
-              child: Center(child: UiLoader(),),
-            ),
-          ),) : SizedBox()
-        ],
+                ),
+              ),),
+              _isLoading ? Positioned.fill(child: SafeArea(
+                child: Container(
+                  color: Colors.white,
+                  child: Center(child: UiLoader(),),
+                ),
+              ),) : SizedBox()
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -620,5 +657,38 @@ class _CardListState extends State<CardList> {
         ],),
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._widget);
+  final Widget _widget;
+
+  @override
+  double get minExtent => 104.0;
+  @override
+  double get maxExtent => 204.0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    // double statusBarHeight = MediaQuery.of(context).padding.top;
+    return Container(
+      decoration: BoxDecoration(
+        // border: Border.all(
+        //   color: Colors.white,
+        //   width: 1.0,
+        // ),
+        color: THEME_COLOR,
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: 20, bottom: 20),
+        child: _widget,
+      )
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }
