@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 // import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
@@ -188,7 +189,7 @@ class _PetaState extends State<Peta> {
                   _mapController = googleMapController;
                   rootBundle.loadString('assets/map_style.txt').then((json) {
                     _mapController.setMapStyle(json);
-                    Future.delayed(Duration(milliseconds: 1000), () {
+                    Future.delayed(Duration(milliseconds: 3000), () {
                       setState(() {
                         _isLoading = false;
                       });
@@ -226,7 +227,7 @@ class _PetaState extends State<Peta> {
               child: AnimatedOpacity(
                 opacity: _isLoading ? 1 : 0,
                 duration: Duration(milliseconds: 1000),
-                child: Container(color: Colors.white, child: Center(child: _isLoading ? UiLoader() : SizedBox())),
+                child: Container(color: THEME_BACKGROUND, child: Center(child: _isLoading ? SpinKitChasingDots(color: Colors.teal[200], size: 50,) : SizedBox())),
               ),
             ),
             Align(alignment: Alignment.topCenter, child: Row(
@@ -237,7 +238,7 @@ class _PetaState extends State<Peta> {
                   color: Colors.transparent,
                   shape: CircleBorder(),
                   clipBehavior: Clip.antiAlias,
-                  child: IconButton(padding: EdgeInsets.all(15), icon: Icon(LineIcons.arrow_left), color: Colors.black, iconSize: 30, onPressed: () {
+                  child: IconButton(padding: EdgeInsets.all(15), icon: Icon(LineIcons.arrow_left), color: THEME_COLOR, iconSize: 30, onPressed: () {
                     Navigator.of(context).pop();
                   },),
                 ),

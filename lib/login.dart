@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +40,8 @@ class _LoginState extends State<Login> {
     });
   }
 
+  _generateNewKey() => Key(DateTime.now().millisecondsSinceEpoch.toString());
+
   _getCurrentUser() async {
     FocusScope.of(context).requestFocus(FocusNode());
     if (!_isLoading) setState(() {
@@ -49,7 +52,7 @@ class _LoginState extends State<Login> {
       print(" ==> FIREBASE USER: NOT LOGGED IN");
       setState(() {
         // _smsVerificationCode = '';
-        _loginFormKey = Key(DateTime.now().millisecondsSinceEpoch.toString());
+        _loginFormKey = _generateNewKey();
         _isLoading = false;
       });
     } else {
@@ -85,6 +88,7 @@ class _LoginState extends State<Login> {
           );
           await Navigator.of(context).pushNamed(ROUTE_HOME);
           setState(() {
+            _loginFormKey = _generateNewKey();
             _isLoading = false;
           });
         } else {
@@ -134,7 +138,7 @@ class _LoginState extends State<Login> {
                   index: _isLoading ? 0 : 1,
                   alignment: Alignment.center,
                   children: <Widget>[
-                    UiLoader(loaderColor: Colors.white, textStyle: style.textWhite,),
+                    SpinKitChasingDots(color: Colors.white70, size: 50,),
                     LoginForm(
                       key: _loginFormKey,
                       getCurrentUser: _getCurrentUser,

@@ -88,7 +88,7 @@ class MyApp extends StatelessWidget {
           var _isFromSplash = arguments['fromSplash'] ?? false;
           return PageTransition(
             type: PageTransitionType.fade,
-            duration: Duration(milliseconds: _isFromSplash ? 2000 : 500),
+            duration: Duration(milliseconds: _isFromSplash ? 2000 : 300),
             settings: settings,
             child: page
           );

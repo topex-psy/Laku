@@ -10,7 +10,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-// import '../extensions/widget.dart';
+import '../extensions/widget.dart';
 import '../providers/notifications.dart';
 // import '../providers/person.dart';
 import '../providers/settings.dart';
@@ -122,7 +122,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   _getAllData() {
     // print(" ==> GET ALL DATA ..................");
     final notification = Provider.of<NotificationsProvider>(context, listen: false);
-    Future.delayed(Duration(milliseconds: 2000), () {
+    Future.delayed(Duration(milliseconds: 5000), () {
       _refreshController.refreshCompleted();
       // TODO on error
       // _refreshController.refreshFailed();
@@ -155,7 +155,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       colors: [
         Color(0xff4af699),
       ],
-      barWidth: 7,
+      barWidth: 6,
       isStrokeCapRound: true,
       dotData: FlDotData(show: false,),
       belowBarData: BarAreaData(show: false,),
@@ -173,7 +173,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       colors: [
         Color(0xffeba434),
       ],
-      barWidth: 6,
+      barWidth: 5,
       isStrokeCapRound: true,
       dotData: FlDotData(show: true,),
       belowBarData: BarAreaData(show: false,),
@@ -190,7 +190,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       colors: const [
         Color(0xff27b6fc),
       ],
-      barWidth: 8,
+      barWidth: 7,
       isStrokeCapRound: true,
       dotData: FlDotData(show: false,),
       belowBarData: BarAreaData(show: false,),
@@ -214,8 +214,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         bottomTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          textStyle: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 16,),
-          margin: 10,
+          textStyle: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 13,),
+          margin: 6,
           getTitles: (value) {
             switch (value.toInt()) {
               case 2:
@@ -234,13 +234,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
           getTitles: (value) {
             switch (value.toInt()) {
               case 1:
-                return '1m';
+                return '10';
               case 2:
-                return '2m';
+                return '20';
               case 3:
-                return '3m';
+                return '30';
               case 4:
-                return '5m';
+                return '50';
             }
             return '';
           },
@@ -410,92 +410,102 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                 controller: _refreshController,
                 onRefresh: _getAllData,
                 child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                  child: AnimatedOpacity(
+                    opacity: _isLoading ? 0 : 1,
+                    duration: Duration(milliseconds: 1000),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
 
-                          // AnimatedSize(
-                          //   duration: Duration(milliseconds: 800),
-                          //   curve: Curves.easeOut,
-                          //   vsync: this,
-                          //   child: _isChartExpand ? Padding(
-                          //     padding: EdgeInsets.only(bottom: 12),
-                          //     child: Container(
-                          //       width: double.infinity,
-                          //       height: 150,
-                          //       child: LineChart(
-                          //         _getLineChartData(),
-                          //         swapAnimationDuration: Duration(milliseconds: 500),
-                          //       ),
-                          //     ),
-                          //   ) : Container(width: double.infinity,),
-                          // ),
+                            // AnimatedSize(
+                            //   duration: Duration(milliseconds: 800),
+                            //   curve: Curves.easeOut,
+                            //   vsync: this,
+                            //   child: _isChartExpand ? Padding(
+                            //     padding: EdgeInsets.only(bottom: 12),
+                            //     child: Container(
+                            //       width: double.infinity,
+                            //       height: 150,
+                            //       child: LineChart(
+                            //         _getLineChartData(),
+                            //         swapAnimationDuration: Duration(milliseconds: 500),
+                            //       ),
+                            //     ),
+                            //   ) : Container(width: double.infinity,),
+                            // ),
 
-                          // Center(
-                          //   child: Padding(
-                          //     padding: EdgeInsets.only(bottom: SECTION_MARGIN),
-                          //     child: AnimatedOpacity(
-                          //       opacity: _isChartButton ? 1 : 0,
-                          //       duration: Duration(milliseconds: 400),
-                          //       child: UiButton(
-                          //         _isChartExpand ? "Hide chart" : "Show chart",
-                          //         icon: _isChartExpand ? LineIcons.chevron_circle_up : LineIcons.chevron_circle_down,
-                          //         width: 118,
-                          //         height: 30,
-                          //         textStyle: style.textWhiteS,
-                          //         color: Colors.teal[300],
-                          //         onPressed: () {
-                          //           setState(() {
-                          //             _isChartExpand = !_isChartExpand;
-                          //           });
-                          //         },
-                          //       ),
-                          //     ),
-                          //   ),
-                          // ),
+                            // Center(
+                            //   child: Padding(
+                            //     padding: EdgeInsets.only(bottom: SECTION_MARGIN),
+                            //     child: AnimatedOpacity(
+                            //       opacity: _isChartButton ? 1 : 0,
+                            //       duration: Duration(milliseconds: 400),
+                            //       child: UiButton(
+                            //         _isChartExpand ? "Hide chart" : "Show chart",
+                            //         icon: _isChartExpand ? LineIcons.chevron_circle_up : LineIcons.chevron_circle_down,
+                            //         width: 118,
+                            //         height: 30,
+                            //         textStyle: style.textWhiteS,
+                            //         color: Colors.teal[300],
+                            //         onPressed: () {
+                            //           setState(() {
+                            //             _isChartExpand = !_isChartExpand;
+                            //           });
+                            //         },
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
 
-                          Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
-                          SizedBox(height: 12,),
-                          CardList('iklanTerpasang'),
-                          CardList('pencarianTerpasang'),
-                          CardList('pesanMasuk'),
+                            Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                            SizedBox(height: 12,),
+                            CardList('iklanTerpasang'),
+                            CardList('pencarianTerpasang'),
+                            CardList('pesanMasuk'),
 
-                          SizedBox(height: SECTION_MARGIN,),
+                            SizedBox(height: SECTION_MARGIN,),
 
-                          Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
-                          SizedBox(height: 12,),
-                          Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
-                            CardBox('iklan'),
-                            CardBox('pengguna'),
-                            CardBox('pencari'),
+                            Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                            SizedBox(height: 12,),
+                            Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: <Widget>[
+                              CardBox('iklan'),
+                              CardBox('pengguna'),
+                              CardBox('pencari'),
+                            ],),
+
+                            SizedBox(height: SECTION_MARGIN,),
+
+                            // Container(
+                            //   width: double.infinity,
+                            //   height: 150,
+                            //   child: LineChart(
+                            //     _getLineChartData(),
+                            //     swapAnimationDuration: Duration(milliseconds: 500),
+                            //   ),
+                            // ),
+
+                            // SizedBox(height: 100,),
+
                           ],),
-
-                          SizedBox(height: SECTION_MARGIN,),
-
-                          // Container(
-                          //   width: double.infinity,
-                          //   height: 150,
-                          //   child: LineChart(
-                          //     _getLineChartData(),
-                          //     swapAnimationDuration: Duration(milliseconds: 500),
-                          //   ),
-                          // ),
-
-                          // SizedBox(height: 100,),
-
-                        ],),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),),
               _isLoading ? Positioned.fill(child: SafeArea(
-                child: Container(
-                  color: Colors.white,
-                  child: Center(child: UiLoader(),),
+                child: AbsorbPointer(
+                  child: Container(
+                    child: Center(
+                      child: SpinKitChasingDots(
+                        color: Colors.teal[300],
+                        size: 100,
+                      ),
+                    ),
+                  ),
                 ),
               ),) : SizedBox()
             ],
@@ -678,7 +688,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 104.0;
   @override
-  double get maxExtent => 274.0;
+  double get maxExtent => 264.0;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
