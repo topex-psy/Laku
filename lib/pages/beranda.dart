@@ -1,18 +1,19 @@
 import 'dart:async';
-import 'dart:math';
+// import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 // import '../extensions/widget.dart';
 import '../providers/notifications.dart';
+// import '../providers/person.dart';
+import '../providers/settings.dart';
 import '../utils/constants.dart';
 import '../utils/curves.dart';
 import '../utils/helpers.dart';
@@ -36,10 +37,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   var _isLoading = true;
   Timer _timer;
 
-  var _isGettingLocation = false;
   var _isChartExpand = false;
   var _isChartButton = true;
-  Address _address;
 
   @override
   void onPageVisible() {
@@ -53,7 +52,6 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
 
   @override
   void initState() {
-    // _scrollController.addListener(_scrollListener);
     _spinController = AnimationController(
       duration: Duration(milliseconds: 500),
       vsync: this,
@@ -72,11 +70,6 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     super.dispose();
   }
 
-  // _scrollListener() {
-  //   var opacity = min(1, _scrollController.offset / (200 - kToolbarHeight));
-  //   print("_scrollController.offset = ${_scrollController.offset}");
-  // }
-
   _runTimer() {
     _getAllData();
     _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getAllData());
@@ -89,14 +82,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     });
     if (!isGranted) return;
 
-    if (_isGettingLocation) return;
-    setState(() {
-      _isGettingLocation = true;
-    });
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    if (settings.isGettingLocation) return;
+    settings.setSettings(isGettingLocation: true);
     _spinController.forward();
 
     print("... GETTING MY LOCATION");
-    var address = _address;
+    var address = settings.address;
     try {
       var position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       var coordinates = Coordinates(position.latitude, position.longitude);
@@ -123,15 +115,12 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       print("... GETTING MY LOCATION error: $e");
     }
     _spinController.reset();
-    setState(() {
-      _address = address;
-      _isGettingLocation = false;
-    });
+    settings.setSettings(address: address, isGettingLocation: false);
   }
 
   _getAllData() {
     // print(" ==> GET ALL DATA ..................");
-    var notification = Provider.of<NotificationsProvider>(context, listen: false);
+    final notification = Provider.of<NotificationsProvider>(context, listen: false);
     Future.delayed(Duration(milliseconds: 2000), () {
       _refreshController.refreshCompleted();
       // TODO on error
@@ -167,12 +156,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ],
       barWidth: 8,
       isStrokeCapRound: true,
-      dotData: FlDotData(
-        show: false,
-      ),
-      belowBarData: BarAreaData(
-        show: false,
-      ),
+      dotData: FlDotData(show: false,),
+      belowBarData: BarAreaData(show: false,),
     );
     final LineChartBarData lineChartBarData2 = LineChartBarData(
       spots: [
@@ -185,16 +170,12 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ],
       isCurved: true,
       colors: [
-        Color(0xffaa4cfc),
+        Color(0xffebe534),
       ],
       barWidth: 6,
       isStrokeCapRound: true,
-      dotData: FlDotData(
-        show: true,
-      ),
-      belowBarData: BarAreaData(show: false, colors: [
-        Color(0x00aa4cfc),
-      ]),
+      dotData: FlDotData(show: true,),
+      belowBarData: BarAreaData(show: false,),
     );
     final LineChartBarData lineChartBarData3 = LineChartBarData(
       spots: [
@@ -210,12 +191,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ],
       barWidth: 8,
       isStrokeCapRound: true,
-      dotData: FlDotData(
-        show: false,
-      ),
-      belowBarData: BarAreaData(
-        show: false,
-      ),
+      dotData: FlDotData(show: false,),
+      belowBarData: BarAreaData(show: false,),
     );
     return [
       lineChartBarData1,
@@ -318,7 +295,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
             });
           } else if (scrollNotification is ScrollUpdateNotification) {
           } else if (scrollNotification is ScrollEndNotification) {
-            if (!_isChartButton && _scrollController.offset == 0) setState(() {
+            if (!_isChartButton && _scrollController.offset <= kToolbarHeight) setState(() {
               _isChartButton = true;
             });
           }
@@ -346,42 +323,6 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                 expandedHeight: kToolbarHeight,
                 floating: false,
                 pinned: false,
-                // flexibleSpace: FlexibleSpaceBar(
-                  // centerTitle: false,
-                  // title: Text("Pengaturan", style: TextStyle(
-                  //   color: Colors.white,
-                  //   fontFamily: THEME_FONT_MAIN,
-                  //   fontWeight: FontWeight.bold,
-                  //   fontSize: 17,
-                  //   height: 1.0,
-                  // )), //.withOpacity(_titleOpacity),
-                  // background: Stack(children: <Widget>[
-                  //   Positioned.fill(child: CachedNetworkImage(
-                  //     imageUrl: Uri.encodeFull('https://img.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148258092.jpg?size=626&ext=jpg'),
-                  //     placeholder: (context, url) => Container(child: Center(child: SizedBox(width: 100, height: 100, child: Padding(padding: EdgeInsets.all(50), child: CircularProgressIndicator())))),
-                  //     errorWidget: (context, url, error) => Container(child: Center(child: SizedBox(width: 100, height: 100, child: Icon(Icons.error, color: Colors.grey,)))),
-                  //     fit: BoxFit.cover,
-                  //   ),),
-                  //   Positioned.fill(child: IgnorePointer(child: Container(
-                  //     decoration: BoxDecoration(
-                  //       color: Colors.white,
-                  //       gradient: LinearGradient(
-                  //         begin: FractionalOffset.bottomCenter,
-                  //         end: FractionalOffset.topCenter,
-                  //         colors: [
-                  //           h.cardColor().withOpacity(1.0),
-                  //           h.cardColor().withOpacity(0.0),
-                  //         ],
-                  //         stops: [
-                  //           0.0,
-                  //           0.65,
-                  //         ]
-                  //       ),
-                  //     ),
-                  //   ),),),
-                  //   Align(alignment: Alignment.center, child: Image.asset("images/logo.png", width: 150, height: 150, fit: BoxFit.cover,),),
-                  // ],),
-                // ),
               ),
               SliverPersistentHeader(
                 delegate: _SliverAppBarDelegate(
@@ -393,53 +334,32 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                         Text("Kamu berada di:", style: style.textWhite),
 
-                        Builder(
-                          builder: (context) {
-                            return _isGettingLocation || _address == null ? Container(
+                        Consumer<SettingsProvider>(
+                          builder: (context, settings, child) {
+                            return settings.isGettingLocation || settings.address == null ? Container(
                               width: 50.0,
                               height: 46.0,
-                              child: SpinKitThreeBounce(
-                                color: Colors.white,
-                                size: 30.0,
-                              ),
-                            )
-                            : GestureDetector(
+                              child: SpinKitThreeBounce(color: Colors.white, size: 30.0,),
+                            ) : GestureDetector(
                               onTap: () async {
-                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA, arguments: { 'address': _address, 'radius': 10000 }) as Map;
+                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA) as Map;
                                 print(results);
                                 // TODO set latest selected radius
                               },
                               child: Container(
                                 height: 46.0,
-                                // child: Selector<PersonProvider, Address>(
-                                //   selector: (buildContext, person) => person.address,
-                                //   builder: (context, address, child) {
-                                //     return RichText(text: TextSpan(
-                                //       style: Theme.of(context).textTheme.bodyText1,
-                                //       children: <TextSpan>[
-                                //         TextSpan(text: '${address.subAdminArea},\n', style: style.textHeadlineWhite),
-                                //         TextSpan(text: address.countryName, style: style.textTitleWhite,)
-                                //       ],
-                                //     ),);
-                                //   }
-                                // ),
-
                                 child: RichText(text: TextSpan(
                                   style: Theme.of(context).textTheme.bodyText1,
                                   children: <TextSpan>[
-                                    TextSpan(text: '${_address.subAdminArea},\n', style: style.textHeadlineWhite),
-                                    TextSpan(text: _address.countryName, style: style.textTitleWhite,)
+                                    TextSpan(text: '${settings.address.subAdminArea},\n', style: style.textHeadlineWhite),
+                                    TextSpan(text: settings.address.countryName, style: style.textTitleWhite,)
                                   ],
                                 ),),
-
                               ),
                             );
                           }
-                        )
+                        ),
 
-
-
-                        
                       ],),
                     ),
                     Material(

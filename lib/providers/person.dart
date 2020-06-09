@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:geocoder/geocoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PersonProvider with ChangeNotifier {
   String _namaDepan;
   String _namaBelakang;
-  Address _address;
   String _foto;
   bool _isSignedIn;
 
@@ -16,20 +14,17 @@ class PersonProvider with ChangeNotifier {
 
   String get namaDepan => _namaDepan;
   String get namaBelakang => _namaBelakang;
-  Address get address => _address;
   String get foto => _foto;
   bool get isSignedIn => _isSignedIn;
 
   setPerson({
     String namaDepan,
     String namaBelakang,
-    Address address,
     String foto,
     bool isSignedIn,
   }) {
     if (namaDepan != null) _namaDepan = namaDepan;
     if (namaBelakang != null) _namaBelakang = namaBelakang;
-    if (address != null) _address = address;
     if (foto != null) _foto = foto;
     if (isSignedIn != null) _isSignedIn = isSignedIn;
     notifyListeners();

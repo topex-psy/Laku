@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
             case ROUTE_DAFTAR: page = Daftar(); break;
             case ROUTE_PROFIL: page = Profil(); break;
             case ROUTE_TAMBAH: page = Tambah(); break;
-            case ROUTE_PETA:   page = Peta(arguments); break;
+            case ROUTE_PETA:   page = Peta(); break;
             case ROUTE_HOME:
             case '/':
             default: page = Home(analytics: analytics, observer: observer,); break;

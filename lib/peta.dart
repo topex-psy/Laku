@@ -5,8 +5,10 @@ import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:provider/provider.dart';
 // import 'package:permission_handler/permission_handler.dart';
 import 'models/iklan.dart';
+import 'providers/settings.dart';
 // import 'utils/helpers.dart';
 import 'utils/constants.dart';
 // import 'utils/styles.dart' as style;
@@ -16,23 +18,11 @@ const DEFAULT_RADIUS = 10000;
 const DEFAULT_ZOOM = 16.34;
 
 class Peta extends StatefulWidget {
-  Peta(Map arguments, {Key key})
-  : address = arguments['address'],
-    radius = arguments['radius'] ?? DEFAULT_RADIUS,
-    zoom = arguments['zoom'] ?? DEFAULT_ZOOM,
-    super(key: key);
-
-  final Address address;
-  final int radius;
-  final double zoom;
-
   @override
-  _PetaState createState() => _PetaState(address, radius, zoom);
+  _PetaState createState() => _PetaState();
 }
 
 class _PetaState extends State<Peta> {
-  _PetaState(this._address, this._radius, this._zoom) : _location = LatLng(_address.coordinates.latitude, _address.coordinates.longitude);
-  
   // final _cameraPositionDebouncer = Debouncer<CameraPosition>(Duration(milliseconds: 1000));
 
   GoogleMapController _mapController;
@@ -42,7 +32,7 @@ class _PetaState extends State<Peta> {
   var _listIklan = <IklanModel>[];
   var _isLoading = true;
   Address _address;
-  double _zoom;
+  double _zoom = DEFAULT_ZOOM;
   int _radius;
   KategoriIklanModel _kategori;
   final _listKategori = <KategoriIklanModel>[
@@ -148,6 +138,10 @@ class _PetaState extends State<Peta> {
 
   @override
   void initState() {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    _address = settings.address;
+    _location = LatLng(_address.coordinates.latitude, _address.coordinates.longitude);
+    _radius = settings.radius;
     _kategori = _listKategori[0];
     // _cameraPositionDebouncer.values.listen((cameraPosition) {
     //   _setLocation(cameraPosition);
