@@ -91,7 +91,8 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   }
 
   _lanjut() {
-    Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
+    // TODO Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
+    Navigator.of(context).pushNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
   }
 
   @override
@@ -102,8 +103,8 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
         backgroundColor: THEME_COLOR,
         body: SafeArea(
           child: Center(
-            child: Hero(
-              tag: "SplashLogo",
+            child: GestureDetector(
+              onTap: isDebugMode ? _lanjut : null,
               child: Stack(
                 alignment: Alignment.center,
                 children: <Widget>[
@@ -115,7 +116,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                         offset: Offset(0, 17 * _animation1.value),
                         child: Opacity(
                           opacity: _animation1.value,
-                          child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
+                          child: Hero(tag: "SplashLogo", child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,)),
                         )
                       );
                     }

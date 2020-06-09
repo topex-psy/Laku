@@ -170,7 +170,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       ],
       isCurved: true,
       colors: [
-        Color(0xffebe534),
+        Color(0xffeba434),
       ],
       barWidth: 6,
       isStrokeCapRound: true,

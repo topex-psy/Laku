@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
+import 'package:laku/routes/fade.dart';
 import 'package:provider/provider.dart';
 // import 'package:pull_to_refresh/pull_to_refresh.dart';
 // import 'services/firestore_service.dart';
@@ -88,7 +89,8 @@ class MyApp extends StatelessWidget {
             case '/':
             default: page = Home(analytics: analytics, observer: observer,); break;
           }
-          return MaterialPageRoute(settings: settings, builder: (_) => page);
+          // TODO return MaterialPageRoute(settings: settings, builder: (_) => page);
+          return FadeRoute(page: page);
         },
         initialRoute: ROUTE_SPLASH,
         home: Splash(),
