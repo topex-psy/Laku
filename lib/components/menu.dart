@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:launch_review/launch_review.dart';
 import 'package:line_icons/line_icons.dart';
 import '../utils/helpers.dart';
@@ -47,9 +48,9 @@ class _MenuNavContentState extends State<MenuNavContent> {
   @override
   Widget build(BuildContext context) {
     final List<MenuNavItem> _menu = [
-      MenuNavItem(value: MenuNavVal.rate_us, icon: LineIcons.comment_o, teks: "Beri Feedback/Rating"),
-      MenuNavItem(value: MenuNavVal.settings, icon: LineIcons.cog, teks: "Pengaturan"),
-      MenuNavItem(value: MenuNavVal.logout, icon: LineIcons.sign_out, teks: "Keluar"),
+      MenuNavItem(value: MenuNavVal.rate_us, icon: LineIcons.comment_o, teks: 'menu_feedback'.tr()),
+      MenuNavItem(value: MenuNavVal.settings, icon: LineIcons.cog, teks: 'menu_settings'.tr()),
+      MenuNavItem(value: MenuNavVal.logout, icon: LineIcons.sign_out, teks: 'menu_logout'.tr()),
     ];
     
     return Column(children: _menu.map((MenuNavItem menu) {

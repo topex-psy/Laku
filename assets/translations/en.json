@@ -1,6 +1,10 @@
 {
-  "menu_home": "Home",
-  "menu_find": "Browse",
+  "menu_account": "Account",
+  "menu_browse": "Browse",
   "menu_favorites": "Favorites",
-  "menu_account": "Account"
+  "menu_feedback": "Give Feedback/Rating",
+  "menu_home": "Home",
+  "menu_logout": "Logout",
+  "menu_manage": "My Ads",
+  "menu_settings": "Settings"
 }

@@ -1,6 +1,10 @@
 {
-  "menu_home": "Beranda",
-  "menu_find": "Temukan",
+  "menu_account": "Akun",
+  "menu_browse": "Temukan",
   "menu_favorites": "Favorit",
-  "menu_account": "Akun"
+  "menu_feedback": "Beri Feedback/Rating",
+  "menu_home": "Beranda",
+  "menu_logout": "Keluar",
+  "menu_manage": "Iklan Saya",
+  "menu_settings": "Pengaturan"
 }

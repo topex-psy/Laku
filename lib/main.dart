@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:provider/provider.dart';
-// import 'package:pull_to_refresh/pull_to_refresh.dart';
 // import 'models/report.dart';
 import 'providers/notifications.dart';
 import 'providers/person.dart';
@@ -53,12 +51,6 @@ class MyApp extends StatelessWidget {
 
     // final _firestore = FirestoreService();
 
-    // final supportedLocales = [
-    //   Locale('id', 'ID'),
-    //   Locale('en', 'US'),
-    // ];
-    // final defaultLocale = supportedLocales.first;
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => PersonProvider()),
@@ -70,24 +62,6 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: APP_NAME,
         debugShowCheckedModeBanner: false,
-        // supportedLocales: supportedLocales,
-        // locale: defaultLocale,
-        // localizationsDelegates: [
-        //   AppLocalizations.delegate,
-        //   GlobalMaterialLocalizations.delegate,
-        //   GlobalCupertinoLocalizations.delegate,
-        //   GlobalWidgetsLocalizations.delegate,
-        //   RefreshLocalizations.delegate,
-        // ],
-        // localeResolutionCallback: (locale, supportedLocales) {
-        //   for (var supportedLocale in supportedLocales) {
-        //     if (
-        //       supportedLocale.languageCode == locale.languageCode &&
-        //       supportedLocale.countryCode == locale.countryCode
-        //     ) return supportedLocale;
-        //   }
-        //   return defaultLocale;
-        // },
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,

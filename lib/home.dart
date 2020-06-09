@@ -44,9 +44,9 @@ class _HomeState extends State<Home> {
   PreloadPageController _pageController;
   final _pages = <Page>[
     Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
-    Page(title: 'menu_find'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, koleksi
-    Page(title: 'menu_favorites'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
-    Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, pesan masuk, notifikasi
+    Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
+    Page(title: 'menu_manage'.tr(), icon: LineIcons.dropbox, content: Favorit()), // kelola iklan saya
+    Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
     // Page(title: 'Beranda', icon: LineIcons.home, content: Beranda()),
     // Page(title: 'Temukan', icon: LineIcons.search, content: Temukan()),
     // Page(title: 'Favorit', icon: LineIcons.heart_o, content: Favorit()),

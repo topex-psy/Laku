@@ -14,26 +14,16 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> with TickerProviderStateMixin {
-  AnimationController _animation1Controller; //, _animation2Controller, _animation3Controller;
-  Animation _animation1; //, _animation2, _animation3;
+  AnimationController _animation1Controller;
+  Animation _animation1;
 
   @override
   void initState() {
     _animation1Controller = AnimationController(duration: Duration(milliseconds: 500), vsync: this);
-    // _animation2Controller = AnimationController(duration: Duration(milliseconds: 1500), vsync: this);
-    // _animation3Controller = AnimationController(duration: Duration(milliseconds: 1500), vsync: this);
     _animation1 = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
       parent: _animation1Controller,
       curve: Curves.ease
     ));
-    // _animation2 = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-    //   parent: _animation1Controller,
-    //   curve: Curves.easeOutBack
-    // ));
-    // _animation3 = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-    //   parent: _animation1Controller,
-    //   curve: Curves.bounceInOut
-    // ));
     super.initState();
 
     // set orientation menjadi portrait untuk sementara
@@ -55,8 +45,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   @override
   void dispose() {
     _animation1Controller.dispose();
-    // _animation2Controller.dispose();
-    // _animation3Controller.dispose();
     // SystemChrome.setPreferredOrientations([
     //   DeviceOrientation.landscapeRight,
     //   DeviceOrientation.landscapeLeft,
@@ -79,20 +67,13 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
     isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
     isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
-    // Future.delayed(Duration.zero, () {
-    //   _animation2Controller.forward();
-    // });
-    // Future.delayed(Duration(milliseconds: 250), () {
-    //   _animation3Controller.forward();
-    // });
     Future.delayed(Duration(milliseconds: SPLASH_DISMISS), () {
       _lanjut();
     });
   }
 
   _lanjut() {
-    // TODO Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
-    Navigator.of(context).pushNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
+    Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN);
   }
 
   @override
@@ -128,36 +109,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                       size: 100,
                     ),
                   ),
-                  // AnimatedBuilder(
-                  //   animation: _animation2Controller,
-                  //   builder: (context, child) {
-                  //     return Transform.translate(
-                  //       offset: Offset(41.75, -22.5),
-                  //       child: Transform.scale(
-                  //         scale: 1 * _animation2.value,
-                  //         child: Opacity(
-                  //           opacity: 0.8,
-                  //           child: Container(width: 25, height: 25, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,),),
-                  //         ),
-                  //       )
-                  //     );
-                  //   }
-                  // ),
-                  // AnimatedBuilder(
-                  //   animation: _animation3Controller,
-                  //   builder: (context, child) {
-                  //     return Transform.translate(
-                  //       offset: Offset(11, -53.5),
-                  //       child: Transform.scale(
-                  //         scale: 1 * _animation3.value,
-                  //         child: Opacity(
-                  //           opacity: 0.6,
-                  //           child: Container(width: 36.5, height: 36.5, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white,),),
-                  //         ),
-                  //       )
-                  //     );
-                  //   }
-                  // ),
                 ],
               ),
             ),
