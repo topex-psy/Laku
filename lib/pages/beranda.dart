@@ -58,7 +58,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     _headerOffsetAnimationController = AnimationController(vsync: this, duration: Duration(seconds: 0));
     _headerOffsetAnimation = Tween(begin: Offset(0.0, 0.0), end: Offset(0.0, -100.0)).animate(_headerOffsetAnimationController);
     _headerOpacityAnimationController = AnimationController(vsync: this, duration: Duration(seconds: 0));
-    _headerOpacityAnimation = Tween(begin: 15.0, end: 0.0).animate(_headerOffsetAnimationController);
+    _headerOpacityAnimation = Tween(begin: 1.0, end: 0.0).animate(_headerOpacityAnimationController);
     _spinController = AnimationController(
       duration: Duration(milliseconds: 500),
       vsync: this,
@@ -302,9 +302,9 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
             child: NotificationListener<ScrollNotification>(
               onNotification: (scrollNotification) {
                 if (scrollNotification.metrics.axis == Axis.vertical && scrollNotification is ScrollUpdateNotification) {
-                  // print("scrollNotification metrics: ${scrollNotification.metrics.pixels} / ${_scrollController.offset}");
+                  print("scrollNotification metrics: ${scrollNotification.metrics.pixels} / ${_scrollController.offset}");
                   _headerOffsetAnimationController.animateTo(_scrollController.offset / 200);
-                  _headerOpacityAnimationController.animateTo(_scrollController.offset / 50);
+                  _headerOpacityAnimationController.animateTo((_scrollController.offset - 210) / 40);
                   return true;
                 }
                 if (scrollNotification is ScrollStartNotification) {
@@ -349,9 +349,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                             AnimatedBuilder(
                               animation: _headerOpacityAnimationController,
                               builder: (context, child) {
-                                print("_headerOpacityAnimation.value = ${_headerOpacityAnimation.value}");
                                 return Opacity(
-                                  opacity: min(1.0, _headerOpacityAnimation.value),
+                                  opacity: _headerOpacityAnimation.value,
                                   child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
                                     SizedBox(width: 10,),
                                     Icon(LineIcons.map_marker, color: Colors.white, size: 50,),
