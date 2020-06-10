@@ -433,7 +433,7 @@ class _UiInputState extends State<UiInput> {
 }
 
 class UiSelect extends StatefulWidget {
-  UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.margin, this.onSelect, this.error = '', this.simple = false}) : super(key: key);
+  UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.margin, this.onSelect, this.error = '', this.simple = false, this.isDense = false}) : super(key: key);
   final IconData icon;
   final List<dynamic> listMenu;
   final dynamic initialValue;
@@ -444,6 +444,7 @@ class UiSelect extends StatefulWidget {
   final void Function(dynamic) onSelect;
   final String error;
   final bool simple;
+  final bool isDense;
 
   @override
   _UiSelectState createState() => _UiSelectState();
@@ -467,33 +468,39 @@ class _UiSelectState extends State<UiSelect> {
   @override
   Widget build(BuildContext context) {
     Widget card = Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50.0),),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),),
       elevation: 1.0,
       margin: widget.margin ?? EdgeInsets.only(bottom: 8),
       child: Padding(
-        padding: EdgeInsets.all(10),
+        padding: widget.isDense ? EdgeInsets.all(10) : EdgeInsets.symmetric(horizontal: 15, vertical: 12),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             SizedBox(width: 4,),
-            widget.icon == null ? SizedBox() : Icon(widget.icon, size: 19.5, color: Colors.grey,),
-            widget.icon == null ? SizedBox() : SizedBox(width: 14,),
-            DropdownButton<dynamic>(
-              isDense: true,
-              underline: SizedBox(),
-              value: widget.value ?? _val,
-              hint: Text(widget.placeholder),
-              style: TextStyle(fontSize: widget.fontSize ?? 16, color: Theme.of(context).textTheme.bodyText1.color),
-              onChanged: (dynamic val) {
-                setState(() { _val = val; });
-                widget.onSelect(val);
-              },
-              items: widget.listMenu.map<DropdownMenuItem<dynamic>>((dynamic val) {
-                return DropdownMenuItem<dynamic>(
-                  value: val,
-                  child: Text(val.toString(), style: TextStyle(fontWeight: FontWeight.normal),),
-                );
-              }).toList(),
+            widget.icon == null ? SizedBox() : Padding(
+              padding: EdgeInsets.only(right: widget.isDense ? 12 : 15),
+              child: Icon(widget.icon, size: 19.5, color: Colors.grey,),
+            ),
+            Theme(
+              data: Theme.of(context),
+              // data: Theme.of(context).copyWith(canvasColor: Colors.white,),
+              child: DropdownButton<dynamic>(
+                isDense: true,
+                underline: SizedBox(),
+                value: widget.value ?? _val,
+                hint: Text(widget.placeholder),
+                style: TextStyle(fontSize: widget.fontSize ?? 16, color: Theme.of(context).textTheme.bodyText1.color),
+                onChanged: (dynamic val) {
+                  setState(() { _val = val; });
+                  widget.onSelect(val);
+                },
+                items: widget.listMenu.map<DropdownMenuItem<dynamic>>((dynamic val) {
+                  return DropdownMenuItem<dynamic>(
+                    value: val,
+                    child: Text(val.toString(), style: TextStyle(fontWeight: FontWeight.normal),),
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ),

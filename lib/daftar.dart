@@ -43,7 +43,9 @@ class _DaftarState extends State<Daftar> {
   var _lakuTag = '';
 
   _dismissError(String tag) {
-    if (_errorText.containsKey(tag)) setState(() { _errorText.remove(tag); });
+    if (_errorText.containsKey(tag)) setState(() {
+      _errorText.remove(tag);
+    });
   }
 
   @override

@@ -243,7 +243,7 @@ class _PetaState extends State<Peta> {
                   },),
                 ),
                 Spacer(),
-                UiSelect(simple: true, icon: _kategori.icon, listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
+                UiSelect(simple: true, isDense: true, icon: _kategori.icon, listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
                   setState(() { _kategori = val; });
                 },),
                 SizedBox(width: 8)

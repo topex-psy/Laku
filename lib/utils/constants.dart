@@ -38,6 +38,5 @@ const THEME_INPUT_HEIGHT   = 50.0;
 const THEME_PADDING        = 15.0;
 const THEME_FONT_MAIN      = 'Quicksand';
 const THEME_FONT_SECONDARY = 'Quicksand';
-const THEME_FONT_HEADLINE  = 'DeRotterdamDemo';
 const THEME_CARD_ELEVATION = 4.0;
 const THEME_CARD_RADIUS    = 15.0;

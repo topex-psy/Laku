@@ -215,7 +215,7 @@ class UIHelper {
     Text(teks ?? "Tunggu sebentar ...")
   ],), showButton: false, barrierDismissible: false);
 
-  // fungsi untuk menampilkan notifikasi flashbar
+  /// fungsi untuk menampilkan notifikasi flashbar
   showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, void Function() action}) {
     showFlash(
       context: context,
@@ -251,7 +251,7 @@ class UIHelper {
     );
   }
 
-  // fungsi untuk menampilkan popup pesan gagal konek
+  /// fungsi untuk menampilkan popup pesan gagal konek
   failAlertInternet({String message, void Function() onRetry, String onRetryLabel}) {
     showFlashBar("Gagal Memuat", message ?? "Terjadi masalah saat memuat data. Harap periksa koneksi internet Anda!", actionLabel: onRetry == null ? 'TUTUP' : (onRetryLabel ?? 'REFRESH'), action: onRetry);
   }
