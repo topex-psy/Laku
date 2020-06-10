@@ -489,7 +489,7 @@ class _UiSelectState extends State<UiSelect> {
                 underline: SizedBox(),
                 value: widget.value ?? _val,
                 hint: Text(widget.placeholder),
-                style: TextStyle(fontSize: widget.fontSize ?? 16, color: Theme.of(context).textTheme.bodyText1.color),
+                style: TextStyle(fontFamily: THEME_FONT_MAIN, fontSize: widget.fontSize ?? 16, color: Theme.of(context).textTheme.bodyText1.color),
                 onChanged: (dynamic val) {
                   setState(() { _val = val; });
                   widget.onSelect(val);
