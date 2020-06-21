@@ -13,7 +13,6 @@ import 'utils/helpers.dart';
 import 'auth_login.dart';
 import 'auth_register.dart';
 import 'home.dart';
-import 'intro.dart';
 import 'peta.dart';
 import 'profil.dart';
 import 'splash.dart';
@@ -77,7 +76,6 @@ class MyApp extends StatelessWidget {
 
           switch (settings.name) {
             case ROUTE_SPLASH: page = Splash(); break;
-            case ROUTE_INTRO:  page = Intro();  break;
             case ROUTE_LOGIN:  page = Login();  break;
             case ROUTE_DAFTAR: page = Daftar(); break;
             case ROUTE_PROFIL: page = Profil(); break;

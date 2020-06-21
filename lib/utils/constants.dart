@@ -18,7 +18,6 @@ const DEBUG_ONBOARDING     = false;
 const DEFAULT_USER_IMAGE   = "images/anon.png";
 
 const ROUTE_SPLASH         = '/Splash';
-const ROUTE_INTRO          = '/Intro';
 const ROUTE_LOGIN          = '/Login';
 const ROUTE_DAFTAR         = '/Daftar';
 const ROUTE_HOME           = '/Home';
