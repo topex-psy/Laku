@@ -140,25 +140,25 @@ class _DaftarState extends State<Daftar> {
         body: SafeArea(
           child: Column(
             children: <Widget>[
-              Card(
-                margin: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                elevation: 4,
-                color: THEME_COLOR,
-                child: UiCaption(
-                  ["Identitas Saya", "Buat Nomor PIN"][_registerIndex],
-                  no: _registerIndex + 1,
-                  total: 2,
-                  icon: Padding(
-                    padding: EdgeInsets.only(left: 12, right: 12),
-                    child: Icon([LineIcons.user, LineIcons.lock][_registerIndex], color: Colors.white, size: 32.0,),
-                  ),
-                  stepAction: (page) {
-                    if (_registerIndex == page) return;
-                    if (page == 0) _batal(); else _register();
-                  },
-                ),
-              ),
+              // Card(
+              //   margin: EdgeInsets.zero,
+              //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              //   elevation: 4,
+              //   color: THEME_COLOR,
+              //   child: UiCaption(
+              //     ["Identitas Saya", "Buat Nomor PIN"][_registerIndex],
+              //     no: _registerIndex + 1,
+              //     total: 2,
+              //     icon: Padding(
+              //       padding: EdgeInsets.only(left: 12, right: 12),
+              //       child: Icon([LineIcons.user, LineIcons.lock][_registerIndex], color: Colors.white, size: 32.0,),
+              //     ),
+              //     stepAction: (page) {
+              //       if (_registerIndex == page) return;
+              //       if (page == 0) _batal(); else _register();
+              //     },
+              //   ),
+              // ),
               Expanded(
                 child: SingleChildScrollView(
                   controller: _registerScrollController,
@@ -169,6 +169,7 @@ class _DaftarState extends State<Daftar> {
                       children: <Widget>[
                         // register step 1: identitas
                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          SizedBox(height: 10,),
                           Row(children: <Widget>[
                             GestureDetector(
                               child: Icon(LineIcons.sign_in, color: THEME_COLOR, size: 69,),
@@ -177,7 +178,7 @@ class _DaftarState extends State<Daftar> {
                             SizedBox(width: 20,),
                             Expanded(child: Text("Silakan lengkapi data diri untuk dapat memulai menggunakan aplikasi $APP_NAME.", style: TextStyle(color: Colors.grey[600], fontSize: 14),)),
                           ],),
-                          SizedBox(height: 20,),
+                          SizedBox(height: 30,),
                           UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],),
                           SizedBox(height: 4,),
                           UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],),
@@ -231,18 +232,29 @@ class _DaftarState extends State<Daftar> {
                         ],),
                         // register step 2: buat pin
                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          SizedBox(height: 10,),
                           Row(children: <Widget>[
-                            Icon(LineIcons.info_circle, color: THEME_COLOR, size: 72,),
+                            Icon(LineIcons.info_circle, color: THEME_COLOR, size: 69,),
                             SizedBox(width: 20,),
-                            Expanded(child: RichText(text: TextSpan(
-                              style: Theme.of(context).textTheme.bodyText1,
-                              children: <TextSpan>[
-                                TextSpan(text: 'PENTING! ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                TextSpan(text: 'Nomor PIN adalah kode angka rahasia Anda di aplikasi $APP_NAME. Harap ingat nomor PIN Anda!', style: TextStyle(color: Colors.blueGrey),)
-                              ],
-                            ),),),
+                            Expanded(child: Text("Buat kode 6-digit angka rahasia Anda untuk dapat mengakses aplikasi $APP_NAME.", style: TextStyle(color: Colors.grey[600], fontSize: 14),)),
                           ],),
                           SizedBox(height: 20,),
+                          Container(
+                            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.amber[200],
+                              borderRadius: BorderRadius.circular(10)
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: RichText(text: TextSpan(
+                              style: Theme.of(context).textTheme.bodyText1,
+                              children: <TextSpan>[
+                                TextSpan(text: 'PENTING: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                TextSpan(text: 'Harap ingat nomor PIN Anda!', style: TextStyle(color: Colors.grey[600]),)
+                              ],
+                            ),),
+                          ),
+                          SizedBox(height: 30,),
                           UiInput("Buat Nomor PIN", info: "6-digit", textStyle: style.textInputL, isRequired: true, icon: LineIcons.unlock_alt, type: UiInputType.PIN, controller: _nomorPINController, focusNode: _nomorPINFocusNode, error: _errorText["pin"],),
                           SizedBox(height: 4,),
                           UiInput("Konfirmasi Nomor PIN", textStyle: style.textInputL, isRequired: true, icon: LineIcons.unlock, type: UiInputType.PIN, controller: _konfirmasiPINController, focusNode: _konfirmasiPINFocusNode, error: _errorText["pin2"],),

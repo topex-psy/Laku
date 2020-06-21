@@ -6,7 +6,9 @@ import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:step_progress_indicator/step_progress_indicator.dart';
 import '../extensions/string.dart';
+import '../models/basic.dart';
 import '../plugins/datetime_picker_formfield.dart';
 import 'api.dart';
 import 'constants.dart';
@@ -350,10 +352,19 @@ class _UiInputState extends State<UiInput> {
             ),
           ),
           Align(
-            alignment: Alignment.topRight,
-            child: IconButton(icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility), iconSize: _iconSize, color: Colors.grey, onPressed: () {
-              setState(() { _viewText = !_viewText; });
-            },),
+            alignment: Alignment.centerRight,
+            child: Transform.translate(
+              offset: Offset(0, 0),
+              child: IconButton(
+                icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility),
+                iconSize: _iconSize,
+                color: Colors.grey,
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  setState(() { _viewText = !_viewText; });
+                },
+              ),
+            ),
           ),
         ],);
         break;
@@ -699,6 +710,65 @@ class UiButtonIcon extends StatelessWidget {
   }
 }
 
+class UiStepIndicator extends StatelessWidget {
+  UiStepIndicator({Key key, this.list = const [], this.currentIndex = 0, this.onTapDot}) : super(key: key);
+  final List<IconLabel> list;
+  final int currentIndex;
+  final void Function(int) onTapDot;
+
+  @override
+  Widget build(BuildContext context) {
+    var _screenWidth = MediaQuery.of(context).size.width;
+    var _barWidth = _screenWidth - _screenWidth / list.length;
+    return Stack(
+      alignment: Alignment.center,
+      children: <Widget>[
+        Container(width: _barWidth, height: 3, color: THEME_COLOR,),
+        StepProgressIndicator(
+          totalSteps: list.length,
+          currentStep: currentIndex + 1,
+          size: 36,
+          selectedColor: THEME_COLOR,
+          unselectedColor: Colors.teal[400],
+          customStep: (index, color, _) => UiStepIndicatorDot(index, item: list[index], currentIndex: currentIndex, onTap: onTapDot,),
+        ),
+      ],
+    );
+  }
+}
+
+class UiStepIndicatorDot extends StatelessWidget {
+  UiStepIndicatorDot(this.index, {Key key, this.item, this.currentIndex = 0, this.onTap}) : super(key: key);
+  final IconLabel item;
+  final int index;
+  final int currentIndex;
+  final void Function(int) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    var _isDone = index < currentIndex;
+    var _isCurrent = index == currentIndex;
+    var _icon = _isDone ? Icons.check_circle : item.icon;
+    return Transform.scale(
+      scale: _isCurrent ? 1.5 : 1.0,
+      child: GestureDetector(
+        onTap: onTap == null ? null : () => onTap(index),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _isCurrent ? Colors.teal[400] : THEME_COLOR,
+            shape: BoxShape.circle,
+          ),
+          child: Center(child: _icon == null ? SizedBox() : Icon(
+            _icon,
+            color: Colors.white,
+            // color: _isDone ? Colors.white : THEME_COLOR,
+          ),),
+        ),
+      ),
+    );
+  }
+}
+
 class UiMapMarker extends StatefulWidget {
   UiMapMarker({Key key, this.size = 50.0, this.onTap}) : super(key: key);
   final double size;
@@ -849,27 +919,30 @@ class Copyright extends StatelessWidget {
 }
 
 class UiCaption extends StatelessWidget {
-  UiCaption(this.title, {Key key, this.no, this.total, this.icon, this.stepAction, this.tool}) : super(key: key);
-  final int no;
-  final int total;
-  final Widget icon;
-  final String title;
+  UiCaption({Key key, this.steps, this.currentIndex = 0, this.stepAction, this.tool}) : super(key: key);
+  final List<IconLabel> steps;
+  final int currentIndex;
   final void Function(int) stepAction;
   final Widget tool;
 
   @override
   Widget build(BuildContext context) {
+    var no = currentIndex + 1;
+    var icon = Padding(
+      padding: EdgeInsets.only(left: 12, right: 12),
+      child: Icon(steps[currentIndex].icon, color: Colors.white, size: 32.0,),
+    );
     return Container(
       height: 60,
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-        icon ?? SizedBox(),
-        Text(title, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
+        icon,
+        Text(steps[currentIndex].label, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
         Spacer(),
         no == null ? SizedBox() : Padding(
           padding: EdgeInsets.only(right: 12),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: List.generate(total, (index) {
+            children: List.generate(steps.length, (index) {
               double _scale = no == index + 1 ? 1.1 : 0.9;
               Color _backgroundColor = no == index + 1 ? Colors.white : Colors.white30;
               Color _textColor = no == index + 1 ? THEME_COLOR : THEME_COLOR;
