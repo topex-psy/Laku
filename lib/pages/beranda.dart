@@ -333,7 +333,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                         ),
                       ),
                       actions: [
-                        IconButton(icon: Icon(LineIcons.building_o, color: Colors.white,), tooltip: 'Toko Saya', onPressed: () async {
+                        IconButton(icon: Icon(LineIcons.map_o, color: Colors.white,), tooltip: 'Lokasi Saya', onPressed: () async {
                           final results = await Navigator.of(context).pushNamed(ROUTE_TOKO) as Map;
                           print(results);
                         },),

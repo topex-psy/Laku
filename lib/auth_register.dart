@@ -24,7 +24,15 @@ class Daftar extends StatefulWidget {
 }
 
 class _DaftarState extends State<Daftar> {
-  final _registerScrollController = ScrollController();
+  final _listSteps = <IconLabel>[
+    IconLabel(LineIcons.user, "Identitas Diri"),
+    IconLabel(LineIcons.unlock, "Buat Nomor PIN"),
+    IconLabel(LineIcons.map_o, "Tentukan Lokasi"),
+  ];
+  final _scrollControllers = [
+    ScrollController(),
+    ScrollController(),
+  ];
   var _registerIndex = 0;
 
   TextEditingController _namaLengkapController;
@@ -41,6 +49,8 @@ class _DaftarState extends State<Daftar> {
   var _jenisKelamin  = 'L';
   var _tanggalLahir  = '';
   var _nomorPIN = '';
+  var _alamat = '';
+  double _lat, _lng;
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) setState(() {
@@ -82,7 +92,23 @@ class _DaftarState extends State<Daftar> {
     super.dispose();
   }
 
-  _registerUser() async {
+  _navigate(index) async {
+    print(" ... NAVIGATE: $index");
+    var isGranted = true;
+    if (index == 2) { // form lokasi
+      isGranted = await Permission.location.request().isGranted;
+      if (!isGranted) {
+        h.showFlashBar("Izin Anda Dibutuhkan", "Anda harus mengizinkan akses lokasi untuk melanjutkan pendaftaran.", action: () => _navigate(index), actionLabel: "Izinkan");
+      }
+    }
+
+    if (isGranted) setState(() {
+      _registerIndex = index;
+      if (index < 2) _scrollControllers[index].jumpTo(0);
+    });
+  }
+
+  _submit() async {
     // var cekApi = await auth('tag_check', {'tag': tag});
     final registerData = <String, String>{
       'uid': currentPerson.uid,
@@ -92,6 +118,9 @@ class _DaftarState extends State<Daftar> {
       'tanggalLahir': _tanggalLahir,
       'email': _emailController.text,
       'pin': _nomorPIN,
+      'address': _alamat,
+      'lat': _lat.toString(),
+      'lng': _lng.toString(),
     };
     h.loadAlert();
     await auth('register', registerData);
@@ -99,62 +128,50 @@ class _DaftarState extends State<Daftar> {
   }
 
   _register() async {
-    setState(() {
-      _errorText.clear();
-      switch(_registerIndex) {
-        case 2:
-          break;
-        case 1:
-          if (_nomorPINController.text.isEmpty) {
-            _errorText["pin"] = "Harap buat nomor PIN kamu!";
-          } else if (_konfirmasiPINController.text.isEmpty) {
-            _errorText["pin2"] = "Harap ketik ulang nomor PIN!";
-          } else if (_nomorPINController.text != _konfirmasiPINController.text) {
-            _errorText["pin2"] = "Nomor PIN & konfirmasi PIN tidak sama!";
-          } else {
-            _nomorPIN = _nomorPINController.text;
-          }
-          break;
-        default:
-          if (_namaLengkapController.text.isEmpty) _errorText["name"] = "Harap masukkan nama lengkapmu!";
-          if (_emailController.text.isEmpty) _errorText["email"] = "Harap masukkan alamat emailmu!";
-          if (_tanggalLahir.isEmpty) _errorText["dob"] = "Harap masukkan tanggal lahirmu!";
-      }
-    });
-    if (_errorText.isEmpty) {
-      _lanjut();
-    }
-  }
-
-  _lanjut() async {
+    print(" ... REGISTER");
+    // var errorString = <String, String>{};
+    var invalidIndex = -1;
     if (_registerIndex == 2) {
-      _registerUser();
-      return;
     }
-    var _isValid = false;
-    if (_registerIndex == 1) {
-      if (await Permission.location.request().isGranted) {
-        _isValid = true;
+    if (_registerIndex >= 1 && invalidIndex < 0) {
+      if (_nomorPINController.text.isEmpty) {
+        _errorText["pin"] = "Harap buat nomor PIN kamu!";
+      } else if (_konfirmasiPINController.text.isEmpty) {
+        _errorText["pin2"] = "Harap ketik ulang nomor PIN!";
+      } else if (_nomorPINController.text != _konfirmasiPINController.text) {
+        _errorText["pin2"] = "Nomor PIN & konfirmasi PIN tidak sama!";
       } else {
-        h.showFlashBar("Izin Anda Dibutuhkan", "Anda harus mengizinkan akses lokasi untuk melanjutkan pendaftaran.", action: _lanjut, actionLabel: "Izinkan");
+        _nomorPIN = _nomorPINController.text;
       }
-    } else {
-      _isValid = true;
+      if (_errorText.isNotEmpty) {
+        invalidIndex = 1;
+      }
     }
-    if (_isValid) {
-      setState(() {
-        _registerIndex++;
-        _registerScrollController.jumpTo(0);
-      });
+    if (_registerIndex >= 0 && invalidIndex < 0) {
+      if (_namaLengkapController.text.isEmpty) _errorText["name"] = "Harap masukkan nama lengkapmu!";
+      if (_emailController.text.isEmpty) _errorText["email"] = "Harap masukkan alamat emailmu!";
+      if (_tanggalLahir.isEmpty) _errorText["dob"] = "Harap masukkan tanggal lahirmu!";
+      if (_errorText.isNotEmpty) {
+        invalidIndex = 0;
+      }
+    }
+    print(" ... REGISTER invalidIndex = $invalidIndex");
+    if (invalidIndex >= 0) {
+      print(" ... REGISTER cond = 1");
+      _navigate(invalidIndex);
+      // setState(() {});
+    } else if (_registerIndex == _listSteps.length - 1) {
+      print(" ... REGISTER cond = 2");
+      _submit(); // last step reached
+    } else {
+      print(" ... REGISTER cond = 3");
+      _navigate(_registerIndex + 1);
     }
   }
 
   Future<bool> _batal() async {
     if (_registerIndex > 0) {
-      setState(() {
-        _registerIndex--;
-        _registerScrollController.jumpTo(0);
-      });
+      _navigate(_registerIndex - 1);
     } else {
       if (await h.showConfirm("Batal Daftar?", "Apakah kamu yakin ingin membatalkan pendaftaran?")) a.signOut();
     }
@@ -163,13 +180,6 @@ class _DaftarState extends State<Daftar> {
 
   @override
   Widget build(BuildContext context) {
-
-    final _listSteps = <IconLabel>[
-      IconLabel(LineIcons.user, "Identitas"),
-      IconLabel(LineIcons.unlock, "Nomor PIN"),
-      IconLabel(LineIcons.map_marker, "Lokasi"),
-    ];
-
     return WillPopScope(
       onWillPop: _batal,
       child: Scaffold(
@@ -184,29 +194,23 @@ class _DaftarState extends State<Daftar> {
                 child: UiCaption(
                   steps: _listSteps,
                   currentIndex: _registerIndex,
-                  stepAction: (index) {
-                    if (index == _registerIndex - 1) _batal();
-                    else if (index == _registerIndex + 1) _register();
-                  },
+                  stepAction: _navigate,
                 ),
               ),
 
               // SizedBox(height: 30,),
               
-              // UiStepIndicator(list: _listSteps, currentIndex: _registerIndex, onTapDot: (index) {
-              //   if (index == _registerIndex - 1) _batal();
-              //   else if (index == _registerIndex + 1) _register();
-              // },),
+              // UiStepIndicator(list: _listSteps, currentIndex: _registerIndex, onTapDot: _navigate,),
               
               Expanded(
-                child: SingleChildScrollView(
-                  controller: _registerScrollController,
-                  padding: EdgeInsets.only(top: 20, right: 20, left: 20, bottom: 50),
-                  child: IndexedStack(
-                    index: _registerIndex,
-                    children: <Widget>[
-                      // register step 1: identitas
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                child: IndexedStack(
+                  index: _registerIndex,
+                  children: <Widget>[
+                    // register step 1: identitas
+                    SingleChildScrollView(
+                      controller: _scrollControllers[0],
+                      padding: EdgeInsets.only(top: 20, right: 20, left: 20, bottom: 50),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                         SizedBox(height: 10,),
                         Row(children: <Widget>[
                           GestureDetector(
@@ -266,10 +270,14 @@ class _DaftarState extends State<Daftar> {
                           ),
                         ),
                         SizedBox(height: 30,),
-                        Center(child: UiButton("Lanjut", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
+                        UiButton("Lanjut", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),
                       ],),
-                      // register step 2: buat pin
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                    ),
+                    // register step 2: buat pin
+                    SingleChildScrollView(
+                      controller: _scrollControllers[1],
+                      padding: EdgeInsets.only(top: 20, right: 20, left: 20, bottom: 50),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                         SizedBox(height: 10,),
                         Row(children: <Widget>[
                           Icon(LineIcons.info_circle, color: THEME_COLOR, size: 69,),
@@ -297,13 +305,20 @@ class _DaftarState extends State<Daftar> {
                         SizedBox(height: 4,),
                         UiInput("Konfirmasi Nomor PIN", textStyle: style.textInputL, isRequired: true, icon: LineIcons.unlock, type: UiInputType.PIN, controller: _konfirmasiPINController, focusNode: _konfirmasiPINFocusNode, error: _errorText["pin2"],),
                         SizedBox(height: 20,),
-                        Center(child: UiButton("Daftar", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
+                        UiButton("Daftar", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),
                       ],),
-                      // register step 3: lokasi
-                      // FormLocation(isStarted: _registerIndex == _listSteps.length - 1,),
-                      Container()
-                    ],
-                  ),
+                    ),
+                    // register step 3: lokasi
+                    FormLocation(
+                      isStarted: _registerIndex == _listSteps.length - 1,
+                      onSubmit: (address, latLng) {
+                        _alamat = address;
+                        _lat = latLng.latitude;
+                        _lng = latLng.longitude;
+                        _register();
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -315,8 +330,9 @@ class _DaftarState extends State<Daftar> {
 }
 
 class FormLocation extends StatefulWidget {
-  FormLocation({Key key, this.isStarted = false}) : super(key: key);
+  FormLocation({Key key, this.isStarted = false, @required this.onSubmit}) : super(key: key);
   final bool isStarted;
+  final void Function(String, LatLng) onSubmit;
 
   @override
   _FormLocationState createState() => _FormLocationState();
@@ -362,7 +378,8 @@ class _FormLocationState extends State<FormLocation> {
   void didUpdateWidget(FormLocation oldWidget) {
     super.didUpdateWidget(oldWidget);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!oldWidget.isStarted && widget.isStarted) _getMyLocation(); else setState(() {
+      if (!oldWidget.isStarted && widget.isStarted) _getMyLocation();
+      else if (!widget.isStarted) setState(() {
         _location = null;
         _address = null;
       });
@@ -408,129 +425,152 @@ class _FormLocationState extends State<FormLocation> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
+      alignment: Alignment.center,
       children: <Widget>[
-        Text("Di mana lokasi Anda?", textAlign: TextAlign.center, style: style.textWhite),
-        SizedBox(height: 12,),
-        Expanded(
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: _location?.target ?? _defaultLocation,
-                  zoom: _location?.zoom ?? _defaultZoom,
-                  bearing: 0.0,
-                  tilt: 0.0,
-                ),
-                mapType: MapType.normal,
-                onMapCreated: (googleMapController) {
-                  _mapController = googleMapController;
-                  rootBundle.loadString('assets/map_style.txt').then((json) {
-                    _mapController.setMapStyle(json);
-                  });
-                },
-                onCameraMove: (cameraPosition) {
-                  _cameraPositionDebouncer.value = cameraPosition;
-                },
-                onTap: (latLng) {
-                  // var cameraUpdate = CameraUpdate.newCameraPosition(CameraPosition(target: latLng,),);
-                  // _mapController?.animateCamera(cameraUpdate);
-                  _goToLocation(CameraPosition(target: latLng,),);
-                },
-              ),
-              _location == null ? Container() : UiMapMarker(size: 50.0, onTap: () => _goToLocation(_myLocation),),
-              _address == null ? Container() : Align(alignment: Alignment.bottomCenter, child: AddressBox(address: _address, onSetAddress: (address) => setState(() { _address = address; }),),),
-              _address == null ? UiLoader(label: "Memuat lokasi ...",) : Container()
-            ],
+        GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: _location?.target ?? _defaultLocation,
+            zoom: _location?.zoom ?? _defaultZoom,
+            bearing: 0.0,
+            tilt: 0.0,
           ),
+          mapType: MapType.normal,
+          onMapCreated: (googleMapController) {
+            _mapController = googleMapController;
+            rootBundle.loadString('assets/map_style.txt').then((json) {
+              _mapController.setMapStyle(json);
+            });
+          },
+          onCameraMove: (cameraPosition) {
+            _cameraPositionDebouncer.value = cameraPosition;
+          },
+          onTap: (latLng) {
+            _goToLocation(CameraPosition(target: latLng, zoom: _defaultZoom),);
+          },
         ),
+        _location == null ? Container() : UiMapMarker(size: 50.0, onTap: () => _goToLocation(_myLocation),),
+        _address == null ? Container() : Align(alignment: Alignment.bottomCenter, child: Container(
+          height: 150,
+          child: Card(
+            color: Colors.white,
+            elevation: 4,
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: Row(children: <Widget>[
+                      Icon(LineIcons.map_marker, size: 30, color: THEME_COLOR,),
+                      SizedBox(width: 8,),
+                      Expanded(child: Text(_address,)),
+                      SizedBox(width: 8,),
+                      IconButton(
+                        icon: Icon(LineIcons.edit),
+                        iconSize: 20,
+                        color: THEME_COLOR,
+                        onPressed: () async {
+                          var address = await h.showAlert(title: "Alamat Anda", showButton: false, body: FormAddress(address: _address),);
+                          if (address != null && address.isNotEmpty) {
+                            print(" ... ON SET ADDRESS = $address");
+                            setState(() {
+                              _address = address;
+                            });
+                          }
+                        },
+                      ),
+                    ],),
+                  ),
+                  SizedBox(height: 8),
+                  UiButton(
+                    "Daftar",
+                    height: style.heightButtonL,
+                    color: Colors.green,
+                    icon: LineIcons.check,
+                    textStyle: style.textButtonL,
+                    iconRight: true,
+                    onPressed: _address == null ? null : () => widget.onSubmit(_address, _location.target),
+                  ),
+                  SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
+        ),),
+        _address == null ? Container(width: double.infinity, color: THEME_BACKGROUND, child: UiLoader(label: "Memuat lokasi ...")) : Container()
       ],
     );
   }
 }
 
-class AddressBox extends StatefulWidget {
-  AddressBox({Key key, @required this.address, @required this.onSetAddress}) : super(key: key);
+class FormAddress extends StatefulWidget {
+  FormAddress({Key key, this.address}) : super(key: key);
   final String address;
-  final void Function(String) onSetAddress;
 
   @override
-  _AddressBoxState createState() => _AddressBoxState();
+  _FormAddressState createState() => _FormAddressState();
 }
 
-class _AddressBoxState extends State<AddressBox> {
-  TextEditingController _companyAddressController;
-  FocusNode _companyAddressFocusNode;
-  var _companyAddressError = '';
+class _FormAddressState extends State<FormAddress> {
+  TextEditingController _addressController;
+  FocusNode _addressFocusNode;
+  var _addressError = '';
 
   @override
   void initState() {
-    _companyAddressController = TextEditingController();
-    _companyAddressFocusNode = FocusNode();
+    _addressController = TextEditingController();
+    _addressFocusNode = FocusNode();
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _addressController.text = widget.address;
+      _addressFocusNode.requestFocus();
     });
   }
 
   @override
   void dispose() {
-    _companyAddressController.dispose();
-    _companyAddressFocusNode.dispose();
+    _addressController.dispose();
+    _addressFocusNode.dispose();
     super.dispose();
   }
 
-  _setAddress() {
-    var _newAddress = _companyAddressController.text;
+  _submit() {
+    FocusScope.of(context).requestFocus(FocusNode());
+    var address = _addressController.text;
     setState(() {
-      if (_newAddress == null || _newAddress.isEmpty) {
-        _companyAddressError = 'Harap masukkan alamat usaha Anda';
+      if (address == null || address.isEmpty) {
+        _addressError = 'Harap masukkan alamat Anda';
       } else {
-        _companyAddressError = '';
-        widget.onSetAddress(_newAddress);
+        _addressError = '';
+        Navigator.of(context).pop(address);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    var _isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
-    return Container(
-      height: _isPortrait ? 90 : 70,
-      child: Card(
-        color: Colors.white,
-        elevation: 4,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () {
-            _companyAddressController.text = widget.address;
-            h.showAlert(title: "Alamat Usaha Anda", showButton: false, body: Column(children: <Widget>[
-              Text("Berikan alamat terang termasuk kelurahan, kecamatan, dan kode pos.", style: TextStyle(color: Colors.grey)),
-              UiInput("Alamat Usaha", type: UiInputType.NOTE, isRequired: true, height: 100, borderRadius: BorderRadius.circular(12), icon: LineIcons.map_marker, controller: _companyAddressController, focusNode: _companyAddressFocusNode, error: _companyAddressError,),
-              SizedBox(height: 8,),
-              UiButton("OK", width: 100, height: 45, color: THEME_COLOR, onPressed: () {
-                FocusScope.of(context).requestFocus(FocusNode());
-                h.closeDialog();
-                _setAddress();
-              },),
-            ],),);
-          },
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-            child: Row(children: <Widget>[
-              Icon(LineIcons.map_marker, size: 30, color: THEME_COLOR,),
-              SizedBox(width: 8,),
-              Expanded(child: Text(widget.address,)),
-              SizedBox(width: 8,),
-              Icon(LineIcons.edit, size: 20, color: THEME_COLOR,),
-            ],),
-          ),
-        ),
+    return Column(children: <Widget>[
+      Text("Berikan alamat terang termasuk kelurahan, kecamatan, dan kode pos.", style: TextStyle(color: Colors.grey, fontSize: 12)),
+      SizedBox(height: 12,),
+      UiInput(
+        "Alamat",
+        type: UiInputType.NOTE,
+        isRequired: true,
+        height: 150,
+        borderRadius: BorderRadius.circular(12),
+        showLabel: false,
+        controller: _addressController,
+        focusNode: _addressFocusNode,
+        error: _addressError,
+        onSubmit: (address) => _submit(),
       ),
-    );
+      SizedBox(height: 8,),
+      UiButton("OK", width: 100, height: 45, color: THEME_COLOR, onPressed: _submit,),
+    ],);
   }
 }

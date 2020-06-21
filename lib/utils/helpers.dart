@@ -216,7 +216,7 @@ class UIHelper {
   ],), showButton: false, barrierDismissible: false);
 
   /// fungsi untuk menampilkan notifikasi flashbar
-  showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, void Function() action}) {
+  showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, VoidCallback action}) {
     showFlash(
       context: context,
       duration: Duration(milliseconds: duration),

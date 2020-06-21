@@ -470,16 +470,6 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  @override
-  void didUpdateWidget(LoginForm oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.key != oldWidget.key) {
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   _nomorPonselFocusNode.requestFocus();
-      // });
-    }
-  }
-
   _verifyPhoneNumber(BuildContext context) async {
     if (_nomorPonselController.text.isEmpty) {
       h.showFlashBar("Masukkan nomor ponsel!", "Harap masukkan nomor ponsel valid untuk login atau mendaftar ke aplikasi.");
