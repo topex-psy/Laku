@@ -123,8 +123,18 @@ class _DaftarState extends State<Daftar> {
       'lng': _lng.toString(),
     };
     h.loadAlert();
-    await auth('register', registerData);
-    Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
+    var registerApi = await auth('register', registerData);
+    if (registerApi.isSuccess) {
+      a.firebaseUpdateProfile(namaLengkap: registerData['namaLengkap']);
+      a.firebaseLinkWithEmail(
+        registerData['email'],
+        registerData['pin'],
+      );
+      Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
+    } else {
+      Navigator.of(context).pop();
+      h.failAlert("Gagal Memproses", "Terjadi kendala saat memproses pendaftaran akun Anda.");
+    }
   }
 
   _register() async {
@@ -159,10 +169,9 @@ class _DaftarState extends State<Daftar> {
     if (invalidIndex >= 0) {
       print(" ... REGISTER cond = 1");
       _navigate(invalidIndex);
-      // setState(() {});
     } else if (_registerIndex == _listSteps.length - 1) {
       print(" ... REGISTER cond = 2");
-      _submit(); // last step reached
+      _submit();
     } else {
       print(" ... REGISTER cond = 3");
       _navigate(_registerIndex + 1);

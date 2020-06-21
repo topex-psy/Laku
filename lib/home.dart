@@ -89,10 +89,16 @@ class _HomeState extends State<Home> {
         endDrawer: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
-            child: ClipRRect(
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.69,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.69,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(color: Colors.black45, blurRadius: 25)
+                ],
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
                 child: Drawer(semanticLabel: "Menu panel", child: Column(children: <Widget>[
                   Container(
                     color: THEME_COLOR,

@@ -908,8 +908,8 @@ class Copyright extends StatelessWidget {
           print("OPENING URL: $url");
           print("OPENING PAGE: ${url.replaceAll(APP_HOST, '')}");
           h.loadAlert();
-          Map pageApi = await api('page', type: url.replaceAll(APP_HOST, ''));
-          Map pageRes = pageApi['result'];
+          var pageApi = await api('page', type: url.replaceAll(APP_HOST, ''));
+          Map pageRes = pageApi.result.first;
           h.closeDialog();
           h.showAlert(title: pageRes['JUDUL'], body: h.html(pageRes['ISI'], textStyle: TextStyle(fontSize: 14)));
         },

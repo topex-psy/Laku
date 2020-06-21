@@ -1,14 +1,5 @@
 import 'package:flutter/material.dart';
 
-class KategoriIklanModel {
-  KategoriIklanModel(this.judul, this.icon);
-  final String judul;
-  final IconData icon;
-
-  @override
-  String toString() => judul;
-}
-
 class IklanModel {
   IklanModel({
     this.id,

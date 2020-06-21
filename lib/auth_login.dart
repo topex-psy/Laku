@@ -6,12 +6,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:laku/models/user.dart';
 import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
-import 'extensions/string.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -112,6 +112,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
       } else {
         // Future.microtask(() => _getCurrentUser());
         // Future.delayed(Duration.zero, () => _getCurrentUser());
+        print("_get CurrentUser source 1");
         _getCurrentUser();
       }
     });
@@ -120,6 +121,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   _generateNewKey() => Key(DateTime.now().millisecondsSinceEpoch.toString());
 
   _getCurrentUser() async {
+    print(" ... GET CURRENT USER: $mounted");
+    if (!mounted) return;
     FocusScope.of(context).requestFocus(FocusNode());
     if (!_isLoading) setState(() {
       _isLoading = true;
@@ -136,31 +139,32 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
       print(" ==> FIREBASE USER: EXIST");
       currentPerson.uid = user.uid;
       currentPerson.phone = user.phoneNumber;
-      Map userApi = await api('user', data: {'uid': currentPerson.uid});
-      if (userApi == null) {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-      Map userGet = userApi['get'];
-      if (userGet['TOTAL'] == 0) {
+      var userApi = await api('user', data: {'uid': currentPerson.uid});
+      // if (userApi == null) {
+      //   setState(() {
+      //     _isLoading = false;
+      //   });
+      //   return;
+      // }
+      if (userApi.result.isEmpty) {
         // user belum register
-        final results = await Navigator.of(context).pushNamed(ROUTE_DAFTAR) as Map;
-        // if (results != null && results.containsKey('email')) {
-        //   await auth('register', results);
-        // }
-        print("REGISTER RESULT: $results");
+        await Navigator.of(context).pushNamed(ROUTE_DAFTAR);
+        print(" ... REGISTER DONE");
+        print("_get CurrentUser source 2");
         _getCurrentUser();
       } else {
         // user sudah register
-        Map<String, String> userRes = Map.from(userApi['result'][0]);
-        if (userRes['IS_BANNED'].isEmptyOrNull) {
+        var user = UserModel.fromJson(userApi.result.first);
+        print(" ... USER RESULT: $user");
+        if (user.isBanned) {
+          h.failAlert("Akun Terblokir", "Akunmu diblokir hingga ${f.formatDate(user.banUntil)} karena ${user.banReason}");
+          setState(() { _isLoading = false; });
+        } else {
           var person = Provider.of<PersonProvider>(context, listen: false);
           person.setPerson(
-            namaDepan: userRes['NAMA_DEPAN'],
-            namaBelakang: userRes['NAMA_BELAKANG'],
-            foto: userRes['FOTO'],
+            namaDepan: user.namaDepan,
+            namaBelakang: user.namaBelakang,
+            foto: user.foto,
             isSignedIn: true,
           );
           await Navigator.of(context).pushNamed(ROUTE_HOME);
@@ -168,9 +172,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             _loginFormKey = _generateNewKey();
             _isLoading = false;
           });
-        } else {
-          h.failAlert("Akun Terblokir", "Akunmu diblokir hingga ${f.formatDate(DateTime.parse(userRes['BAN_UNTIL']))} karena ${userRes['BAN_REASON']}");
-          setState(() { _isLoading = false; });
         }
       }
     }
@@ -265,6 +266,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                         Wakelock.disable();
                         _isIntroduction = false;
                       });
+                      print("_get CurrentUser source 3");
                       _getCurrentUser();
                       // Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_LOGIN, (route) => false);
                     }
@@ -322,7 +324,10 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                         SpinKitChasingDots(color: Colors.white70, size: 50,),
                         LoginForm(
                           key: _loginFormKey,
-                          getCurrentUser: _getCurrentUser,
+                          getCurrentUser: () {
+                            print("_get CurrentUser source 4");
+                            _getCurrentUser();
+                          },
                           setLoading: (val) {
                             Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
                             if (_isLoading != val) setState(() {

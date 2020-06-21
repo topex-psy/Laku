@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:laku/models/iklan.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'models/basic.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
@@ -79,15 +79,15 @@ class _FormIklanState extends State<FormIklan> {
   FocusNode _judulFocusNode;
   var _errorText = <String, String>{};
   var _tipe  = 'WTS';
-  KategoriIklanModel _kategori;
+  IconLabel _kategori;
   
-  final _listKategori = <KategoriIklanModel>[
-    KategoriIklanModel('Semua', LineIcons.at),
-    KategoriIklanModel('Jual-Beli', LineIcons.at),
-    KategoriIklanModel('Event', LineIcons.at),
-    KategoriIklanModel('Loker', LineIcons.at),
-    KategoriIklanModel('Jodoh', LineIcons.at),
-    KategoriIklanModel('Lainnya', LineIcons.at),
+  final _listKategori = <IconLabel>[
+    IconLabel(LineIcons.at, 'Semua'),
+    IconLabel(LineIcons.at, 'Jual-Beli'),
+    IconLabel(LineIcons.at, 'Event'),
+    IconLabel(LineIcons.at, 'Loker'),
+    IconLabel(LineIcons.at, 'Jodoh'),
+    IconLabel(LineIcons.at, 'Lainnya'),
   ];
 
   _dismissError(String tag) {

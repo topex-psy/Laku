@@ -5,6 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:laku/models/basic.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 // import 'package:permission_handler/permission_handler.dart';
@@ -35,14 +36,14 @@ class _PetaState extends State<Peta> {
   Address _address;
   double _zoom = DEFAULT_ZOOM;
   int _radius;
-  KategoriIklanModel _kategori;
-  final _listKategori = <KategoriIklanModel>[
-    KategoriIklanModel('Semua', LineIcons.at),
-    KategoriIklanModel('Jual-Beli', LineIcons.at),
-    KategoriIklanModel('Event', LineIcons.at),
-    KategoriIklanModel('Loker', LineIcons.at),
-    KategoriIklanModel('Jodoh', LineIcons.at),
-    KategoriIklanModel('Lainnya', LineIcons.at),
+  IconLabel _kategori;
+  final _listKategori = <IconLabel>[
+    IconLabel(LineIcons.at, 'Semua'),
+    IconLabel(LineIcons.at, 'Jual-Beli'),
+    IconLabel(LineIcons.at, 'Event'),
+    IconLabel(LineIcons.at, 'Loker'),
+    IconLabel(LineIcons.at, 'Jodoh'),
+    IconLabel(LineIcons.at, 'Lainnya'),
   ];
 
   Future<LatLng> _myLocation() async {

@@ -4,6 +4,21 @@ import 'package:dio/dio.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
 
+class ApiModel {
+  ApiModel({
+    this.meta = const {},
+    this.result = const [],
+    this.message = '',
+    this.output = '',
+    this.isSuccess = true
+  });
+  final Map<String, dynamic> meta;
+  final List<Map<String, dynamic>> result;
+  final String message;
+  final String output;
+  final bool isSuccess;
+}
+
 Dio dio = Dio(BaseOptions(
   baseUrl: "${APP_HOST}api",
   connectTimeout: 5000,
@@ -15,7 +30,7 @@ Response<String> response;
 Map responseBody;
 dynamic err;
 
-Future<Map> api(String what, {String type = 'get', Map<String, dynamic> data = const {}}) async {
+Future<ApiModel> api(String what, {String type = 'get', Map<String, dynamic> data = const {}}) async {
   var url = "/data/$what";
   response = null;
   responseBody = null;
@@ -43,10 +58,14 @@ Future<Map> api(String what, {String type = 'get', Map<String, dynamic> data = c
   }
   log("API", what, url, data);
   if (responseBody == null) h.failAlertInternet();
-  return responseBody;
+  return responseBody == null ? ApiModel(isSuccess: false) : ApiModel(
+    meta: responseBody[type],
+    // result: List.from(responseBody['result']),
+    result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
+  );
 }
 
-Future<Map> auth(String what, Map<String, dynamic> data) async {
+Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
   final url = "/auth/$what";
   response = null;
   responseBody = null;
@@ -66,16 +85,21 @@ Future<Map> auth(String what, Map<String, dynamic> data) async {
   }
   log("AUTH", what, url, data);
   if (responseBody == null) h.failAlertInternet();
-  return responseBody;
+  return responseBody == null ? ApiModel(isSuccess: false) : ApiModel(
+    isSuccess: responseBody['status'] == 1,
+    // result: List.from(responseBody['result']),
+    result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
+    message: responseBody['message'],
+    output: responseBody['output'],
+  );
 }
 
 log(String type, String what, String url, Map<String, dynamic> data) {
-  print(" ==> $type $what URL: ${dio.options.baseUrl}$url");
-  print(" ==> $type $what PARAMS: $data");
-  if (err == null) {
-    print(" ==> $type $what RESPONSE: $response");
-    print(" ==> $type $what STATUS CODE: ${response?.statusCode}");
-    return;
-  }
-  print(" ==> $type $what ERROR: $err");
+  print(
+    "\n ==> $type $what URL: ${dio.options.baseUrl}$url"
+    "\n ==> $type $what PARAMS: $data"
+    "\n ==> $type $what RESPONSE: $response"
+    "\n ==> $type $what STATUS CODE: ${response?.statusCode}"
+    "\n ==> $type $what ERROR: $err"
+  );
 }

@@ -109,7 +109,8 @@ class MyRouteObserver extends RouteObserver<PageRoute<dynamic>> {
   void _sendScreenView(String what, PageRoute<dynamic> routeTo, PageRoute<dynamic> routeFrom) {
     var newScreenName = routeTo?.settings?.name;
     var oldScreenName = routeFrom?.settings?.name;
-    print(' ==> ROUTE DID $what: $oldScreenName => $newScreenName');
+    if (what == "pop") print(' ==> ROUTE DID $what: $newScreenName => $oldScreenName');
+    else print(' ==> ROUTE DID $what: $oldScreenName => $newScreenName');
     // do something with it, ie. send it to your analytics service collector
   }
 

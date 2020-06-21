@@ -49,6 +49,31 @@ class UserHelper {
   final BuildContext context;
   UserHelper(this.context);
 
+  Future<bool> firebaseLinkWithCredential(AuthCredential credential) async {
+    final user = await firebaseAuth.currentUser();
+    try {
+      await user.linkWithCredential(credential);
+      print("LINK ACCOUNT SUCCEEEEEEEEEEEEEESS!");
+      return true;
+    } catch(e) {
+      print("LINK ACCOUNT ERROOOOOOOOOOOOOOOOR: $e");
+      return false;
+    }
+  }
+
+  Future<bool> firebaseLinkWithEmail(String email, String password) async {
+    final credential = EmailAuthProvider.getCredential(email: email, password: password);
+    return await firebaseLinkWithCredential(credential);
+  }
+
+  firebaseUpdateProfile({String namaLengkap, String foto}) async {
+    final user = await firebaseAuth.currentUser();
+    final info = UserUpdateInfo();
+    if (namaLengkap != null) info.displayName = namaLengkap;
+    if (foto != null) info.photoUrl = foto;
+    user.updateProfile(info);
+  }
+
   signOut() async {
     final user = await firebaseAuth.currentUser();
     if (user != null) {
@@ -206,14 +231,18 @@ class UIHelper {
   );
 
   /// fungsi untuk menampilkan popup memuat data
-  loadAlert([String teks]) => showAlert(body: Row(children: <Widget>[
-    SizedBox(width: 30, height: 30, child: Padding(
-      padding: EdgeInsets.all(4),
-      child: CircularProgressIndicator(strokeWidth: 4,),
-    )),
-    SizedBox(width: 12,),
-    Text(teks ?? "Tunggu sebentar ...")
-  ],), showButton: false, barrierDismissible: false);
+  loadAlert([String teks]) => showAlert(
+    showButton: false,
+    barrierDismissible: false,
+    body: Row(children: <Widget>[
+      SizedBox(width: 30, height: 30, child: Padding(
+        padding: EdgeInsets.all(4),
+        child: CircularProgressIndicator(strokeWidth: 4,),
+      )),
+      SizedBox(width: 12,),
+      Text(teks ?? "Tunggu sebentar ...")
+    ],),
+  );
 
   /// fungsi untuk menampilkan notifikasi flashbar
   showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, VoidCallback action}) {
