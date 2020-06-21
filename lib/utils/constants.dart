@@ -25,6 +25,8 @@ const ROUTE_HOME           = '/Home';
 const ROUTE_PROFIL         = '/Profil';
 const ROUTE_TAMBAH         = '/Tambah';
 const ROUTE_PETA           = '/Peta';
+const ROUTE_TOKO           = '/Toko';
+const ROUTE_NOTIF          = '/Notif';
 
 const SETUP_MAX_PERSON_AGE = 100;
 const SETUP_MIN_PERSON_AGE = 10;

@@ -859,34 +859,31 @@ class UiCaption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: <Widget>[
+    return Container(
+      height: 60,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         icon ?? SizedBox(),
-        Expanded(child: Container(
-          child: Row(children: <Widget>[
-            Text(title, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
-            Expanded(child: Container(height: 60,),),
-            no == null ? SizedBox() : Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(total, (index) {
-                  double _scale = no == index + 1 ? 1.1 : 0.9;
-                  Color _backgroundColor = no == index + 1 ? Colors.white : Colors.white30;
-                  Color _textColor = no == index + 1 ? THEME_COLOR : THEME_COLOR;
-                  return Transform.scale(
-                    scale: _scale,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      icon: CircleAvatar(backgroundColor: _backgroundColor, child: Text("${index + 1}", style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),),),
-                      onPressed: stepAction == null ? null : () => stepAction(index),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ],),
-        ),),
+        Text(title, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
+        Spacer(),
+        no == null ? SizedBox() : Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(total, (index) {
+              double _scale = no == index + 1 ? 1.1 : 0.9;
+              Color _backgroundColor = no == index + 1 ? Colors.white : Colors.white30;
+              Color _textColor = no == index + 1 ? THEME_COLOR : THEME_COLOR;
+              return Transform.scale(
+                scale: _scale,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: CircleAvatar(backgroundColor: _backgroundColor, child: Text("${index + 1}", style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),),),
+                  onPressed: stepAction == null ? null : () => stepAction(index),
+                ),
+              );
+            }),
+          ),
+        ),
         tool ?? SizedBox(),
       ],),
     );

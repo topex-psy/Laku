@@ -333,8 +333,14 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                         ),
                       ),
                       actions: [
-                        IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), onPressed: () {},),
-                        IconButton(icon: Icon(LineIcons.certificate, color: Colors.white,), onPressed: () {},),
+                        IconButton(icon: Icon(LineIcons.building_o, color: Colors.white,), tooltip: 'Toko Saya', onPressed: () async {
+                          final results = await Navigator.of(context).pushNamed(ROUTE_TOKO) as Map;
+                          print(results);
+                        },),
+                        IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
+                          final results = await Navigator.of(context).pushNamed(ROUTE_NOTIF) as Map;
+                          print(results);
+                        },),
                         SizedBox(width: 8,)
                       ],
                       backgroundColor: THEME_COLOR,

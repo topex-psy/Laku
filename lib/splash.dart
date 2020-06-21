@@ -75,7 +75,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     setState(() {
       _isFinished = true;
     });
-    Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN, arguments: {'fromSplash': !isFirstRun});
+    Navigator.of(context).pushReplacementNamed(isFirstRun ? ROUTE_INTRO : ROUTE_LOGIN, arguments: {'afterSplash': !isFirstRun});
   }
 
   @override
@@ -105,11 +105,8 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                     }
                   ),
                   _isFinished ? SizedBox() : Transform.translate(
+                    child: SpinKitChasingDots(color: Colors.white70, size: 100,),
                     offset: Offset(40, -50),
-                    child: SpinKitChasingDots(
-                      color: Colors.white70,
-                      size: 100,
-                    ),
                   ),
                 ],
               ),

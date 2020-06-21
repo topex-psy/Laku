@@ -8,17 +8,6 @@ import 'utils/widgets.dart';
 
 const jenisKelaminLbl  = <String>['Laki-laki', 'Perempuan'];
 const jenisKelaminVal  = <String>['L', 'P'];
-const golonganDarahVal = <String>['A', 'B', 'O', 'AB'];
-const listProfesi = <String>[
-  'Pengusaha',
-  'Pegawai negeri',
-  'Pegawai swasta',
-  'Pekerja lepas',
-  'Mahasiswa',
-  'Pelajar',
-  'Tidak bekerja',
-  'Lainnya'
-];
 
 class Daftar extends StatefulWidget {
   @override
@@ -32,15 +21,17 @@ class _DaftarState extends State<Daftar> {
   TextEditingController _namaLengkapController;
   TextEditingController _tanggalLahirController;
   TextEditingController _emailController;
-  TextEditingController _lakuTagController;
+  TextEditingController _nomorPINController;
+  TextEditingController _konfirmasiPINController;
   FocusNode _namaLengkapFocusNode;
   FocusNode _tanggalLahirFocusNode;
   FocusNode _emailFocusNode;
-  FocusNode _lakuTagFocusNode;
+  FocusNode _nomorPINFocusNode;
+  FocusNode _konfirmasiPINFocusNode;
   var _errorText = <String, String>{};
   var _jenisKelamin  = 'L';
   var _tanggalLahir  = '';
-  var _lakuTag = '';
+  var _nomorPIN = '';
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) setState(() {
@@ -54,11 +45,13 @@ class _DaftarState extends State<Daftar> {
     _namaLengkapController = TextEditingController()..addListener(() => _dismissError("name"));
     _tanggalLahirController = TextEditingController();
     _emailController = TextEditingController()..addListener(() => _dismissError("email"));
-    _lakuTagController = TextEditingController()..addListener(() => _dismissError("tag"));
+    _nomorPINController = TextEditingController()..addListener(() => _dismissError("pin"));
+    _konfirmasiPINController = TextEditingController()..addListener(() => _dismissError("pin2"));
     _namaLengkapFocusNode = FocusNode();
     _tanggalLahirFocusNode = FocusNode();
     _emailFocusNode = FocusNode();
-    _lakuTagFocusNode = FocusNode();
+    _nomorPINFocusNode = FocusNode();
+    _konfirmasiPINFocusNode = FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       FocusScope.of(context).requestFocus(FocusNode());
@@ -70,48 +63,47 @@ class _DaftarState extends State<Daftar> {
     _namaLengkapController.dispose();
     _tanggalLahirController.dispose();
     _emailController.dispose();
-    _lakuTagController.dispose();
+    _nomorPINController.dispose();
+    _konfirmasiPINController.dispose();
     _namaLengkapFocusNode.dispose();
     _tanggalLahirFocusNode.dispose();
     _emailFocusNode.dispose();
-    _lakuTagFocusNode.dispose();
+    _nomorPINFocusNode.dispose();
+    _konfirmasiPINFocusNode.dispose();
     super.dispose();
+  }
+
+  _registerUser() async {
+    // var cekApi = await auth('tag_check', {'tag': tag});
+    final registerData = <String, String>{
+      'uid': currentPerson.uid,
+      'phone': currentPerson.phone,
+      'namaLengkap': _namaLengkapController.text,
+      'gender': _jenisKelamin,
+      'tanggalLahir': _tanggalLahir,
+      'email': _emailController.text,
+      'pin': _nomorPIN,
+    };
+    h.loadAlert();
+    await auth('register', registerData);
+    Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
   }
 
   _register() async {
     if (_registerIndex > 0) {
-      if (_lakuTag.isNotEmpty) {
-        final registerData = <String, String>{
-          'uid': currentPerson.uid,
-          'phone': currentPerson.phone,
-          'namaLengkap': _namaLengkapController.text,
-          'gender': _jenisKelamin,
-          'tanggalLahir': _tanggalLahir,
-          'email': _emailController.text,
-          'tag': _lakuTag,
-        };
-        h.loadAlert();
-        await auth('register', registerData);
-        Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
-        return;
-      }
       setState(() {
         _errorText.clear();
-        if (_lakuTagController.text.isEmpty) _errorText["tag"] = "Harap tentukan LakuTag kamu!";
-      });
-      if (_errorText.isEmpty) {
-        h.loadAlert("Memeriksa ...");
-        var tag = _lakuTagController.text;
-        var cekApi = await auth('tag_check', {'tag': tag});
-        h.closeDialog();
-        if (cekApi != null && cekApi["status"] == 1) {
-          setState(() {
-            _lakuTag = _lakuTagController.text;
-          });
+        if (_nomorPINController.text.isEmpty) {
+          _errorText["pin"] = "Harap buat nomor PIN kamu!";
+        } else if (_konfirmasiPINController.text.isEmpty) {
+          _errorText["pin2"] = "Harap ketik ulang nomor PIN!";
+        } else if (_nomorPINController.text != _konfirmasiPINController.text) {
+          _errorText["pin2"] = "Nomor PIN & konfirmasi PIN tidak sama!";
         } else {
-          h.failAlert("Tidak Tersedia", "LakuTag <strong>@$tag</strong> sudah dipakai oleh pengguna lain.");
+          _nomorPIN = _nomorPINController.text;
+          _registerUser();
         }
-      }
+      });
     } else {
       setState(() {
         _errorText.clear();
@@ -142,7 +134,6 @@ class _DaftarState extends State<Daftar> {
 
   @override
   Widget build(BuildContext context) {
-    bool _isReady = _lakuTag.isNotEmpty;
     return WillPopScope(
       onWillPop: _batal,
       child: Scaffold(
@@ -155,19 +146,17 @@ class _DaftarState extends State<Daftar> {
                 elevation: 4,
                 color: THEME_COLOR,
                 child: UiCaption(
-                  ["Identitas Saya", "Buat LakuTag"][_registerIndex],
+                  ["Identitas Saya", "Buat Nomor PIN"][_registerIndex],
                   no: _registerIndex + 1,
                   total: 2,
                   icon: Padding(
                     padding: EdgeInsets.only(left: 12, right: 12),
-                    child: Icon([LineIcons.user, LineIcons.at][_registerIndex], color: Colors.white, size: 32.0,),
+                    child: Icon([LineIcons.user, LineIcons.lock][_registerIndex], color: Colors.white, size: 32.0,),
                   ),
-                  // stepAction: (page) {
-                  //   setState(() {
-                  //     _registerIndex = page;
-                  //     _registerScrollController.jumpTo(0);
-                  //   });
-                  // },
+                  stepAction: (page) {
+                    if (_registerIndex == page) return;
+                    if (page == 0) _batal(); else _register();
+                  },
                 ),
               ),
               Expanded(
@@ -243,58 +232,22 @@ class _DaftarState extends State<Daftar> {
                         // register step 2: buat pin
                         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                           Row(children: <Widget>[
-                            Icon(LineIcons.at, color: THEME_COLOR, size: 72,),
+                            Icon(LineIcons.info_circle, color: THEME_COLOR, size: 72,),
                             SizedBox(width: 20,),
                             Expanded(child: RichText(text: TextSpan(
                               style: Theme.of(context).textTheme.bodyText1,
                               children: <TextSpan>[
-                                TextSpan(text: 'Buat LakuTag Kamu! ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                TextSpan(text: 'LakuTag adalah identitas unikmu di aplikasi $APP_NAME. Kamu bisa pakai nama kamu, nama usaha, merek, atau nama unik lainnya.', style: TextStyle(color: Colors.blueGrey),)
+                                TextSpan(text: 'PENTING! ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                TextSpan(text: 'Nomor PIN adalah kode angka rahasia Anda di aplikasi $APP_NAME. Harap ingat nomor PIN Anda!', style: TextStyle(color: Colors.blueGrey),)
                               ],
                             ),),),
                           ],),
                           SizedBox(height: 20,),
-                          _lakuTag.isEmpty
-                            ? UiInput("LakuTag", info: "Tanpa spasi", textStyle: style.textInputL, isRequired: true, icon: LineIcons.at, type: UiInputType.TAG, controller: _lakuTagController, focusNode: _lakuTagFocusNode, error: _errorText["tag"],)
-                            : Column(children: [
-                                // Card(
-                                //   clipBehavior: Clip.antiAlias,
-                                //   margin: EdgeInsets.zero,
-                                //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS)),
-                                //   child: 
-                                // ),
-                                Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-                                  Icon(Icons.check_circle, color: Colors.greenAccent[700], size: 30,),
-                                  SizedBox(width: 8,),
-                                  // SizedBox(width: 12),
-                                  // Expanded(child: Text("@$_lakuTag", style: style.textTitle)),
-                                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                    Text('@$_lakuTag', style: style.textTitle),
-                                    SizedBox(height: 4),
-                                    Text('LakuTag ini tersedia!')
-                                  ],),),
-                                  SizedBox(width: 12,),
-                                  // IconButton(icon: Icon(LineIcons.pencil, color: Colors.grey,), onPressed: () {
-                                  //   setState(() {
-                                  //     _lakuTag = '';
-                                  //   });
-                                  // },),
-                                  UiButton("Ganti", width: 100, color: Colors.blue[400], onPressed: () {
-                                    setState(() {
-                                      _lakuTag = '';
-                                    });
-                                  },),
-                                ],),
-                                // SizedBox(height: 8,),
-                                // Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-                                //   Icon(Icons.check_circle, color: Colors.greenAccent[700], size: 30,),
-                                //   SizedBox(width: 8,),
-                                //   Text("Selamat, LakuTag tersedia!"),
-                                // ],),
-                                SizedBox(height: 20,)
-                              ],),
-                          SizedBox(height: 12,),
-                          Center(child: UiButton(_isReady ? "Mulai" : "Daftar", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
+                          UiInput("Buat Nomor PIN", info: "6-digit", textStyle: style.textInputL, isRequired: true, icon: LineIcons.unlock_alt, type: UiInputType.PIN, controller: _nomorPINController, focusNode: _nomorPINFocusNode, error: _errorText["pin"],),
+                          SizedBox(height: 4,),
+                          UiInput("Konfirmasi Nomor PIN", textStyle: style.textInputL, isRequired: true, icon: LineIcons.unlock, type: UiInputType.PIN, controller: _konfirmasiPINController, focusNode: _konfirmasiPINFocusNode, error: _errorText["pin2"],),
+                          SizedBox(height: 20,),
+                          Center(child: UiButton("Daftar", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check, textStyle: style.textButtonL, iconRight: true, onPressed: _register,),),
                         ],),
                       ],
                     ),

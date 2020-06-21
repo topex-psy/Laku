@@ -18,6 +18,8 @@ import 'peta.dart';
 import 'profil.dart';
 import 'splash.dart';
 import 'tambah.dart';
+import 'toko.dart';
+import 'notif.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -72,6 +74,7 @@ class MyApp extends StatelessWidget {
           final Map arguments = settings.arguments ?? {};
           print(" ==> TO ROUTE: ${settings.name} $arguments");
           Widget page;
+
           switch (settings.name) {
             case ROUTE_SPLASH: page = Splash(); break;
             case ROUTE_INTRO:  page = Intro();  break;
@@ -80,15 +83,18 @@ class MyApp extends StatelessWidget {
             case ROUTE_PROFIL: page = Profil(); break;
             case ROUTE_TAMBAH: page = Tambah(); break;
             case ROUTE_PETA:   page = Peta(); break;
+            case ROUTE_TOKO:   page = Toko(); break;
+            case ROUTE_NOTIF:  page = Notif(); break;
             case ROUTE_HOME:
             case '/':
             default: page = Home(analytics: analytics, observer: observer,); break;
           }
+
           // return MaterialPageRoute(settings: settings, builder: (_) => page);
-          var _isFromSplash = arguments['fromSplash'] ?? false;
+          var _isAfterSplash = arguments['afterSplash'] ?? false;
           return PageTransition(
             type: PageTransitionType.fade,
-            duration: Duration(milliseconds: _isFromSplash ? 2000 : 300),
+            duration: Duration(milliseconds: _isAfterSplash ? 2000 : 300),
             settings: settings,
             child: page
           );
