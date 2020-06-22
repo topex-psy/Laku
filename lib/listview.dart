@@ -81,7 +81,7 @@ class _ListDataState extends State<ListData> {
                         height: 30,
                         clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
-                          color: Colors.orange,
+                          color: THEME_COLOR,
                           borderRadius: BorderRadius.circular(20)
                         ),
                         padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),

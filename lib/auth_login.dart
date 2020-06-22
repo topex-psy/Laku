@@ -95,26 +95,36 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     });
   }
 
+  _loadPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
+    isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
+    isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
+    isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
+
+    if (isFirstRun) {
+      setState(() {
+        print(" -> wakelock: ENABLED");
+        Wakelock.enable();
+        _isIntroduction = true;
+      });
+    } else {
+      // Future.microtask(() => _getCurrentUser());
+      // Future.delayed(Duration.zero, () => _getCurrentUser());
+      print("_get CurrentUser source 1");
+      _getCurrentUser();
+    }
+  }
+
   @override
   void initState() {
     _activeIndex = 0;
     _slidePercent = 0.0;
     _nextPageIndex = _activeIndex;
-    _isIntroduction = isFirstRun;
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(FocusNode());
-      if (isFirstRun) {
-        setState(() {
-          print(" -> wakelock: ENABLED");
-          Wakelock.enable();
-        });
-      } else {
-        // Future.microtask(() => _getCurrentUser());
-        // Future.delayed(Duration.zero, () => _getCurrentUser());
-        print("_get CurrentUser source 1");
-        _getCurrentUser();
-      }
+      Future.delayed(Duration(milliseconds: 2000), _loadPreferences);
     });
   }
 
@@ -241,7 +251,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             Stack(
               children: [
                 _activeIndex == _pages.length ? Container() : GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     if (_activeIndex < _pages.length - 1) {
                       setState(() {
                         animatedPageDragger = AnimatedPageDragger(
@@ -255,16 +265,19 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                         animatedPageDragger.run();
                       });
                     } else {
-                      if (isFirstRun) SharedPreferences.getInstance().then((prefs) {
-                        prefs.setBool('isFirstRun', false);
-                        isFirstRun = false;
-                      });
+                      print("_get CurrentUser source 3");
+                      if (isFirstRun) {
+                        await Navigator.of(context).pushNamed(ROUTE_SPLASH);
+                        SharedPreferences.getInstance().then((prefs) {
+                          prefs.setBool('isFirstRun', false);
+                          isFirstRun = false;
+                        });
+                      }
                       setState(() {
                         print(" -> wakelock: DISABLED");
                         Wakelock.disable();
                         _isIntroduction = false;
                       });
-                      print("_get CurrentUser source 3");
                       _getCurrentUser();
                       // Navigator.of(context).pushNamedAndRemoveUntil(ROUTE_LOGIN, (route) => false);
                     }
@@ -305,12 +318,15 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
 
                     SizedBox(height: 30,),
-                    Center(child: Hero(
-                      tag: "SplashLogo",
-                      child: Semantics(
-                        label: "Logo $APP_NAME",
-                        image: true,
-                        child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
+                    Center(child: Offstage(
+                      offstage: _isLoading,
+                      child: Hero(
+                        tag: "SplashLogo",
+                        child: Semantics(
+                          label: "Logo $APP_NAME",
+                          image: true,
+                          child: Image.asset('images/logo.png', width: _logoSize, height: _logoSize, fit: BoxFit.contain,),
+                        ),
                       ),
                     ),),
                     SizedBox(height: 30,),

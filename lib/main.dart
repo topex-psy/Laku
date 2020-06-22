@@ -93,9 +93,11 @@ class MyApp extends StatelessWidget {
             child: page
           );
         },
-        initialRoute: ROUTE_SPLASH,
         navigatorObservers: [MyRouteObserver()],
-        home: Splash(),
+        // initialRoute: ROUTE_SPLASH,
+        initialRoute: ROUTE_LOGIN,
+        // home: Splash(),
+        home: Login(),
       ),
     );
   }

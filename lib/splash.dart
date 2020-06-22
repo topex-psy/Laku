@@ -57,25 +57,27 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
 
   _startSplash() {
     _animation1Controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) _loadPreferences();
+      // if (status == AnimationStatus.completed) _loadPreferences();
+      if (status == AnimationStatus.completed) Future.delayed(Duration(milliseconds: SPLASH_DISMISS), _dismiss);
     });
     _animation1Controller.forward();
   }
 
-  _loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
-    isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
-    isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
-    isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
-    Future.delayed(Duration(milliseconds: SPLASH_DISMISS), _dismiss);
-  }
+  // _loadPreferences() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
+  //   isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
+  //   isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
+  //   isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
+  //   Future.delayed(Duration(milliseconds: SPLASH_DISMISS), _dismiss);
+  // }
 
   _dismiss() {
     setState(() {
       _isFinished = true;
     });
-    Navigator.of(context).pushReplacementNamed(ROUTE_LOGIN, arguments: {'afterSplash': true});
+    // Navigator.of(context).pushReplacementNamed(ROUTE_LOGIN, arguments: {'afterSplash': true});
+    Navigator.of(context).pop();
   }
 
   @override
