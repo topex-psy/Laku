@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:line_icons/line_icons.dart';
+import '../utils/constants.dart';
 import '../utils/styles.dart' as style;
 
 class Iklan {
@@ -96,12 +97,12 @@ class _TemukanState extends State<Temukan> {
                               label: "Foto produk",
                               value: item.judul,
                               image: true,
-                              child: Image.asset('images/none.png', height: double.infinity, width: double.infinity, fit: BoxFit.cover,),
+                              child: Image.asset(DEFAULT_NONE_IMAGE, height: double.infinity, width: double.infinity, fit: BoxFit.cover,),
                             ),
                             // FadeInImage(
                             //   height: double.infinity,
                             //   width: double.infinity,
-                            //   placeholder: AssetImage('images/none.png'),
+                            //   placeholder: AssetImage(DEFAULT_NONE_IMAGE),
                             //   image: NetworkImage(item.pic),
                             //   fit: BoxFit.cover,
                             // ),

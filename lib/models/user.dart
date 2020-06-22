@@ -4,6 +4,7 @@ class UserModel {
     this.namaDepan,
     this.namaBelakang,
     this.foto,
+    this.jumlahLapak,
     this.isBanned,
     this.banUntil,
     this.banReason,
@@ -13,6 +14,7 @@ class UserModel {
   final String namaDepan;
   final String namaBelakang;
   final String foto;
+  final int jumlahLapak;
   final bool isBanned;
   final DateTime banUntil;
   final String banReason;
@@ -22,6 +24,7 @@ class UserModel {
     namaDepan = parsedJson['NAMA_DEPAN'],
     namaBelakang = parsedJson['NAMA_BELAKANG'],
     foto = parsedJson['FOTO'],
+    jumlahLapak = int.parse(parsedJson['JUMLAH_LAPAK']),
     isBanned = parsedJson['IS_BANNED'] != null,
     banUntil = parsedJson['IS_BANNED'] == null ? null : DateTime.parse(parsedJson['BAN_UNTIL']),
     banReason = parsedJson['BAN_REASON'];

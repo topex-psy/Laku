@@ -52,7 +52,6 @@ Future<ApiModel> api(String what, {String type = 'get', Map<String, dynamic> dat
   if (responseBody == null) h.failAlertInternet();
   return responseBody == null ? ApiModel(isSuccess: false) : ApiModel(
     meta: responseBody[type],
-    // result: List.from(responseBody['result']),
     result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
   );
 }
@@ -79,7 +78,6 @@ Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
   if (responseBody == null) h.failAlertInternet();
   return responseBody == null ? ApiModel(isSuccess: false) : ApiModel(
     isSuccess: responseBody['status'] == 1,
-    // result: List.from(responseBody['result']),
     result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
     message: responseBody['message'],
     output: responseBody['output'],

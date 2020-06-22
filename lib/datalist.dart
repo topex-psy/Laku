@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laku/models/iklan.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'extensions/widget.dart';
@@ -11,15 +12,15 @@ import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
 
-class ListData extends StatefulWidget {
-  ListData(this.tipe, {Key key}) : super(key: key);
-  final String tipe;
+class DataList extends StatefulWidget {
+  DataList(this.args, {Key key}) : super(key: key);
+  final Map args;
 
   @override
-  _ListDataState createState() => _ListDataState();
+  _DataListState createState() => _DataListState();
 }
 
-class _ListDataState extends State<ListData> {
+class _DataListState extends State<DataList> {
   final _refreshController = RefreshController(initialRefresh: true);
   var _listData = [];
 
@@ -31,7 +32,9 @@ class _ListDataState extends State<ListData> {
   }
 
   IconLabel _getTitle() {
-    switch (widget.tipe) {
+    switch (widget.args['tipe']) {
+      case 'listing':
+        return IconLabel(LineIcons.list, "Iklan Saya");
       case 'shop':
         return IconLabel(LineIcons.map, "Lokasi Saya");
       case 'notif':
@@ -41,11 +44,13 @@ class _ListDataState extends State<ListData> {
   }
 
   _getAllData() async {
-    var dataApi = await api(widget.tipe, data: {'uid': currentPerson.uid});
+    var dataApi = await api(widget.args['tipe'], data: { 'uid': currentPerson.uid, ...widget.args });
     _refreshController.refreshCompleted();
     setState(() {
       _listData = dataApi.result.map((res) {
-        switch (widget.tipe) {
+        switch (widget.args['tipe']) {
+          case 'listing':
+            return IklanModel.fromJson(res);
           case 'shop':
             return TokoModel.fromJson(res);
           case 'notif':
@@ -57,13 +62,62 @@ class _ListDataState extends State<ListData> {
   }
 
   Widget _buildItem(context, index) {
-    switch (widget.tipe) {
+    switch (widget.args['tipe']) {
+      case 'listing':
+        IklanModel _data = _listData[index];
+        return Material(
+          color: Colors.white,
+          child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            onTap: () {
+              print(" -> TAP iklan");
+            },
+            child: Padding(
+              padding: EdgeInsets.only(left: 20, top: 20, bottom: 20, right: 8),
+              child: Row(children: <Widget>[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(25),
+                  child: FadeInImage.assetNetwork(
+                    placeholder: DEFAULT_NONE_IMAGE,
+                    image: _data.foto.first.foto,
+                    fit: BoxFit.cover,
+                    width: 50,
+                    height: 50,
+                  ),
+                ),
+                SizedBox(width: 20,),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(_data.judul, style: style.textLabel,),
+                    SizedBox(height: 2),
+                    Text(_data.deskripsi),
+                  ],
+                )),
+                SizedBox(width: 8,),
+                IconButton(
+                  highlightColor: Colors.red[200].withOpacity(.5),
+                  splashColor: Colors.red[200].withOpacity(.5),
+                  icon: Icon(LineIcons.trash),
+                  color: Colors.grey,
+                  onPressed: () {
+                    print(" -> TAP delete");
+                  }
+                ),
+              ],),
+            ),
+          ),
+        );
       case 'shop':
         TokoModel _data = _listData[index];
         return Material(
           color: Colors.white,
           child: InkWell(
-            onTap: () {},
+            onTap: () async {
+              final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'shop': _data.id}) as Map;
+              print(results);
+            },
             child: Padding(
               padding: EdgeInsets.all(20),
               child: Row(children: <Widget>[
@@ -143,7 +197,7 @@ class _ListDataState extends State<ListData> {
             ),
           ),
         ),
-        widget.tipe == "shop" ? Container(
+        widget.args['tipe'] == "shop" ? Container(
           width: double.infinity,
           height: 180,
           padding: EdgeInsets.all(20.0),

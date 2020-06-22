@@ -10,13 +10,13 @@ import 'providers/person.dart';
 import 'providers/settings.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
-import 'auth_login.dart';
-import 'auth_register.dart';
+import 'login.dart';
+import 'register.dart';
+import 'datalist.dart';
 import 'home.dart';
 import 'peta.dart';
 import 'splash.dart';
 import 'tambah.dart';
-import 'listview.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -75,10 +75,10 @@ class MyApp extends StatelessWidget {
           switch (settings.name) {
             case ROUTE_SPLASH:   page = Splash(); break;
             case ROUTE_LOGIN:    page = Login();  break;
-            case ROUTE_DAFTAR:   page = Daftar(); break;
+            case ROUTE_DAFTAR:   page = Register(); break;
             case ROUTE_TAMBAH:   page = Tambah(); break;
             case ROUTE_PETA:     page = Peta(); break;
-            case ROUTE_LISTVIEW: page = ListData(arguments['tipe']); break;
+            case ROUTE_DATA:     page = DataList(arguments); break;
             case ROUTE_HOME:
             case '/':
             default: page = Home(analytics: analytics, observer: observer,); break;
@@ -94,10 +94,8 @@ class MyApp extends StatelessWidget {
           );
         },
         navigatorObservers: [MyRouteObserver()],
-        // initialRoute: ROUTE_SPLASH,
         initialRoute: ROUTE_LOGIN,
-        // home: Splash(),
-        home: Login(),
+        // home: Login(),
       ),
     );
   }

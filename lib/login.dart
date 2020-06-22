@@ -36,6 +36,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   var _loginFormKey = Key('key');
   var _isIntroduction = false;
   var _isLoading = true;
+  var _isLoadPreferences = false;
   var _isWillExit = false;
 
   StreamController<SlideUpdate> slideUpdateStream;
@@ -96,6 +97,10 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   }
 
   _loadPreferences() async {
+    print("_load Preferences blocked: $_isLoadPreferences");
+    if (_isLoadPreferences) return;
+    _isLoadPreferences = true;
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
     isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
@@ -166,7 +171,9 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
         print(" ... USER RESULT: $user");
         if (user.isBanned) {
           h.failAlert("Akun Terblokir", "Akunmu diblokir hingga ${f.formatDate(user.banUntil)} karena ${user.banReason}");
-          setState(() { _isLoading = false; });
+          setState(() {
+            _isLoading = false;
+          });
         } else {
           var person = Provider.of<PersonProvider>(context, listen: false);
           person.setPerson(
@@ -175,6 +182,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             foto: user.foto,
             isSignedIn: true,
           );
+          print(" -> push ROUTE TO HOME");
           await Navigator.of(context).pushNamed(ROUTE_HOME);
           setState(() {
             _loginFormKey = _generateNewKey();
@@ -198,7 +206,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
         color: Colors.purple[400],
         hero: Image.asset('images/onboarding/1.png', width: _imageWidth,),
         // hero: SvgPicture.asset('images/onboarding/1.svg', width: imageWidth,),
-        // heroTag: 'SplashLogo',
         icon: LineIcons.tags,
         title: 'Banyak Barang',
         body: 'Apakah kamu sering buang duit untuk berbelanja barang-barang yang gak penting?',

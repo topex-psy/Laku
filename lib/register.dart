@@ -18,12 +18,12 @@ import 'package:geolocator/geolocator.dart';
 const jenisKelaminLbl  = <String>['Laki-laki', 'Perempuan'];
 const jenisKelaminVal  = <String>['L', 'P'];
 
-class Daftar extends StatefulWidget {
+class Register extends StatefulWidget {
   @override
-  _DaftarState createState() => _DaftarState();
+  _RegisterState createState() => _RegisterState();
 }
 
-class _DaftarState extends State<Daftar> {
+class _RegisterState extends State<Register> {
   final _listSteps = <IconLabel>[
     IconLabel(LineIcons.user, "Identitas Diri"),
     IconLabel(LineIcons.unlock, "Buat Nomor PIN"),

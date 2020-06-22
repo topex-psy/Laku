@@ -1,5 +1,25 @@
 import 'package:flutter/material.dart';
 
+class IklanPicModel {
+  IklanPicModel({
+    this.id,
+    this.foto,
+    this.judul,
+    this.waktu,
+  });
+
+  final int id;
+  final String foto;
+  final String judul;
+  final DateTime waktu;
+
+  IklanPicModel.fromJson(Map<String, dynamic> parsedJson)
+  : id = int.parse(parsedJson['ID']),
+    foto = parsedJson['FOTO'],
+    judul = parsedJson['JUDUL'],
+    waktu = DateTime.parse(parsedJson['TIMEE']);
+}
+
 class IklanModel {
   IklanModel({
     this.id,
@@ -15,6 +35,7 @@ class IklanModel {
     @required this.lng,
     @required this.judulLapak,
     @required this.pengiklan,
+    this.foto,
   });
 
   final int id;
@@ -30,6 +51,7 @@ class IklanModel {
   final double lng;
   final String judulLapak;
   final String pengiklan;
+  final List<IklanPicModel> foto;
 
   IklanModel.fromJson(Map<String, dynamic> parsedJson)
   : id = int.parse(parsedJson['ID']),
@@ -44,5 +66,6 @@ class IklanModel {
     lat = double.parse(parsedJson['LATITUDE']),
     lng = double.parse(parsedJson['LONGITUDE']),
     judulLapak = parsedJson['JUDUL_LAPAK'],
-    pengiklan = parsedJson['PENGIKLAN'];
+    pengiklan = parsedJson['PENGIKLAN'],
+    foto = List.from(parsedJson['FOTO']).map((f) => IklanPicModel.fromJson(f)).toList();
 }
