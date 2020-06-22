@@ -6,8 +6,10 @@ import '../utils/helpers.dart';
 import '../utils/widgets.dart';
 
 enum MenuNavVal {
-  rate_us,
+  profile,
+  feedback,
   settings,
+  upgrade,
   logout,
 }
 
@@ -30,11 +32,18 @@ class _MenuNavContentState extends State<MenuNavContent> {
 
   _aksiMenu(BuildContext context, MenuNavVal val) async {
     switch (val) {
-      case MenuNavVal.rate_us:
+      case MenuNavVal.feedback:
         Navigator.of(context).pop();
         LaunchReview.launch();
         break;
+      case MenuNavVal.profile:
+        // TODO edit profil (identitas, kontak, foto)
+        break;
       case MenuNavVal.settings:
+        // TODO ganti password, bind akun, hapus akun
+        break;
+      case MenuNavVal.upgrade:
+        // TODO upgrade akun
         break;
       case MenuNavVal.logout:
         Navigator.of(context).pop();
@@ -48,8 +57,10 @@ class _MenuNavContentState extends State<MenuNavContent> {
   @override
   Widget build(BuildContext context) {
     final List<MenuNavItem> _menu = [
-      MenuNavItem(value: MenuNavVal.rate_us, icon: LineIcons.comment_o, teks: 'menu_feedback'.tr()),
+      MenuNavItem(value: MenuNavVal.upgrade, icon: LineIcons.certificate, teks: 'menu_upgrade'.tr()),
+      MenuNavItem(value: MenuNavVal.profile, icon: LineIcons.user, teks: 'menu_profile'.tr()),
       MenuNavItem(value: MenuNavVal.settings, icon: LineIcons.cog, teks: 'menu_settings'.tr()),
+      MenuNavItem(value: MenuNavVal.feedback, icon: LineIcons.comment_o, teks: 'menu_feedback'.tr()),
       MenuNavItem(value: MenuNavVal.logout, icon: LineIcons.sign_out, teks: 'menu_logout'.tr()),
     ];
     

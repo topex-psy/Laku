@@ -19,7 +19,7 @@ import 'constants.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
 final screenScaffoldKey = GlobalKey<ScaffoldState>();
-CurrentUserModel currentPerson = CurrentUserModel();
+UserSessionModel userSession = UserSessionModel();
 bool isTour1Completed = false;
 bool isTour2Completed = false;
 bool isTour3Completed = false;
@@ -82,11 +82,11 @@ class UserHelper {
     }
     final person = Provider.of<PersonProvider>(context, listen: false);
     person.setPerson(isSignedIn: false);
-    currentPerson.clear();
+    userSession.clear();
     Future.delayed(Duration.zero, () {
-      Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
+      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
       // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_LOGIN));
-      // Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(context).popUntil((route) => route.isFirst);
     });
   }
 }

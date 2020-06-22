@@ -111,8 +111,8 @@ class _RegisterState extends State<Register> {
   _submit() async {
     // var cekApi = await auth('tag_check', {'tag': tag});
     final registerData = <String, String>{
-      'uid': currentPerson.uid,
-      'phone': currentPerson.phone,
+      'uid': userSession.uid,
+      'phone': userSession.phone,
       'namaLengkap': _namaLengkapController.text,
       'gender': _jenisKelamin,
       'tanggalLahir': _tanggalLahir,
@@ -130,7 +130,8 @@ class _RegisterState extends State<Register> {
         registerData['email'],
         registerData['pin'],
       );
-      Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
+      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
       Navigator.of(context).pop();
       h.failAlert("Gagal Memproses", "Terjadi kendala saat memproses pendaftaran akun Anda.");

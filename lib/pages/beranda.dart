@@ -301,7 +301,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
             child: NotificationListener<ScrollNotification>(
               onNotification: (scrollNotification) {
                 if (scrollNotification.metrics.axis == Axis.vertical && scrollNotification is ScrollUpdateNotification) {
-                  print("scrollNotification metrics: ${scrollNotification.metrics.pixels} / ${_scrollController.offset}");
+                  // print("scrollNotification metrics: ${scrollNotification.metrics.pixels} / ${_scrollController.offset}");
                   _headerOffsetAnimationController.animateTo(_scrollController.offset / 200);
                   _headerOpacityAnimationController.animateTo((_scrollController.offset - 210) / 40);
                   return true;

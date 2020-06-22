@@ -74,28 +74,23 @@ class MyApp extends StatelessWidget {
 
           switch (settings.name) {
             case ROUTE_SPLASH:   page = Splash(); break;
-            case ROUTE_LOGIN:    page = Login();  break;
+            case ROUTE_HOME:     page = Home(analytics: analytics, observer: observer,); break;
             case ROUTE_DAFTAR:   page = Register(); break;
             case ROUTE_TAMBAH:   page = Tambah(); break;
             case ROUTE_PETA:     page = Peta(); break;
             case ROUTE_DATA:     page = DataList(arguments); break;
-            case ROUTE_HOME:
-            case '/':
-            default: page = Home(analytics: analytics, observer: observer,); break;
           }
 
           // return MaterialPageRoute(settings: settings, builder: (_) => page);
-          var _isAfterSplash = arguments['afterSplash'] ?? false;
           return PageTransition(
             type: PageTransitionType.fade,
-            duration: Duration(milliseconds: _isAfterSplash ? 2000 : 300),
+            duration: Duration(milliseconds: arguments['duration'] ?? 300),
             settings: settings,
-            child: page
+            child: page ?? Login()
           );
         },
         navigatorObservers: [MyRouteObserver()],
-        initialRoute: ROUTE_LOGIN,
-        // home: Login(),
+        initialRoute: '/',
       ),
     );
   }

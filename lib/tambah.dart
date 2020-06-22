@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+// import 'package:provider/provider.dart';
 import 'models/basic.dart';
+import 'models/user.dart';
+// import 'providers/person.dart';
+import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
@@ -42,8 +46,10 @@ class _TambahState extends State<Tambah> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       var isGranted = await Permission.location.request().isGranted;
       if (isGranted) {
+        var tierApi = await api('tier', data: {'uid': userSession.uid});
+        var tier = UserTierModel.fromJson(tierApi.result.first);
         setState(() {
-          _maxImageSelect = 3; // TODO ambil dari data user
+          _maxImageSelect = tier.maxListingPic;
           _isLoading = false;
         });
       } else {
@@ -56,10 +62,27 @@ class _TambahState extends State<Tambah> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: _isLoading ? Container(child: Center(child: UiLoader())) : SingleChildScrollView(
-          padding: EdgeInsets.all(THEME_PADDING),
-          child: FormIklan()
+        child: IndexedStack(
+          index: _isLoading ? 0 : 1,
+          children: <Widget>[
+            Container(child: Center(child: UiLoader())),
+            Column(
+              children: <Widget>[
+                UiAppBar("Pasang Iklan", icon: LineIcons.plus),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(THEME_PADDING),
+                    child: FormIklan()
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
+        // child: _isLoading ? Container(child: Center(child: UiLoader())) : SingleChildScrollView(
+        //   padding: EdgeInsets.all(THEME_PADDING),
+        //   child: FormIklan()
+        // ),
       ),
     );
   }
@@ -71,9 +94,13 @@ class FormIklan extends StatefulWidget {
 }
 
 class _FormIklanState extends State<FormIklan> {
-  static const tipeLbl  = <String>['Iklan', 'Cari'];
-  static const tipeVal  = <String>['WTS', 'WTB'];
+  // static const tipeLbl  = <String>['Pasang Iklan', 'Cari Iklan'];
+  // static const tipeVal  = <String>['WTS', 'WTB'];
   final _formKey = GlobalKey<FormState>();
+  final _listTipe = <IconLabel>[
+    IconLabel(LineIcons.bullhorn, "Pasang Iklan", value: 'WTS'),
+    IconLabel(LineIcons.search, "Cari Iklan", value: 'WTB'),
+  ];
 
   TextEditingController _judulController;
   FocusNode _judulFocusNode;
@@ -94,6 +121,10 @@ class _FormIklanState extends State<FormIklan> {
     if (_errorText.containsKey(tag)) setState(() {
       _errorText.remove(tag);
     });
+  }
+
+  _submit() {
+    // TODO post iklan
   }
 
   @override
@@ -123,26 +154,21 @@ class _FormIklanState extends State<FormIklan> {
           height: 45.0,
           child: ToggleButtons(
             borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
-            children: <Widget>[
-              Row(children: <Widget>[
-                SizedBox(width: 20.0),
-                Icon(LineIcons.male, size: 17,),
+            children: _listTipe.asMap().map((index, tipe) {
+              var isFirst = index == 0;
+              var isLast = index == _listTipe.length - 1;
+              return MapEntry(index, Row(children: <Widget>[
+                SizedBox(width: isFirst ? 20.0 : 15.0),
+                Icon(tipe.icon, size: 17,),
                 SizedBox(width: 8.0),
-                Text(tipeLbl[0], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                SizedBox(width: 15.0),
-              ],),
-              Row(children: <Widget>[
-                SizedBox(width: 15.0),
-                Icon(LineIcons.female, size: 17,),
-                SizedBox(width: 8.0),
-                Text(tipeLbl[1], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                SizedBox(width: 20.0),
-              ],),
-            ],
-            isSelected: tipeVal.map((t) => t == _tipe).toList(),
+                Text(tipe.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+                SizedBox(width: isLast ? 20.0 : 15.0),
+              ],));
+            }).values.toList(),
+            isSelected: _listTipe.map((t) => t.value == _tipe).toList(),
             onPressed: (int index) {
               setState(() {
-                _tipe = tipeVal[index];
+                _tipe = _listTipe[index].value;
               });
             },
           ),
@@ -159,9 +185,7 @@ class _FormIklanState extends State<FormIklan> {
         // Text("Detail:", style: style.textLabel,),
         // Text("Warna pin:", style: style.textLabel,),
         SizedBox(height: 20,),
-        UiButton("Pasang!", height: style.heightButtonXL, textStyle: style.textButtonXL, icon: LineIcons.check_circle_o, iconRight: true, onPressed: () {
-          // TODO post item
-        },),
+        UiButton("Pasang", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
       ],)
     );
   }

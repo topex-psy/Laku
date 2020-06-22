@@ -3,6 +3,7 @@ class UserModel {
     this.uid,
     this.namaDepan,
     this.namaBelakang,
+    this.email,
     this.foto,
     this.jumlahLapak,
     this.isBanned,
@@ -13,6 +14,7 @@ class UserModel {
   final String uid;
   final String namaDepan;
   final String namaBelakang;
+  final String email;
   final String foto;
   final int jumlahLapak;
   final bool isBanned;
@@ -23,6 +25,7 @@ class UserModel {
   : uid = parsedJson['FIREBASE_UID'],
     namaDepan = parsedJson['NAMA_DEPAN'],
     namaBelakang = parsedJson['NAMA_BELAKANG'],
+    email = parsedJson['EMAIL'],
     foto = parsedJson['FOTO'],
     jumlahLapak = int.parse(parsedJson['JUMLAH_LAPAK']),
     isBanned = parsedJson['IS_BANNED'] != null,
@@ -34,6 +37,7 @@ class UserModel {
   "\n  uid: $uid"
   "\n  namaDepan: $namaDepan"
   "\n  namaBelakang: $namaBelakang"
+  "\n  email: $email"
   "\n  foto: $foto"
   "\n  isBanned: $isBanned"
   "\n  banUntil: $banUntil"
@@ -41,7 +45,7 @@ class UserModel {
   "\n);";
 }
 
-class CurrentUserModel {
+class UserSessionModel {
   String uid;
   String phone;
 
@@ -49,4 +53,15 @@ class CurrentUserModel {
     uid = null;
     phone = null;
   }
+}
+
+class UserTierModel {
+  UserTierModel({this.maxShop, this.maxListingPic});
+
+  final int maxShop;
+  final int maxListingPic;
+
+  UserTierModel.fromJson(Map<String, dynamic> parsedJson)
+  : maxShop = int.parse(parsedJson['MAX_SHOP']),
+    maxListingPic = int.parse(parsedJson['MAX_LISTING_PIC']);
 }

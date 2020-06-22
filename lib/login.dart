@@ -6,12 +6,12 @@ import 'package:code_input/code_input.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:laku/models/user.dart';
-import 'package:laku/providers/person.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
+import 'models/user.dart';
+import 'providers/person.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -151,9 +151,9 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
       });
     } else {
       print(" ==> FIREBASE USER: EXIST");
-      currentPerson.uid = user.uid;
-      currentPerson.phone = user.phoneNumber;
-      var userApi = await api('user', data: {'uid': currentPerson.uid});
+      userSession.uid = user.uid;
+      userSession.phone = user.phoneNumber;
+      var userApi = await api('user', data: {'uid': userSession.uid});
       if (!userApi.isSuccess) {
         setState(() {
           _loginFormKey = _generateNewKey();
@@ -179,11 +179,12 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
           person.setPerson(
             namaDepan: user.namaDepan,
             namaBelakang: user.namaBelakang,
+            email: user.email,
             foto: user.foto,
             isSignedIn: true,
           );
           print(" -> push ROUTE TO HOME");
-          await Navigator.of(context).pushNamed(ROUTE_HOME);
+          await Navigator.of(context).pushNamed(ROUTE_HOME, arguments: {'duration': 1000});
           setState(() {
             _loginFormKey = _generateNewKey();
             _isLoading = false;

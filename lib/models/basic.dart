@@ -7,4 +7,7 @@ class IconLabel {
   final dynamic value;
   final Color color;
   final int total;
+
+  @override
+  String toString() => label;
 }

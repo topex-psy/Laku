@@ -44,7 +44,7 @@ class _DataListState extends State<DataList> {
   }
 
   _getAllData() async {
-    var dataApi = await api(widget.args['tipe'], data: { 'uid': currentPerson.uid, ...widget.args });
+    var dataApi = await api(widget.args['tipe'], data: { 'uid': userSession.uid, ...widget.args });
     _refreshController.refreshCompleted();
     setState(() {
       _listData = dataApi.result.map((res) {
@@ -210,9 +210,9 @@ class _DataListState extends State<DataList> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text('Anda pelaku bisnis?', style: style.textTitle,),
-              SizedBox(height: 4),
+              SizedBox(height: 6),
               Text('Anda dapat memberikan nama usaha dan menambahkan lebih dari satu lokasi.', style: style.textMutedM,),
-              SizedBox(height: 12),
+              SizedBox(height: 16),
               UiButton("Upgrade ke Akun Bisnis", width: 250, height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.certificate, textStyle: style.textButton, iconRight: true, onPressed: () {
                 // TODO upgrade akun bisnis
               },),

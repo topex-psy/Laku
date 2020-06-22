@@ -8,13 +8,14 @@ import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'components/menu.dart';
-import 'pages/akun.dart';
+// import 'pages/akun.dart';
 import 'pages/beranda.dart';
 import 'pages/favorit.dart';
 import 'pages/temukan.dart';
 import 'providers/person.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
+import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
 
 class Page {
@@ -70,7 +71,7 @@ class _HomeState extends State<Home> {
       Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
       Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
       Page(title: 'menu_favorites'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
-      Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
+      // Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
     ];
     return WillPopScope(
       onWillPop: () async {
@@ -115,6 +116,11 @@ class _HomeState extends State<Home> {
                           selector: (buildContext, person) => person.namaDepan,
                           builder: (context, namaDepan, child) => Text("${'prompt_hello'.tr()}, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
                         ),
+                        SizedBox(height: 2),
+                        Selector<PersonProvider, String>(
+                          selector: (buildContext, person) => person.email,
+                          builder: (context, email, child) => Text(email, style: style.textWhite,),
+                        ),
                       ],),)
                     ],),
                   ),
@@ -150,9 +156,12 @@ class _HomeState extends State<Home> {
           ),
         ),
         bottomNavigationBar: Container(
-          decoration: BoxDecoration(color: Colors.white, boxShadow: [
-            BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))
-          ]),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))
+            ]
+          ),
           child: SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
