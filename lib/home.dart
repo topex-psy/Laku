@@ -69,7 +69,7 @@ class _HomeState extends State<Home> {
     final _pages = <Page>[
       Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
       Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
-      Page(title: 'menu_manage'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
+      Page(title: 'menu_favorites'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
       Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
     ];
     return WillPopScope(
@@ -107,7 +107,7 @@ class _HomeState extends State<Home> {
                     child: Row(children: <Widget>[
                       Selector<PersonProvider, String>(
                         selector: (buildContext, person) => person.foto,
-                        builder: (context, foto, child) => UiAvatar(foto, size: 70, onPressed: () => Navigator.of(context).pushNamed(ROUTE_PROFIL),),
+                        builder: (context, foto, child) => UiAvatar(foto, size: 70, onPressed: () {},),
                       ),
                       SizedBox(width: 12,),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[

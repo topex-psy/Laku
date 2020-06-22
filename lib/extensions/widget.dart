@@ -57,8 +57,8 @@ extension WidgetExtension on Widget {
   }
 
   // fungsi untuk animasi shimmer pada widget
-  Widget shimmerIt([bool shimmer = true, double opacity = 0.5]) {
-    return shimmer ? ShimmerIt(child: this, opacity: opacity,) : this;
+  Widget shimmerIt({bool shimmer = true, double minOpacity = 0.4, double maxOpacity = 0.8}) {
+    return shimmer ? ShimmerIt(child: this, minOpacity: minOpacity, maxOpacity: maxOpacity,) : this;
   }
 
   // fungsi untuk animasi pulse pada widget
@@ -82,10 +82,11 @@ extension WidgetExtension on Widget {
 }
 
 class ShimmerIt extends StatefulWidget {
-  ShimmerIt({Key key, this.child, this.shimmer = true, this.opacity = 0.5}) : super(key: key);
+  ShimmerIt({Key key, this.child, this.minOpacity = 0.4, this.maxOpacity = 0.8, this.shimmer = true}) : super(key: key);
   final Widget child;
+  final double minOpacity;
+  final double maxOpacity;
   final bool shimmer;
-  final double opacity;
 
   @override
   _ShimmerItState createState() => _ShimmerItState();
@@ -98,7 +99,7 @@ class _ShimmerItState extends State<ShimmerIt> with SingleTickerProviderStateMix
   @override
   void initState() {
     _animationController = AnimationController(duration: Duration(milliseconds: 1500), vsync: this)..repeat(reverse: true);
-    _animation = Tween(begin: widget.opacity * 0.4, end: widget.opacity).animate(CurvedAnimation(
+    _animation = Tween(begin: widget.minOpacity, end: widget.maxOpacity).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeIn,
     ));

@@ -195,20 +195,9 @@ class _DaftarState extends State<Daftar> {
         body: SafeArea(
           child: Column(
             children: <Widget>[
-              Card(
-                margin: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                elevation: 4,
-                color: THEME_COLOR,
-                child: UiCaption(
-                  steps: _listSteps,
-                  currentIndex: _registerIndex,
-                  stepAction: _navigate,
-                ),
-              ),
+              UiCaption(steps: _listSteps, currentIndex: _registerIndex, stepAction: _navigate,),
 
               // SizedBox(height: 30,),
-              
               // UiStepIndicator(list: _listSteps, currentIndex: _registerIndex, onTapDot: _navigate,),
               
               Expanded(

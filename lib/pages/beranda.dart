@@ -334,11 +334,11 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                       ),
                       actions: [
                         IconButton(icon: Icon(LineIcons.map_o, color: Colors.white,), tooltip: 'Lokasi Saya', onPressed: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_TOKO) as Map;
+                          final results = await Navigator.of(context).pushNamed(ROUTE_LISTVIEW, arguments: {'tipe': 'shop'}) as Map;
                           print(results);
                         },),
                         IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_NOTIF) as Map;
+                          final results = await Navigator.of(context).pushNamed(ROUTE_LISTVIEW, arguments: {'tipe': 'notif'}) as Map;
                           print(results);
                         },),
                         SizedBox(width: 8,)

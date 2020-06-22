@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:code_input/code_input.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:laku/models/user.dart';
 import 'package:laku/providers/person.dart';
@@ -131,7 +131,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     if (user == null) {
       print(" ==> FIREBASE USER: NOT LOGGED IN");
       setState(() {
-        // _smsVerificationCode = '';
         _loginFormKey = _generateNewKey();
         _isLoading = false;
       });
@@ -140,13 +139,12 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
       currentPerson.uid = user.uid;
       currentPerson.phone = user.phoneNumber;
       var userApi = await api('user', data: {'uid': currentPerson.uid});
-      // if (userApi == null) {
-      //   setState(() {
-      //     _isLoading = false;
-      //   });
-      //   return;
-      // }
-      if (userApi.result.isEmpty) {
+      if (!userApi.isSuccess) {
+        setState(() {
+          _loginFormKey = _generateNewKey();
+          _isLoading = false;
+        });
+      } else if (userApi.result.isEmpty) {
         // user belum register
         await Navigator.of(context).pushNamed(ROUTE_DAFTAR);
         print(" ... REGISTER DONE");

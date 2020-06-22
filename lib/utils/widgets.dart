@@ -918,27 +918,57 @@ class Copyright extends StatelessWidget {
   }
 }
 
+class UiAppBar extends StatelessWidget {
+  UiAppBar(this.title, {Key key, this.icon, this.backButton = true}) : super(key: key);
+  final String title;
+  final IconData icon;
+  final bool backButton;
+
+  @override
+  Widget build(BuildContext context) {
+    return UiCaption(
+      steps: [IconLabel(icon, title)],
+      hideSteps: true,
+      backButton: backButton,
+    );
+  }
+}
+
 class UiCaption extends StatelessWidget {
-  UiCaption({Key key, this.steps, this.currentIndex = 0, this.stepAction, this.tool}) : super(key: key);
+  UiCaption({Key key, this.steps, this.currentIndex = 0, this.stepAction, this.hideSteps = false, this.backButton = false, this.tool}) : super(key: key);
   final List<IconLabel> steps;
   final int currentIndex;
   final void Function(int) stepAction;
+  final bool hideSteps;
+  final bool backButton;
   final Widget tool;
 
   @override
   Widget build(BuildContext context) {
     var no = currentIndex + 1;
-    var icon = Padding(
-      padding: EdgeInsets.only(left: 12, right: 12),
+    var icon = backButton ? Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4),
+      child: IconButton(
+        iconSize: 32.0,
+        color: Colors.white,
+        icon: Icon(LineIcons.arrow_left),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+    ) : (steps[currentIndex].icon == null ? SizedBox() : Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12),
       child: Icon(steps[currentIndex].icon, color: Colors.white, size: 32.0,),
-    );
+    ));
     return Container(
       height: 60,
+      decoration: BoxDecoration(
+        color: THEME_COLOR,
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)]
+      ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         icon,
         Text(steps[currentIndex].label, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
         Spacer(),
-        no == null ? SizedBox() : Padding(
+        hideSteps ? SizedBox() : Padding(
           padding: EdgeInsets.only(right: 12),
           child: Row(
             mainAxisSize: MainAxisSize.min,

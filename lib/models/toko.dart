@@ -18,7 +18,7 @@ class TokoModel {
   final double lng;
 
   TokoModel.fromJson(Map<String, dynamic> parsedJson)
-  : id = parsedJson['ID'],
+  : id = int.parse(parsedJson['ID']),
     judul = parsedJson['JUDUL'],
     deskripsi = parsedJson['DESKRIPSI'],
     alamat = parsedJson['ALAMAT'],
