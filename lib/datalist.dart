@@ -92,6 +92,10 @@ class _DataListState extends State<DataList> {
                   children: <Widget>[
                     Text(_data.judul, style: style.textLabel,),
                     SizedBox(height: 2),
+                    h.html("Tipe: <strong>${_data.tipe == 'WTS' ? 'Iklan' : 'Pencarian'}</strong>"),
+                    SizedBox(height: 2),
+                    h.html("Kategori: <strong>${_data.kategori}</strong>"),
+                    SizedBox(height: 2),
                     Text(_data.deskripsi),
                   ],
                 )),

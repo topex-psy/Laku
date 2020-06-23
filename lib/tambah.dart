@@ -1,13 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:laku/models/iklan.dart';
+import 'package:laku/providers/settings.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';
 import 'models/basic.dart';
 import 'models/user.dart';
-// import 'providers/person.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -40,21 +42,11 @@ class _TambahState extends State<Tambah> {
   FocusNode _judulFocusNode;
   FocusNode _deskripsiFocusNode;
   var _errorText = <String, String>{};
+  var _listKategori = <IklanKategoriModel>[];
 
-  IconLabel _kategori;
+  IklanKategoriModel _kategori;
   String _tipe;
   String _foto;
-  
-  // TODO load from database
-  final _listKategori = <IconLabel>[
-    IconLabel(LineIcons.at, 'Jual-Beli', value: 1),
-    IconLabel(LineIcons.at, 'Jasa', value: 2),
-    IconLabel(LineIcons.at, 'Event', value: 3),
-    IconLabel(LineIcons.at, 'Loker', value: 4),
-    IconLabel(LineIcons.at, 'Kehilangan', value: 5),
-    IconLabel(LineIcons.at, 'Jodoh', value: 6),
-    IconLabel(LineIcons.at, 'Lainnya'),
-  ];
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) setState(() {
@@ -74,13 +66,15 @@ class _TambahState extends State<Tambah> {
       'tipe': _tipe,
       'judul': _judulController.text,
       'deskripsi': _deskripsiController.text,
-      'kategori': _kategori.value.toString(),
+      'kategori': _kategori.id.toString(),
       'hash': hash.toString(),
     };
     h.loadAlert("Memasang iklan ...");
 
     // upload pic
-    // TODO include provider loader for hash
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    settings.setSettings(iklanUploadPic: [...settings.iklanUploadPic, hash]);
+
     uploadImages('listing', _images, hash).then((response) {
       print("IMAGES UPLOAD RESPONSE: $response");
       if (response == null) {
@@ -90,13 +84,8 @@ class _TambahState extends State<Tambah> {
         print("IMAGES UPLOAD HEADERS: ${response.headers}");
         response.stream.transform(utf8.decoder).listen((value) {
           print("IMAGES UPLOAD DONE: $value");
-          // TODO dismiss provider loader for hash
-          // if (idEdit > 0) {
-          //   var uploadImage = timelineState.uploadImage..remove(idEdit);
-          //   timelineState.uploadImage = uploadImage;
-          // }
-          // print("GET ITEM CALLED FROM: pic uploaded");
-          // widget.onGetItems(false);
+          var iklanUploadPicAfter = settings.iklanUploadPic.where((i) => i != hash).toList();
+          settings.setSettings(iklanUploadPic: iklanUploadPicAfter);
         });
       }
     });
@@ -141,7 +130,9 @@ class _TambahState extends State<Tambah> {
       if (isGranted) {
         var tierApi = await api('tier', data: {'uid': userSession.uid});
         var tier = UserTierModel.fromJson(tierApi.result.first);
+        var listingCategoryApi = await api('listing_category', data: {'tier': tier.tier});
         setState(() {
+          _listKategori = listingCategoryApi.result.map((res) => IklanKategoriModel.fromJson(res)).toList();
           _maxImageSelect = tier.maxListingPic;
           _isLoading = false;
         });
@@ -212,9 +203,9 @@ class _TambahState extends State<Tambah> {
                         SizedBox(height: 4,),
                         UiInput("Deskripsi", isRequired: true, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
                         SizedBox(height: 4,),
-                        Text("Kategori:", style: style.textLabel,), //jubel, jasa, loker, event, jodoh, kehilangan, lainnya
+                        Text("Kategori:", style: style.textLabel,),
                         SizedBox(height: 8,),
-                        UiSelect(icon: _kategori?.icon, listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
+                        UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'circleOutline'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
                           setState(() { _kategori = val; });
                         },),
                         SizedBox(height: 20,),

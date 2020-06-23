@@ -5,7 +5,6 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-import 'providers/notifications.dart';
 import 'providers/person.dart';
 import 'providers/settings.dart';
 import 'utils/constants.dart';
@@ -53,7 +52,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => PersonProvider()),
-        ChangeNotifierProvider(create: (context) => NotificationsProvider()),
         ChangeNotifierProvider(create: (context) => SettingsProvider()),
       ],
       child: MaterialApp(

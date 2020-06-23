@@ -20,7 +20,7 @@ class ApiModel {
   final bool isSuccess;
 
   ApiModel.fromJson(Map<String, dynamic> responseBody, {String type = 'get'})
-  : isSuccess = responseBody['status'] == 1,
+  : isSuccess = (responseBody['status'] ?? 1) == 1,
     result = List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
     message = responseBody['message'],
     output = responseBody['output'],

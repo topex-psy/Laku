@@ -6,12 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:laku/models/user.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import '../providers/notifications.dart';
 import '../providers/settings.dart';
+import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import '../utils/mixins.dart';
@@ -126,24 +127,25 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     settings.setSettings(address: address, isGettingLocation: false);
   }
 
-  _getAllData() {
+  _getAllData() async {
     // print(" ==> GET ALL DATA ..................");
-    final notification = Provider.of<NotificationsProvider>(context, listen: false);
-    Future.delayed(Duration(milliseconds: 5000), () {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    var notifApi = await api('notif', data: {
+      'uid': userSession.uid,
+      'lat': settings.address.coordinates.latitude,
+      'lng': settings.address.coordinates.longitude
+    });
+
+    if (notifApi.isSuccess) {
+      var notif = UserNotifModel.fromJson(notifApi.result.first);
+      settings.setSettings(notif: notif);
       _refreshController.refreshCompleted();
-      // TODO on error
-      // _refreshController.refreshFailed();
-      notification.setNotif(
-        iklanTerpasang: 5,
-        pencarianTerpasang: 0,
-        pesanMasuk: 2,
-        iklan: 29,
-        pengguna: 8,
-        pencari: 1,
-      );
-      if (mounted) setState(() {
-        _isLoading = false;
-      });
+    } else {
+      _refreshController.refreshFailed();
+    }
+
+    if (mounted) setState(() {
+      _isLoading = false;
     });
   }
 
@@ -552,7 +554,7 @@ class CardBox extends StatefulWidget {
 class _CardBoxState extends State<CardBox> {
   @override
   Widget build(BuildContext context) {
-    var notification = Provider.of<NotificationsProvider>(context);
+    final settings = Provider.of<SettingsProvider>(context);
     var size = (MediaQuery.of(context).size.width - 38) / 2;
     int angka;
     VoidCallback buka;
@@ -562,21 +564,21 @@ class _CardBoxState extends State<CardBox> {
 
     switch (widget.notif) {
       case 'iklan':
-        angka = notification.iklan;
+        angka = settings.notif.iklan;
         color = Colors.blue;
         icon = LineIcons.map_marker;
         label = "Iklan";
         buka = () {};
         break;
       case 'pengguna':
-        angka = notification.pengguna;
+        angka = settings.notif.pengguna;
         color = Colors.green;
         icon = LineIcons.users;
         label = "Pengguna";
         buka = () {};
         break;
       case 'pencari':
-        angka = notification.pencari;
+        angka = settings.notif.pencari;
         color = Colors.orange;
         icon = LineIcons.binoculars;
         label = "Pencari";
@@ -643,7 +645,7 @@ class CardList extends StatefulWidget {
 class _CardListState extends State<CardList> {
   @override
   Widget build(BuildContext context) {
-    var notification = Provider.of<NotificationsProvider>(context);
+    final settings = Provider.of<SettingsProvider>(context);
     int angka;
     VoidCallback buka;
     String buttonLabel, label;
@@ -651,7 +653,7 @@ class _CardListState extends State<CardList> {
     double buttonWidth;
     switch (widget.notif) {
       case 'iklanTerpasang':
-        angka = notification.iklanTerpasang;
+        angka = settings.notif.iklanTerpasang;
         label = "Iklan terpasang";
         buttonLabel = angka == 0 ? "Buat" : "Kelola";
         buttonWidth = angka == 0 ? 96 : 110;
@@ -661,7 +663,7 @@ class _CardListState extends State<CardList> {
         };
         break;
       case 'pencarianTerpasang':
-        angka = notification.pencarianTerpasang;
+        angka = settings.notif.pencarianTerpasang;
         label = "Pencarian terpasang";
         buttonLabel = "Lihat";
         buttonWidth = 100;
@@ -671,7 +673,7 @@ class _CardListState extends State<CardList> {
         };
         break;
       case 'pesanMasuk':
-        angka = notification.pesanMasuk;
+        angka = settings.notif.pesanMasuk;
         label = "Pesan masuk";
         buttonLabel = "Cek";
         buttonWidth = 90;

@@ -55,13 +55,47 @@ class UserSessionModel {
   }
 }
 
-class UserTierModel {
-  UserTierModel({this.maxShop, this.maxListingPic});
+class UserNotifModel {
+  UserNotifModel({
+    this.iklanUploadPic,
+    this.iklanTerpasang,
+    this.pencarianTerpasang,
+    this.pesanMasuk,
+    this.notifikasi,
+    this.iklan,
+    this.pengguna,
+    this.pencari,
+  });
 
+  final List<int> iklanUploadPic;
+  final int iklanTerpasang;
+  final int pencarianTerpasang;
+  final int pesanMasuk;
+  final int notifikasi;
+  final int iklan;
+  final int pengguna;
+  final int pencari;
+
+  UserNotifModel.fromJson(Map<String, dynamic> parsedJson)
+  : iklanUploadPic = List.from(parsedJson['IKLAN_UPLOAD_PIC']).map((l) => int.parse(l['HASHCODE'])).toList(),
+    iklanTerpasang = int.parse(parsedJson['IKLAN_TERPASANG']),
+    pencarianTerpasang = int.parse(parsedJson['PENCARIAN_TERPASANG']),
+    pesanMasuk = int.parse(parsedJson['PESAN_MASUK']),
+    notifikasi = int.parse(parsedJson['NOTIFIKASI']),
+    iklan = int.parse(parsedJson['IKLAN']),
+    pengguna = int.parse(parsedJson['PENGGUNA']),
+    pencari = int.parse(parsedJson['PENCARI']);
+}
+
+class UserTierModel {
+  UserTierModel({this.tier, this.maxShop, this.maxListingPic});
+
+  final int tier;
   final int maxShop;
   final int maxListingPic;
 
   UserTierModel.fromJson(Map<String, dynamic> parsedJson)
-  : maxShop = int.parse(parsedJson['MAX_SHOP']),
+  : tier = int.parse(parsedJson['TIER']),
+    maxShop = int.parse(parsedJson['MAX_SHOP']),
     maxListingPic = int.parse(parsedJson['MAX_LISTING_PIC']);
 }
