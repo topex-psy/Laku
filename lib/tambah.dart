@@ -153,7 +153,7 @@ class _TambahState extends State<Tambah> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       var isGranted = await Permission.location.request().isGranted;
       if (isGranted) {
-        var tierApi = await api('tier', data: {'uid': userSession.uid});
+        var tierApi = await api('user_tier', data: {'uid': userSession.uid});
         var tier = UserTierModel.fromJson(tierApi.result.first);
         var listingCategoryApi = await api('listing_category', data: {'tier': tier.tier});
         setState(() {

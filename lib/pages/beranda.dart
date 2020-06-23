@@ -128,13 +128,16 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     }
     _spinController.reset();
     settings.setSettings(address: address, isGettingLocation: false);
+    // TODO var postSetupApi = await auth('user_setup', {
+
+    // });
     _runTimer();
   }
 
   _getAllData() async {
     // print(" ==> GET ALL DATA ..................");
     final settings = Provider.of<SettingsProvider>(context, listen: false);
-    var notifApi = await api('notif', data: {
+    var notifApi = await api('user_notif', data: {
       'uid': userSession.uid,
       'lat': settings.address.coordinates.latitude,
       'lng': settings.address.coordinates.longitude

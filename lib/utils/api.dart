@@ -38,8 +38,8 @@ Response<String> response;
 Map responseBody;
 dynamic err;
 
-Future<ApiModel> api(String what, {String type = 'get', Map<String, dynamic> data = const {}}) async {
-  var url = "/data/$what";
+Future<ApiModel> api(String what, {String sub1, String type = 'get', Map<String, dynamic> data = const {}}) async {
+  var url = "/data/$what${sub1 == null ? '' : '/$sub1'}";
   response = null;
   responseBody = null;
   err = null;

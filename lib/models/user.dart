@@ -87,6 +87,15 @@ class UserNotifModel {
     pencari = int.parse(parsedJson['PENCARI']);
 }
 
+class UserSetupModel {
+  UserSetupModel({this.radius});
+
+  final int radius;
+
+  UserSetupModel.fromJson(Map<String, dynamic> parsedJson)
+  : radius = int.parse(parsedJson['RADIUS']);
+}
+
 class UserTierModel {
   UserTierModel({this.tier, this.maxShop, this.maxListingPic});
 
