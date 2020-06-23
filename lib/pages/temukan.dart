@@ -80,7 +80,7 @@ class _TemukanState extends State<Temukan> {
                 child: StaggeredGridView.countBuilder(
                   padding: EdgeInsets.all(4),
                   crossAxisCount: _isPortrait ? 3 : 5,
-                  itemCount: ITEM_PER_PAGE,
+                  itemCount: _listItem.length > ITEM_PER_PAGE ? ITEM_PER_PAGE : _listItem.length,
                   itemBuilder: (context, index) {
                     var item = _listItem[index];
                     return Material(
@@ -90,7 +90,7 @@ class _TemukanState extends State<Temukan> {
                       child: InkWell(
                         onTap: () {},
                         child: Stack(
-                          alignment: Alignment.bottomRight,
+                          alignment: Alignment.bottomLeft,
                           children: <Widget>[
                             Semantics(
                               label: "Listing item",
@@ -118,7 +118,7 @@ class _TemukanState extends State<Temukan> {
                                 ]
                               ),
                             ),),
-                            Padding(
+                            SingleChildScrollView(
                               padding: EdgeInsets.all(10),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: <Widget>[
                                 Text(item.judul, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),

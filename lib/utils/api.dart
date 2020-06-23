@@ -29,7 +29,7 @@ class ApiModel {
 
 Dio dio = Dio(BaseOptions(
   baseUrl: "${APP_HOST}api",
-  connectTimeout: 5000,
+  connectTimeout: 10000,
   receiveTimeout: 3000,
 ));
 
@@ -56,7 +56,7 @@ Future<ApiModel> api(String what, {String sub1, String type = 'get', Map<String,
   } catch (e) {
     err = e;
   }
-  log("API", what, url, data);
+  log("API", type, url, data);
   if (responseBody == null) h.failAlertInternet();
   return responseBody == null ? ApiModel(isSuccess: false) : ApiModel.fromJson(responseBody, type: type);
   // : ApiModel(
@@ -83,7 +83,7 @@ Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
   } catch (e) {
     err = e;
   }
-  log("AUTH", what, url, data);
+  log("AUTH", "post", url, data);
   if (responseBody == null) h.failAlertInternet();
   return responseBody == null ? ApiModel(isSuccess: false) : ApiModel.fromJson(responseBody, type: 'post');
   // : ApiModel(
@@ -94,12 +94,13 @@ Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
   // );
 }
 
-log(String type, String what, String url, Map<String, dynamic> data) {
+log(String tag, String type, String url, Map<String, dynamic> data) {
+  type = type.toUpperCase();
   print(
-    "\n ==> $type $what URL: ${dio.options.baseUrl}$url"
-    "\n ==> $type $what PARAMS: $data"
-    "\n ==> $type $what RESPONSE: $response"
-    "\n ==> $type $what STATUS CODE: ${response?.statusCode}"
-    "\n ==> $type $what ERROR: $err"
+    "\n ==> $tag $type $url URL: ${dio.options.baseUrl}$url"
+    "\n ==> $tag $type $url PARAMS: $data"
+    "\n ==> $tag $type $url RESPONSE: $response"
+    "\n ==> $tag $type $url STATUS CODE: ${response?.statusCode}"
+    "\n ==> $tag $type $url ERROR: $err"
   );
 }

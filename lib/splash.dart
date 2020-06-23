@@ -36,7 +36,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(FocusNode());
+      FocusScope.of(context).unfocus();
       Future.delayed(Duration(milliseconds: 500), () {
         _startSplash();
       });

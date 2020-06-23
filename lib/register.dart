@@ -72,8 +72,8 @@ class _RegisterState extends State<Register> {
     _nomorPINFocusNode = FocusNode();
     _konfirmasiPINFocusNode = FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      FocusScope.of(context).requestFocus(FocusNode());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
     });
   }
 
@@ -444,6 +444,7 @@ class _FormLocationState extends State<FormLocation> {
             _cameraPositionDebouncer.value = cameraPosition;
           },
           onTap: (latLng) {
+            print(" -> tap location: $latLng");
             _goToLocation(CameraPosition(target: latLng, zoom: _defaultZoom),);
           },
         ),
@@ -538,7 +539,7 @@ class _FormAddressState extends State<FormAddress> {
   }
 
   _submit() {
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     var address = _addressController.text;
     setState(() {
       if (address == null || address.isEmpty) {

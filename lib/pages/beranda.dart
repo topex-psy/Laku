@@ -68,7 +68,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _getMyLocation();
-      _runTimer();
+      // _runTimer();
     });
   }
 
@@ -97,7 +97,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     if (settings.isGettingLocation) return;
     settings.setSettings(isGettingLocation: true);
-    _timer.cancel();
+    _timer?.cancel();
     _spinController.forward();
 
     print("... GETTING MY LOCATION");
@@ -129,15 +129,16 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     }
     _spinController.reset();
     settings.setSettings(address: address, isGettingLocation: false);
-    await api('user', type: 'post', sub1: 'location', data: {
-      'lat': address.coordinates.latitude,
-      'lng': address.coordinates.longitude,
-    });
+    // api('user', type: 'post', sub1: 'location', data: {
+    //   'uid': userSession.uid,
+    //   'lat': address.coordinates.latitude,
+    //   'lng': address.coordinates.longitude,
+    // });
     _runTimer();
   }
 
   _getAllData() async {
-    // print(" ==> GET ALL DATA ..................");
+    print(" ==> GET ALL DATA ..................");
 
     var notifApi = await api('user_notif', data: {'uid': userSession.uid});
     if (notifApi.isSuccess) {
@@ -447,7 +448,11 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                       enablePullUp: false,
                       header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR),
                       controller: _refreshController,
-                      onRefresh: _getAllData,
+                      onRefresh: () {
+                        _timer?.cancel();
+                        _runTimer();
+                        // _getAllData();
+                      },
                       child: SingleChildScrollView(
                         child: AnimatedOpacity(
                           opacity: _isLoading ? 0 : 1,
@@ -568,27 +573,28 @@ class _CardBoxState extends State<CardBox> {
 
     switch (widget.notif) {
       case 'iklan':
-        angka = settings.notif.iklan;
+        angka = settings.notif?.iklan;
         color = Colors.blue;
         icon = LineIcons.map_marker;
         label = "Iklan";
         buka = () {};
         break;
       case 'pengguna':
-        angka = settings.notif.pengguna;
+        angka = settings.notif?.pengguna;
         color = Colors.green;
         icon = LineIcons.users;
         label = "Pengguna";
         buka = () {};
         break;
       case 'pencari':
-        angka = settings.notif.pencari;
+        angka = settings.notif?.pencari;
         color = Colors.orange;
         icon = LineIcons.binoculars;
         label = "Pencari";
         buka = () {};
         break;
     }
+    angka ??= 0;
     return angka == 0 && widget.notif != 'iklan' ? SizedBox() : SizedBox(
       width: size,
       height: size,
@@ -657,7 +663,7 @@ class _CardListState extends State<CardList> {
     double buttonWidth;
     switch (widget.notif) {
       case 'iklanTerpasang':
-        angka = settings.notif.iklanTerpasang;
+        angka = settings.notif?.iklanTerpasang;
         label = "Iklan terpasang";
         buttonLabel = angka == 0 ? "Buat" : "Kelola";
         buttonWidth = angka == 0 ? 96 : 110;
@@ -667,7 +673,7 @@ class _CardListState extends State<CardList> {
         };
         break;
       case 'pencarianTerpasang':
-        angka = settings.notif.pencarianTerpasang;
+        angka = settings.notif?.pencarianTerpasang;
         label = "Pencarian terpasang";
         buttonLabel = "Lihat";
         buttonWidth = 100;
@@ -677,7 +683,7 @@ class _CardListState extends State<CardList> {
         };
         break;
       case 'pesanMasuk':
-        angka = settings.notif.pesanMasuk;
+        angka = settings.notif?.pesanMasuk;
         label = "Pesan masuk";
         buttonLabel = "Cek";
         buttonWidth = 90;
@@ -687,6 +693,7 @@ class _CardListState extends State<CardList> {
         };
         break;
     }
+    angka ??= 0;
     return angka == 0 && widget.notif != 'iklanTerpasang' ? SizedBox() : Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
       elevation: THEME_CARD_ELEVATION,

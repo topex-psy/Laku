@@ -128,7 +128,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     _nextPageIndex = _activeIndex;
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(FocusNode());
+      FocusScope.of(context).unfocus();
       Future.delayed(Duration(milliseconds: 2000), _loadPreferences);
     });
   }
@@ -138,7 +138,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   _getCurrentUser() async {
     print(" ... GET CURRENT USER: $mounted");
     if (!mounted) return;
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     if (!_isLoading) setState(() {
       _isLoading = true;
     });
@@ -408,7 +408,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
       return;
     }
     String phoneNumber = "+62${_nomorPonselController.text}";
-    FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     widget.setLoading(true);
     await firebaseAuth.verifyPhoneNumber(
       verificationCompleted: (authCredential) => _verificationComplete(authCredential, context),
@@ -453,8 +453,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
     if (smsCode.length < SMS_CODE_LENGTH || _signingIn) return;
     _signingIn = true;
     print(" ==> _signInWithCode ...\n$_smsVerificationCode\n$smsCode");
-    // Future.delayed(Duration(milliseconds: 500), () => FocusScope.of(context).requestFocus(FocusNode()));
-    // FocusScope.of(context).requestFocus(FocusNode());
+    FocusScope.of(context).unfocus();
     widget.setLoading(true);
     var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
     try {
@@ -535,7 +534,6 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
       UiInput(
         "Nomor ponsel",
         isRequired: true,
-        autoFocus: true,
         icon: LineIcons.mobile_phone,
         labelStyle: style.textLabelWhite,
         textStyle: style.textInputXL,

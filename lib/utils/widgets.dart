@@ -142,7 +142,7 @@ class _UiInputState extends State<UiInput> {
     _maxLength = widget.maxLength;
     _textCapitalization = widget.caps;
     _onTap = widget.onTap == null ? null : () {
-      FocusScope.of(context).requestFocus(FocusNode());
+      FocusScope.of(context).unfocus();
       widget.onTap();
     };
     switch (widget.type) {
