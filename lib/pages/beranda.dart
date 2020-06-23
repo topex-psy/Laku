@@ -45,11 +45,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
 
   @override
   void onPageVisible() {
+    print(" -> onPageVisible BERANDA");
     _runTimer();
   }
 
   @override
   void onPageInvisible() {
+    print(" -> onPageInvisible BERANDA");
     _timer.cancel();
   }
 
@@ -94,6 +96,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     if (settings.isGettingLocation) return;
     settings.setSettings(isGettingLocation: true);
+    _timer.cancel();
     _spinController.forward();
 
     print("... GETTING MY LOCATION");
@@ -125,6 +128,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     }
     _spinController.reset();
     settings.setSettings(address: address, isGettingLocation: false);
+    _runTimer();
   }
 
   _getAllData() async {

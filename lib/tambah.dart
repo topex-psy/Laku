@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -73,7 +74,12 @@ class _TambahState extends State<Tambah> {
 
     // upload pic
     final settings = Provider.of<SettingsProvider>(context, listen: false);
-    settings.setSettings(iklanUploadPic: [...settings.iklanUploadPic, hash]);
+    settings.setSettings(
+      // iklanUploadPic: [...settings.iklanUploadPic, hash],
+      isUploadListing: true
+    );
+
+    int byteCount = 0;
 
     uploadImages('listing', _images, hash).then((response) {
       print("IMAGES UPLOAD RESPONSE: $response");
@@ -82,10 +88,28 @@ class _TambahState extends State<Tambah> {
       } else {
         print("IMAGES UPLOAD STATUS CODE: ${response.statusCode}");
         print("IMAGES UPLOAD HEADERS: ${response.headers}");
-        response.stream.transform(utf8.decoder).listen((value) {
-          print("IMAGES UPLOAD DONE: $value");
-          var iklanUploadPicAfter = settings.iklanUploadPic.where((i) => i != hash).toList();
-          settings.setSettings(iklanUploadPic: iklanUploadPicAfter);
+        response.stream.transform(
+          // utf8.decoder
+          StreamTransformer.fromHandlers(
+            handleData: (data, sink) {
+              byteCount += data.length;
+              print(" -> byteCount: $byteCount");
+              sink.add(data);
+            },
+            handleError: (error, stack, sink) {},
+            handleDone: (sink) {
+              sink.close();
+            },
+          ),
+        ).listen((value) {
+          print("IMAGES UPLOAD PROGRESS: $value");
+        }).onDone(() {
+          print("IMAGES UPLOAD DONE");
+          // var iklanUploadPicAfter = settings.iklanUploadPic.where((i) => i != hash).toList();
+          settings.setSettings(
+            // iklanUploadPic: iklanUploadPicAfter,
+            isUploadListing: false
+          );
         });
       }
     });
@@ -94,7 +118,8 @@ class _TambahState extends State<Tambah> {
     Navigator.of(context).pop();
     if (postApi.isSuccess) {
       await h.customAlert("Iklan Terpasang!", "Iklan <strong>${postData['judul']}</strong> telah terpasang!", icon: Icon(LineIcons.check_circle, color: Colors.green, size: 69,));
-      Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_HOME);
+      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_HOME);
+      Navigator.of(context).pop({'isSubmit': true});
     } else {
       h.failAlert("Gagal Memproses", "Terjadi kendala saat memproses pemasangan iklan.");
     }

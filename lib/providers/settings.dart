@@ -10,38 +10,44 @@ class SettingsProvider with ChangeNotifier {
   Address _address;
   bool _isGettingLocation;
   bool _isShowGraphics;
+  bool _isUploadListing;
   int _radius;
   UserNotifModel _notif;
-  List<int> _iklanUploadPic;
+  // List<int> _iklanUploadPic;
 
   SettingsProvider() {
     _isGettingLocation = false;
     _isShowGraphics = false;
+    _isUploadListing = false;
     _radius = DEFAULT_RADIUS;
+    // _iklanUploadPic = [];
     // loadPreferences();
   }
 
   Address get address => _address;
   bool get isGettingLocation => _isGettingLocation;
   bool get isShowGraphics => _isShowGraphics;
+  bool get isUploadListing => _isUploadListing;
   int get radius => _radius;
   UserNotifModel get notif => _notif;
-  List<int> get iklanUploadPic => _iklanUploadPic;
+  // List<int> get iklanUploadPic => _iklanUploadPic;
 
   setSettings({
     Address address,
     bool isGettingLocation,
     bool isShowGraphics,
+    bool isUploadListing,
     int radius,
     UserNotifModel notif,
-    List<int> iklanUploadPic,
+    // List<int> iklanUploadPic,
   }) {
     if (address != null) _address = address;
     if (isGettingLocation != null) _isGettingLocation = isGettingLocation;
     if (isShowGraphics != null) _isShowGraphics = isShowGraphics;
+    if (isUploadListing != null) _isUploadListing = isUploadListing;
     if (radius != null) _radius = radius;
     if (notif != null) _notif = notif;
-    if (iklanUploadPic != null) _iklanUploadPic = iklanUploadPic;
+    // if (iklanUploadPic != null) _iklanUploadPic = iklanUploadPic;
     notifyListeners();
     // savePreferences();
   }
