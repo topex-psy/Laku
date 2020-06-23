@@ -39,6 +39,7 @@ class UiInput extends StatefulWidget {
     this.textAlign = TextAlign.start,
     this.showLabel = true,
     this.showHint = true,
+    this.placeholder,
     this.labelStyle,
     this.info,
     this.prefix,
@@ -76,6 +77,7 @@ class UiInput extends StatefulWidget {
   final String prefix;
   final bool showLabel;
   final bool showHint;
+  final String placeholder;
   final TextStyle labelStyle;
   final double height;
   final EdgeInsetsGeometry contentPadding;
@@ -134,7 +136,7 @@ class _UiInputState extends State<UiInput> {
     _fontWeight = _textStyle.fontWeight;
     _fontColor = _textStyle.color;
     _viewText = widget.type != UiInputType.PASSWORD && widget.type != UiInputType.PIN;
-    _hintText = widget.showHint ? widget.label : '';
+    _hintText = widget.showHint ? (widget.placeholder ?? widget.label) : '';
     _hintStyle = TextStyle(fontSize: _fontSize, color: style.textHint.color, fontWeight: FontWeight.normal);
     _iconSize = _fontSize * 1.3;
     _maxLength = widget.maxLength;
@@ -694,7 +696,7 @@ class UiButton extends StatelessWidget {
 }
 
 class UiButtonIcon extends StatelessWidget {
-  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color, this.iconColor, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed}) : super(key: key);
+  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color = THEME_COLOR, this.iconColor = Colors.white, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed}) : super(key: key);
   final IconData icon;
   final double size;
   final double iconSize;
@@ -850,36 +852,47 @@ class UiMenuList extends StatelessWidget {
 }
 
 class UiAvatar extends StatelessWidget {
-  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.onPressed, this.strokeWidth = 3}) : super(key: key);
+  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.placeholder = SETUP_USER_IMAGE, this.onPressed, this.onTapEdit}) : super(key: key);
   final String pic;
+  final String placeholder;
   final double size;
   final String heroTag;
   final void Function() onPressed;
+  final void Function() onTapEdit;
   final double strokeWidth;
 
   @override
   Widget build(BuildContext context) {
-    final _imageDefault = Image.asset(DEFAULT_USER_IMAGE, width: size, height: size, fit: BoxFit.cover);
-    final _imageWidget = pic == null ? _imageDefault : CachedNetworkImage(
+    final _imageDefault = Image.asset(placeholder, width: size, height: size, fit: BoxFit.cover);
+    var _imageWidget;
+    if (pic == null || pic.isEmpty) _imageWidget = _imageDefault;
+    else if (f.isValudURL(pic)) _imageWidget = CachedNetworkImage(
       imageUrl: Uri.encodeFull(pic),
       placeholder: (context, url) => SizedBox(width: size, height: size, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
       errorWidget: (context, url, error) => _imageDefault,
       width: size, height: size,
       fit: BoxFit.cover,
     );
+    else _imageWidget = Image.asset(pic, width: size, height: size, fit: BoxFit.cover);
     final _image = ClipOval(child: InkWell(onTap: onPressed, child: _imageWidget));
-    return Card(
-      elevation: 1,
-      color: Colors.white,
-      clipBehavior: Clip.antiAlias,
-      shape: CircleBorder(),
-      child: Padding(
-        padding: EdgeInsets.all(strokeWidth),
-        child: heroTag == null ? _image : Hero(
-          tag: heroTag,
-          child: _image,
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: <Widget>[
+        Card(
+          elevation: 1,
+          color: Colors.white,
+          clipBehavior: Clip.antiAlias,
+          shape: CircleBorder(),
+          child: Padding(
+            padding: EdgeInsets.all(strokeWidth),
+            child: heroTag == null ? _image : Hero(
+              tag: heroTag,
+              child: _image,
+            ),
+          ),
         ),
-      ),
+        onTapEdit == null ? Container() : UiButtonIcon(Icons.add_a_photo, onPressed: onTapEdit,)
+      ],
     );
   }
 }

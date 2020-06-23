@@ -15,9 +15,6 @@ const APP_ABOUT_URL        = "${APP_HOST}about";
 const DEBUG_TOUR           = false;
 const DEBUG_ONBOARDING     = false;
 
-const DEFAULT_USER_IMAGE   = "images/anon.png";
-const DEFAULT_NONE_IMAGE   = "images/none.png";
-
 const ROUTE_SPLASH         = '/Splash';
 const ROUTE_LOGIN          = '/Login';
 const ROUTE_DAFTAR         = '/Daftar';
@@ -28,7 +25,8 @@ const ROUTE_DATA           = '/Data';
 
 const SETUP_MAX_PERSON_AGE = 100;
 const SETUP_MIN_PERSON_AGE = 10;
-
+const SETUP_NONE_IMAGE     = "images/none.png";
+const SETUP_USER_IMAGE     = "images/anon.png";
 
 const THEME_BACKGROUND     = Color(0XFFDEFFF3);
 const THEME_BORDER_RADIUS  = 12.0;

@@ -109,7 +109,6 @@ class _RegisterState extends State<Register> {
   }
 
   _submit() async {
-    // var cekApi = await auth('tag_check', {'tag': tag});
     final registerData = <String, String>{
       'uid': userSession.uid,
       'phone': userSession.phone,

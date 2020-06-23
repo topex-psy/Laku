@@ -43,6 +43,7 @@ class FormatHelper {
   String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
   String formatDate(DateTime date, {String format = 'dd/MM/yyyy'}) => date == null ? null : DateFormat(format).format(date);
   String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => nominal == null ? null : NumberFormat.currency(locale: APP_LOCALE, symbol: symbol).format(nominal);
+  bool isValudURL(String url) => Uri.parse(url).isAbsolute;
 }
 
 class UserHelper {
@@ -190,7 +191,7 @@ class UIHelper {
   closeDialog() => Navigator.of(context, rootNavigator: true).pop('dialog');
 
   /// fungsi untuk menampilkan popup dialog custom
-  Future<dynamic> customAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onAction, void Function() onDismiss, actionLabel}) => showAlert(
+  Future<dynamic> customAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onAction, actionLabel}) => showAlert(
     title: title,
     body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       direction == Axis.horizontal ? Row(children: <Widget>[
@@ -215,23 +216,20 @@ class UIHelper {
       ],),
     ],),
     showButton: false,
-  ).then((res) {
-    if (onDismiss != null) onDismiss();
-  });
+  );
 
   /// fungsi untuk menampilkan popup pesan gagal
-  Future<dynamic> failAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onRetry, void Function() onDismiss}) => customAlert(
+  Future<dynamic> failAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onRetry}) => customAlert(
     title,
     message,
     icon: icon,
     direction: direction,
     onAction: onRetry,
-    onDismiss: onDismiss,
     actionLabel: 'Coba Lagi',
   );
 
   /// fungsi untuk menampilkan popup memuat data
-  loadAlert([String teks]) => showAlert(
+  loadAlert([String label]) => showAlert(
     showButton: false,
     barrierDismissible: false,
     body: Row(children: <Widget>[
@@ -240,7 +238,7 @@ class UIHelper {
         child: CircularProgressIndicator(strokeWidth: 4,),
       )),
       SizedBox(width: 12,),
-      Text(teks ?? "Tunggu sebentar ...")
+      Text(label ?? "Tunggu sebentar ...")
     ],),
   );
 

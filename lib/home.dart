@@ -145,9 +145,9 @@ class _HomeState extends State<Home> {
           switchInCurve: Curves.easeInBack,
           switchOutCurve: Curves.easeOutBack,
           transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
-          child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
+          child: _selectedIndex > 1 ? SizedBox() : FloatingActionButton(
             onPressed: () async {
-              final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH) as Map;
+              final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH, arguments: {'tipe': _selectedIndex}) as Map;
               print(results);
             },
             backgroundColor: Colors.teal[400],

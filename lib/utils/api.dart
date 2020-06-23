@@ -12,11 +12,19 @@ class ApiModel {
     this.output = '',
     this.isSuccess = true
   });
+
   final Map<String, dynamic> meta;
   final List<Map<String, dynamic>> result;
   final String message;
   final String output;
   final bool isSuccess;
+
+  ApiModel.fromJson(Map<String, dynamic> responseBody, {String type = 'get'})
+  : isSuccess = responseBody['status'] == 1,
+    result = List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
+    message = responseBody['message'],
+    output = responseBody['output'],
+    meta = responseBody[type];
 }
 
 Dio dio = Dio(BaseOptions(
@@ -50,10 +58,11 @@ Future<ApiModel> api(String what, {String type = 'get', Map<String, dynamic> dat
   }
   log("API", what, url, data);
   if (responseBody == null) h.failAlertInternet();
-  return responseBody == null ? ApiModel(isSuccess: false) : ApiModel(
-    meta: responseBody[type],
-    result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
-  );
+  return responseBody == null ? ApiModel(isSuccess: false) : ApiModel.fromJson(responseBody, type: type);
+  // : ApiModel(
+  //   meta: responseBody[type],
+  //   result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
+  // );
 }
 
 Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
@@ -76,12 +85,13 @@ Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
   }
   log("AUTH", what, url, data);
   if (responseBody == null) h.failAlertInternet();
-  return responseBody == null ? ApiModel(isSuccess: false) : ApiModel(
-    isSuccess: responseBody['status'] == 1,
-    result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
-    message: responseBody['message'],
-    output: responseBody['output'],
-  );
+  return responseBody == null ? ApiModel(isSuccess: false) : ApiModel.fromJson(responseBody, type: 'post');
+  // : ApiModel(
+  //   isSuccess: responseBody['status'] == 1,
+  //   result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
+  //   message: responseBody['message'],
+  //   output: responseBody['output'],
+  // );
 }
 
 log(String type, String what, String url, Map<String, dynamic> data) {

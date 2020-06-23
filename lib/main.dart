@@ -76,7 +76,7 @@ class MyApp extends StatelessWidget {
             case ROUTE_SPLASH:   page = Splash(); break;
             case ROUTE_HOME:     page = Home(analytics: analytics, observer: observer,); break;
             case ROUTE_DAFTAR:   page = Register(); break;
-            case ROUTE_TAMBAH:   page = Tambah(); break;
+            case ROUTE_TAMBAH:   page = Tambah(arguments); break;
             case ROUTE_PETA:     page = Peta(); break;
             case ROUTE_DATA:     page = DataList(arguments); break;
           }

@@ -79,7 +79,7 @@ class _DataListState extends State<DataList> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(25),
                   child: FadeInImage.assetNetwork(
-                    placeholder: DEFAULT_NONE_IMAGE,
+                    placeholder: SETUP_NONE_IMAGE,
                     image: _data.foto.first.foto,
                     fit: BoxFit.cover,
                     width: 50,
