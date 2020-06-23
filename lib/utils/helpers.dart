@@ -44,6 +44,11 @@ class FormatHelper {
   String formatDate(DateTime date, {String format = 'dd/MM/yyyy'}) => date == null ? null : DateFormat(format).format(date);
   String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => nominal == null ? null : NumberFormat.currency(locale: APP_LOCALE, symbol: symbol).format(nominal);
   bool isValudURL(String url) => Uri.parse(url).isAbsolute;
+  num roundNumber(num nominal, {int maxDecimal = 1}) => num.parse((nominal / 1000).toStringAsFixed(maxDecimal));
+  String distanceLabel(double meter) {
+    if (meter > 999) return "${roundNumber(meter / 1000)} km";
+    return "${roundNumber(meter)} m";
+  }
 }
 
 class UserHelper {

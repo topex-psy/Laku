@@ -77,6 +77,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     _scrollController.dispose();
     _headerOffsetAnimationController.dispose();
     _headerOpacityAnimationController.dispose();
+    _refreshController.dispose();
     _timer.cancel();
     super.dispose();
   }
@@ -128,24 +129,20 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     }
     _spinController.reset();
     settings.setSettings(address: address, isGettingLocation: false);
-    // TODO var postSetupApi = await auth('user_setup', {
-
-    // });
+    await api('user', type: 'post', sub1: 'location', data: {
+      'lat': address.coordinates.latitude,
+      'lng': address.coordinates.longitude,
+    });
     _runTimer();
   }
 
   _getAllData() async {
     // print(" ==> GET ALL DATA ..................");
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    var notifApi = await api('user_notif', data: {
-      'uid': userSession.uid,
-      'lat': settings.address.coordinates.latitude,
-      'lng': settings.address.coordinates.longitude
-    });
 
+    var notifApi = await api('user_notif', data: {'uid': userSession.uid});
     if (notifApi.isSuccess) {
-      var notif = UserNotifModel.fromJson(notifApi.result.first);
-      settings.setSettings(notif: notif);
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      settings.setSettings(notif: UserNotifModel.fromJson(notifApi.result.first));
       _refreshController.refreshCompleted();
     } else {
       _refreshController.refreshFailed();
@@ -342,11 +339,11 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                       ),
                       actions: [
                         IconButton(icon: Icon(LineIcons.map_o, color: Colors.white,), tooltip: 'Lokasi Saya', onPressed: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop'}) as Map;
+                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'user_shop'}) as Map;
                           print(results);
                         },),
                         IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'notif'}) as Map;
+                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'user_notif'}) as Map;
                           print(results);
                         },),
                         SizedBox(width: 8,)

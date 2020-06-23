@@ -35,9 +35,9 @@ class _DataListState extends State<DataList> {
     switch (widget.args['tipe']) {
       case 'listing':
         return IconLabel(LineIcons.list, "Iklan Saya");
-      case 'shop':
+      case 'user_shop':
         return IconLabel(LineIcons.map, "Lokasi Saya");
-      case 'notif':
+      case 'user_notif':
       default:
         return IconLabel(LineIcons.bell_o, "Notifikasi");
     }
@@ -51,9 +51,9 @@ class _DataListState extends State<DataList> {
         switch (widget.args['tipe']) {
           case 'listing':
             return IklanModel.fromJson(res);
-          case 'shop':
+          case 'user_shop':
             return TokoModel.fromJson(res);
-          case 'notif':
+          case 'user_notif':
           default:
             return NotifModel.fromJson(res);
         }
@@ -113,7 +113,7 @@ class _DataListState extends State<DataList> {
             ),
           ),
         );
-      case 'shop':
+      case 'user_shop':
         TokoModel _data = _listData[index];
         return Material(
           color: Colors.white,
@@ -159,7 +159,7 @@ class _DataListState extends State<DataList> {
             ),
           ),
         );
-      case 'notif':
+      case 'user_notif':
       default:
         NotifModel _data = _listData[index];
         return Container(
@@ -201,7 +201,7 @@ class _DataListState extends State<DataList> {
             ),
           ),
         ),
-        widget.args['tipe'] == "shop" ? Container(
+        widget.args['tipe'] == 'user_shop' ? Container(
           width: double.infinity,
           height: 180,
           padding: EdgeInsets.all(20.0),

@@ -1,21 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import '../models/iklan.dart';
+import '../utils/api.dart';
 import '../utils/constants.dart';
+import '../utils/helpers.dart';
 import '../utils/styles.dart' as style;
-
-class Iklan {
-  Iklan({this.judul, this.pic, this.x, this.y});
-  String judul;
-  String pic;
-  int x;
-  int y;
-
-  @override
-  String toString() => "Iklan ($x/$y)";
-}
 
 class Temukan extends StatefulWidget {
   @override
@@ -23,26 +14,34 @@ class Temukan extends StatefulWidget {
 }
 
 class _TemukanState extends State<Temukan> {
+  final _refreshController = RefreshController(initialRefresh: false);
   static const ITEM_PER_PAGE = 12;
-  var _listItem = <Iklan>[];
+  var _listItem = <IklanModel>[];
 
   @override
   void initState() {
-    for (var i = 0; i < ITEM_PER_PAGE; i++) {
-      _listItem.add(Iklan(
-        judul: 'Test Produk',
-        pic: 'https://webimg.secondhandapp.com/w-i-mgl/5db94ce263dfa4255608294a',
-        x: 1 + Random().nextInt(2),
-        y: 1 + Random().nextInt(2)
-      ));
-    }
-    print("_listItem = $_listItem");
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getAllData();
+    });
   }
 
   @override
   void dispose() {
+    _refreshController.dispose();
     super.dispose();
+  }
+
+  _getAllData() async {
+    var listingApi = await api('listing', data: { 'uid': userSession.uid, 'mode': 'near' });
+    if (listingApi.isSuccess) {
+      setState(() {
+        _listItem = listingApi.result.map((res) => IklanModel.fromJson(res)).toList();
+      });
+      _refreshController.refreshCompleted();
+    } else {
+      _refreshController.refreshFailed();
+    }
   }
 
   @override
@@ -94,18 +93,17 @@ class _TemukanState extends State<Temukan> {
                           alignment: Alignment.bottomRight,
                           children: <Widget>[
                             Semantics(
-                              label: "Foto produk",
+                              label: "Listing item",
                               value: item.judul,
                               image: true,
-                              child: Image.asset(SETUP_NONE_IMAGE, height: double.infinity, width: double.infinity, fit: BoxFit.cover,),
+                              child: FadeInImage.assetNetwork(
+                                placeholder: SETUP_NONE_IMAGE,
+                                image: item.foto.first.foto,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                            // FadeInImage(
-                            //   height: double.infinity,
-                            //   width: double.infinity,
-                            //   placeholder: AssetImage(SETUP_NONE_IMAGE),
-                            //   image: NetworkImage(item.pic),
-                            //   fit: BoxFit.cover,
-                            // ),
                             Container(width: double.infinity, height: MediaQuery.of(context).size.width / 6, decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: FractionalOffset.topCenter,
@@ -123,8 +121,9 @@ class _TemukanState extends State<Temukan> {
                             Padding(
                               padding: EdgeInsets.all(10),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: <Widget>[
-                                Text("Rp 2.000.000", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                                Text("2.0 km", style: TextStyle(color: Colors.white, fontSize: 11)),
+                                Text(item.judul, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                Text(item.judulLapak, style: TextStyle(color: Colors.white, fontSize: 11)),
+                                // Text(f.distanceLabel(item.jarakMeter), style: TextStyle(color: Colors.white, fontSize: 11)),
                               ],),
                             )
                           ],
@@ -132,10 +131,7 @@ class _TemukanState extends State<Temukan> {
                       )
                     );
                   },
-                  staggeredTileBuilder: (index) {
-                    var item = _listItem[index];
-                    return StaggeredTile.count(1, item.y);
-                  },
+                  staggeredTileBuilder: (index) => StaggeredTile.count(1, _listItem[index].tier > 1 ? 2 : 1),
                   mainAxisSpacing: 4.0,
                   crossAxisSpacing: 4.0,
                 ),

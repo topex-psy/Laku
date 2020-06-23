@@ -54,9 +54,11 @@ class IklanModel {
     this.waktuUpdate,
     @required this.lat,
     @required this.lng,
+    @required this.jarakMeter,
     @required this.judulLapak,
     @required this.pengiklan,
     this.foto,
+    this.tier,
   });
 
   final int id;
@@ -71,9 +73,11 @@ class IklanModel {
   final DateTime waktuUpdate;
   final double lat;
   final double lng;
+  final double jarakMeter;
   final String judulLapak;
   final String pengiklan;
   final List<IklanPicModel> foto;
+  final int tier;
 
   IklanModel.fromJson(Map<String, dynamic> parsedJson)
   : id = int.parse(parsedJson['ID']),
@@ -88,7 +92,9 @@ class IklanModel {
     waktuUpdate = DateTime.parse(parsedJson['LAST_UPDATED']),
     lat = double.parse(parsedJson['LATITUDE']),
     lng = double.parse(parsedJson['LONGITUDE']),
+    jarakMeter = double.parse(parsedJson['JARAK_METER']),
     judulLapak = parsedJson['JUDUL_LAPAK'],
     pengiklan = parsedJson['PENGIKLAN'],
-    foto = List.from(parsedJson['FOTO']).map((f) => IklanPicModel.fromJson(f)).toList();
+    foto = List.from(parsedJson['FOTO']).map((f) => IklanPicModel.fromJson(f)).toList(),
+    tier = int.parse(parsedJson['TIER']);
 }
