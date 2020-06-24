@@ -52,8 +52,7 @@ class _TemukanState extends State<Temukan> {
     var listingApi = await api('listing', data: {
       'uid': userSession.uid,
       'mode': 'near',
-      'page': _page,
-      'itemPerPage': ITEM_PER_PAGE,
+      'limit': _page * ITEM_PER_PAGE,
       'keyword': _keyword
     });
     if (listingApi.isSuccess) {
