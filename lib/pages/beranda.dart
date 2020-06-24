@@ -594,8 +594,8 @@ class _CardBoxState extends State<CardBox> {
         buka = () {};
         break;
     }
-    angka ??= 0;
-    return angka == 0 && widget.notif != 'iklan' ? SizedBox() : SizedBox(
+    if ((angka ?? 0) == 0 && widget.notif != 'iklan') return SizedBox();
+    return SizedBox(
       width: size,
       height: size,
       child: Card(
@@ -626,7 +626,8 @@ class _CardBoxState extends State<CardBox> {
                   ),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-                  Text(f.formatNumber(angka) ?? '-', style: style.textHeadlineXLWhite,),
+                  // TODO check spinkit size
+                  angka == null ? SpinKitRipple(color: Colors.white70, size: 50,) : Text(f.formatNumber(angka), style: style.textHeadlineXLWhite,),
                   Text(label, style: style.textTitleWhite,),
                   SizedBox(height: 14,),
                   Row(children: <Widget>[
