@@ -285,7 +285,12 @@ class UIHelper {
 
   /// fungsi untuk menampilkan popup pesan gagal konek
   failAlertInternet({String message, void Function() onRetry, String onRetryLabel}) {
-    showFlashBar("Gagal Memuat", message ?? "Terjadi masalah saat memuat data. Harap periksa koneksi internet Anda!", actionLabel: onRetry == null ? 'TUTUP' : (onRetryLabel ?? 'REFRESH'), action: onRetry);
+    showFlashBar(
+      "Gagal Memuat",
+      message ?? "Terjadi masalah saat memuat data. Harap periksa koneksi internet Anda!",
+      actionLabel: onRetry == null ? 'TUTUP' : (onRetryLabel ?? 'REFRESH'),
+      action: onRetry
+    );
   }
 
   /// fungsi yang mengembalikan teks versi html

@@ -53,16 +53,20 @@ Future<ApiModel> api(String what, {String sub1, String type = 'get', Map<String,
     }
     // responseBody = response?.data;
     responseBody = json.decode(response?.data);
+  } on DioError catch (e) {
+    if (e.type == DioErrorType.CONNECT_TIMEOUT) {
+      // ...
+    }
+    if (e.type == DioErrorType.RECEIVE_TIMEOUT) {
+      // ...
+    }
+    h.failAlertInternet();
+    err = e;
   } catch (e) {
     err = e;
   }
   log("API", type, url, data);
-  if (responseBody == null) h.failAlertInternet();
   return responseBody == null ? ApiModel(isSuccess: false) : ApiModel.fromJson(responseBody, type: type);
-  // : ApiModel(
-  //   meta: responseBody[type],
-  //   result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
-  // );
 }
 
 Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
@@ -80,18 +84,20 @@ Future<ApiModel> auth(String what, Map<String, dynamic> data) async {
       // }
     ));
     responseBody = json.decode(response?.data);
+  } on DioError catch (e) {
+    if (e.type == DioErrorType.CONNECT_TIMEOUT) {
+      // ...
+    }
+    if (e.type == DioErrorType.RECEIVE_TIMEOUT) {
+      // ...
+    }
+    h.failAlertInternet();
+    err = e;
   } catch (e) {
     err = e;
   }
   log("AUTH", "post", url, data);
-  if (responseBody == null) h.failAlertInternet();
   return responseBody == null ? ApiModel(isSuccess: false) : ApiModel.fromJson(responseBody, type: 'post');
-  // : ApiModel(
-  //   isSuccess: responseBody['status'] == 1,
-  //   result: List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
-  //   message: responseBody['message'],
-  //   output: responseBody['output'],
-  // );
 }
 
 log(String tag, String type, String url, Map<String, dynamic> data) {

@@ -102,10 +102,15 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
 
     print("... GETTING MY LOCATION");
     var address = settings.address;
-    try {
+    // try {
       var position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       var coordinates = Coordinates(position.latitude, position.longitude);
       print("... GETTING MY LOCATION result: $coordinates");
+      api('user', type: 'post', sub1: 'location', data: {
+        'uid': userSession.uid,
+        'lat': coordinates.latitude,
+        'lng': coordinates.longitude,
+      });
 
       var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
       address = addresses.first;
@@ -124,16 +129,11 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         "\n countryCode: ${address.countryCode}"
       );
 
-    } catch(e) {
-      print("... GETTING MY LOCATION error: $e");
-    }
+    // } catch(e) {
+    //   print("... GETTING MY LOCATION error: $e");
+    // }
     _spinController.reset();
     settings.setSettings(address: address, isGettingLocation: false);
-    // api('user', type: 'post', sub1: 'location', data: {
-    //   'uid': userSession.uid,
-    //   'lat': address.coordinates.latitude,
-    //   'lng': address.coordinates.longitude,
-    // });
     _runTimer();
   }
 

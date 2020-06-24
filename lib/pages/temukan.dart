@@ -120,7 +120,7 @@ class _TemukanState extends State<Temukan> {
                             ),),
                             SingleChildScrollView(
                               padding: EdgeInsets.all(10),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: <Widget>[
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: <Widget>[
                                 Text(item.judul, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                                 Text(item.judulLapak, style: TextStyle(color: Colors.white, fontSize: 11)),
                                 // Text(f.distanceLabel(item.jarakMeter), style: TextStyle(color: Colors.white, fontSize: 11)),
