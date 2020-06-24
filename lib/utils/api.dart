@@ -11,7 +11,6 @@ class ApiModel {
     this.message = '',
     this.output = '',
     this.isSuccess = true,
-    this.totalAll = 0,
   });
 
   final Map<String, dynamic> meta;
@@ -19,15 +18,13 @@ class ApiModel {
   final String message;
   final String output;
   final bool isSuccess;
-  final int totalAll;
 
   ApiModel.fromJson(Map<String, dynamic> responseBody, {String type = 'get'})
   : isSuccess = (responseBody['status'] ?? 1) == 1,
     result = List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
     message = responseBody['message'],
     output = responseBody['output'],
-    totalAll = int.parse(responseBody['total_all']),
-    meta = responseBody[type];
+    meta = Map.from(responseBody[type]);
 }
 
 Dio dio = Dio(BaseOptions(

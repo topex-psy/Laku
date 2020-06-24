@@ -58,7 +58,7 @@ class _TemukanState extends State<Temukan> {
     if (listingApi.isSuccess) {
       setState(() {
         _listItem = listingApi.result.map((res) => IklanModel.fromJson(res)).toList();
-        _totalAll = listingApi.totalAll;
+        _totalAll = listingApi.meta['TOTAL_ALL'];
       });
       _refreshController.refreshCompleted();
     } else {
