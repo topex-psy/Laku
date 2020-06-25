@@ -24,7 +24,7 @@ class ApiModel {
     result = List.from(responseBody['result']).map((res) => Map<String, dynamic>.from(res)).toList(),
     message = responseBody['message'],
     output = responseBody['output'],
-    meta = Map.from(responseBody[type]);
+    meta = type == 'get' ? Map.from(responseBody[type]) : {};
 }
 
 Dio dio = Dio(BaseOptions(

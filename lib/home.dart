@@ -77,6 +77,10 @@ class _HomeState extends State<Home> {
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
         if (!Provider.of<PersonProvider>(context, listen: false).isSignedIn) return true;
+        if (_pageController.page.round() > 1) {
+          _openPage(1);
+          return false;
+        }
         if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
         h.showToast('prompt_exit'.tr());
         _isWillExit = true;

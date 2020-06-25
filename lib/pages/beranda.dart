@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:laku/models/user.dart';
@@ -110,9 +111,12 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         'uid': userSession.uid,
         'lat': coordinates.latitude,
         'lng': coordinates.longitude,
+      }).then((locationUpdateApi) {
+        if (locationUpdateApi.isSuccess) _runTimer();
       });
 
       var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      // var addresses = await Geocoder.google(APP_GOOGLE_MAP_KEY, language: APP_LOCALE).findAddressesFromCoordinates(coordinates);
       address = addresses.first;
       print(
         "... GET ADDRESS result"
@@ -132,9 +136,10 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     // } catch(e) {
     //   print("... GETTING MY LOCATION error: $e");
     // }
-    _spinController.reset();
-    settings.setSettings(address: address, isGettingLocation: false);
-    _runTimer();
+    // finally {
+      _spinController.reset();
+      settings.setSettings(address: address, isGettingLocation: false);
+    // }
   }
 
   _getAllData() async {
@@ -369,7 +374,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                                     SizedBox(width: 12,),
                                     Expanded(
                                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-                                        Text("Kamu berada di:", style: style.textWhite),
+                                        Text('prompt_current_location'.tr(), style: style.textWhite),
                                         Consumer<SettingsProvider>(
                                           builder: (context, settings, child) {
                                             return settings.isGettingLocation || settings.address == null ? Container(
@@ -504,7 +509,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                                   //   ),
                                   // ),
 
-                                  Center(child: Text("Kamu punya:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                                  Center(child: Text('prompt_current_items'.tr(), textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
                                   SizedBox(height: 12,),
                                   CardList('iklanTerpasang'),
                                   CardList('pencarianTerpasang'),
@@ -631,7 +636,7 @@ class _CardBoxState extends State<CardBox> {
                   Text(label, style: style.textTitleWhite,),
                   SizedBox(height: 14,),
                   Row(children: <Widget>[
-                    Expanded(child: Text("Selengkapnya", style: style.textWhite70S,)),
+                    Expanded(child: Text('prompt_more'.tr(), style: style.textWhite70S,)),
                     SizedBox(width: 8,),
                     Icon(LineIcons.chevron_circle_right, color: Colors.white70, size: 15,)
                   ],)

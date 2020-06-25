@@ -9,6 +9,9 @@
   "menu_home": "Home",
   "menu_logout": "Logout",
   "menu_settings": "Settings",
+  "prompt_current_location": "Your're here:",
+  "prompt_current_items": "You have:",
   "prompt_exit": "Tap again to close the application.",
-  "prompt_hello": "Hello"
+  "prompt_hello": "Hello",
+  "prompt_more": "View all"
 }

@@ -9,6 +9,9 @@
   "menu_home": "Beranda",
   "menu_logout": "Keluar",
   "menu_settings": "Pengaturan",
+  "prompt_current_location": "Kamu berada di:",
+  "prompt_current_items": "Kamu punya:",
   "prompt_exit": "Ketuk sekali lagi untuk menutup aplikasi.",
-  "prompt_hello": "Halo"
+  "prompt_hello": "Halo",
+  "prompt_more": "Selengkapnya"
 }
