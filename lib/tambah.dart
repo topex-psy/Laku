@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:laku/models/iklan.dart';
-import 'package:laku/providers/settings.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'models/basic.dart';
+import 'models/iklan.dart';
 import 'models/user.dart';
+import 'providers/settings.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -229,7 +229,7 @@ class _TambahState extends State<Tambah> {
                         SizedBox(height: 4,),
                         Text("Kategori:", style: style.textLabel,),
                         SizedBox(height: 8,),
-                        UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'circleOutline'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
+                        UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'clipboardList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
                           setState(() { _kategori = val; });
                         },),
                         SizedBox(height: 20,),

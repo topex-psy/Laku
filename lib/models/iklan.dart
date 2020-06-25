@@ -18,6 +18,9 @@ class IklanKategoriModel {
     judul = parsedJson['JUDUL'],
     icon = parsedJson['ICON'],
     tier = int.parse(parsedJson['TIER']);
+
+  @override
+  String toString() => judul;
 }
 
 class IklanPicModel {

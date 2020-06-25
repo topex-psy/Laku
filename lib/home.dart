@@ -56,6 +56,7 @@ class _HomeState extends State<Home> {
   }
 
   _openPage(int index) {
+    FocusScope.of(context).unfocus();
     setState(() {
       _selectedIndex = index;
     });

@@ -75,7 +75,8 @@ class _OnboardingPageState extends State<OnboardingPage> with SingleTickerProvid
                             scale: _animation.value,
                             child: widget.viewModel.heroTag == null ? widget.viewModel.hero : Hero(tag: widget.viewModel.heroTag, child: widget.viewModel.hero),
                           );
-                        }),
+                        }
+                      ),
                     ),
                   ),
                 ),

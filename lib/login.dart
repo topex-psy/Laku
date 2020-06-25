@@ -351,7 +351,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                             _getCurrentUser();
                           },
                           setLoading: (val) {
-                            Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
+                            FocusScope.of(context).unfocus();
                             if (_isLoading != val) setState(() {
                               _isLoading = val;
                             });
