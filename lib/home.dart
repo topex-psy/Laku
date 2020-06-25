@@ -158,7 +158,7 @@ class _HomeState extends State<Home> {
               }
             },
             backgroundColor: Colors.teal[400],
-            tooltip: 'action_create_ad'.tr(),
+            tooltip: 'menu_create'.tr(),
             child: Icon(LineIcons.plus),
           ),
         ),

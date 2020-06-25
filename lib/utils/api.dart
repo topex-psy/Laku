@@ -29,7 +29,7 @@ class ApiModel {
 
 Dio dio = Dio(BaseOptions(
   baseUrl: "${APP_HOST}api",
-  connectTimeout: 10000,
+  connectTimeout: 30000,
   receiveTimeout: 3000,
 ));
 

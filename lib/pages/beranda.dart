@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -115,23 +116,34 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
         if (locationUpdateApi.isSuccess) _runTimer();
       });
 
-      var addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
-      // var addresses = await Geocoder.google(APP_GOOGLE_MAP_KEY, language: APP_LOCALE).findAddressesFromCoordinates(coordinates);
-      address = addresses.first;
-      print(
-        "... GET ADDRESS result"
-        "\n name: ${address.featureName}"
-        "\n address: ${address.addressLine}"
-        "\n streetName: ${address.thoroughfare}"
-        "\n streetNo: ${address.subThoroughfare}"
-        "\n kelurahan: ${address.subLocality}"
-        "\n kecamatan: ${address.locality}"
-        "\n city: ${address.subAdminArea}"
-        "\n zip: ${address.postalCode}"
-        "\n province: ${address.adminArea}"
-        "\n countryName: ${address.countryName}"
-        "\n countryCode: ${address.countryCode}"
-      );
+      var addresses = <Address>[];
+
+      try {
+        addresses = await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      } on PlatformException catch(e) {
+        // device no support geocoding, try online
+        print(e);
+        addresses = await Geocoder.google(APP_GOOGLE_MAP_KEY, language: APP_LOCALE).findAddressesFromCoordinates(coordinates);
+      }
+
+      if (addresses.isNotEmpty) {
+        address = addresses.first;
+        print(
+          "... GET ADDRESS result"
+          "\n name: ${address.featureName}"
+          "\n address: ${address.addressLine}"
+          "\n streetName: ${address.thoroughfare}"
+          "\n streetNo: ${address.subThoroughfare}"
+          "\n kelurahan: ${address.subLocality}"
+          "\n kecamatan: ${address.locality}"
+          "\n city: ${address.subAdminArea}"
+          "\n zip: ${address.postalCode}"
+          "\n province: ${address.adminArea}"
+          "\n countryName: ${address.countryName}"
+          "\n countryCode: ${address.countryCode}"
+        );
+      }
+
 
     // } catch(e) {
     //   print("... GETTING MY LOCATION error: $e");
@@ -581,21 +593,21 @@ class _CardBoxState extends State<CardBox> {
         angka = settings.notif?.iklan;
         color = Colors.blue;
         icon = LineIcons.map_marker;
-        label = "Iklan";
+        label = 'menu_listing'.plural(angka ?? 1);
         buka = () {};
         break;
       case 'pengguna':
         angka = settings.notif?.pengguna;
         color = Colors.green;
         icon = LineIcons.users;
-        label = "Pengguna";
+        label = 'menu_user'.plural(angka ?? 1);
         buka = () {};
         break;
       case 'pencari':
         angka = settings.notif?.pencari;
         color = Colors.orange;
         icon = LineIcons.binoculars;
-        label = "Pencari";
+        label = 'menu_seeker'.plural(angka ?? 1);
         buka = () {};
         break;
     }

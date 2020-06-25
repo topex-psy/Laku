@@ -1,5 +1,5 @@
 {
-  "action_create_ad": "Buat Iklan",
+  "menu_create": "Buat Iklan",
   "menu_account": "Akun",
   "menu_browse": "Temukan",
   "menu_favorites": "Favorit",
@@ -9,9 +9,14 @@
   "menu_home": "Beranda",
   "menu_logout": "Keluar",
   "menu_settings": "Pengaturan",
+  "menu_listing": "Iklan",
+  "menu_user": "Pengguna",
+  "menu_seeker": "Pencari",
   "prompt_current_location": "Kamu berada di:",
   "prompt_current_items": "Kamu punya:",
   "prompt_exit": "Ketuk sekali lagi untuk menutup aplikasi.",
   "prompt_hello": "Halo",
-  "prompt_more": "Selengkapnya"
+  "prompt_more": "Selengkapnya",
+  "prompt_search_listing": "Cari iklan",
+  "prompt_sort": "Urutkan"
 }

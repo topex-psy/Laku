@@ -1,5 +1,5 @@
 {
-  "action_create_ad": "Create Ad",
+  "menu_create": "Create Ad",
   "menu_account": "Account",
   "menu_browse": "Browse",
   "menu_favorites": "Favorites",
@@ -9,9 +9,23 @@
   "menu_home": "Home",
   "menu_logout": "Logout",
   "menu_settings": "Settings",
+  "menu_listing": {
+    "one": "Listing",
+    "many": "Listings"
+  },
+  "menu_user": {
+    "one": "User",
+    "many": "Users"
+  },
+  "menu_seeker": {
+    "one": "Seeker",
+    "many": "Seekers"
+  },
   "prompt_current_location": "Your're here:",
   "prompt_current_items": "You have:",
   "prompt_exit": "Tap again to close the application.",
   "prompt_hello": "Hello",
-  "prompt_more": "View all"
+  "prompt_more": "View all",
+  "prompt_search_listing": "Search listing",
+  "prompt_sort": "Sort"
 }
