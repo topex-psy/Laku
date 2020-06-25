@@ -30,7 +30,7 @@ class _TemukanState extends State<Temukan> {
 
   var _listItem = <IklanModel>[];
   var _listItemFiltered = <IklanModel>[];
-  // var _page = 1;
+  var _page = 1;
   var _totalAll = 0;
   var _isGettingData = true;
 
@@ -79,7 +79,7 @@ class _TemukanState extends State<Temukan> {
     var listingApi = await api('listing', data: {
       'uid': userSession.uid,
       'mode': 'near',
-      // 'limit': _page * ITEM_PER_PAGE,
+      'limit': _page * ITEM_PER_PAGE,
       'keyword': keyword
     });
     setState(() {
@@ -90,6 +90,7 @@ class _TemukanState extends State<Temukan> {
         _listItem = listingApi.result.map((res) => IklanModel.fromJson(res)).toList();
         _listItemFiltered = _listItem;
         _totalAll = listingApi.meta['TOTAL_ALL'];
+        // TODO TOTAL_FILTERED seharusnya exclude limit
       });
       _refreshController.refreshCompleted();
     } else {
@@ -197,6 +198,7 @@ class _TemukanState extends State<Temukan> {
           Expanded(
             child: StaggeredGridView.countBuilder(
               // physics: NeverScrollableScrollPhysics(),
+              controller: _scrollController,
               padding: EdgeInsets.all(15),
               crossAxisCount: ITEM_PER_ROW,
               itemCount: _listItemFiltered.length + 1, // add loader
