@@ -44,6 +44,7 @@ dependencies:
   geocoder: ^0.2.1
   geolocator: ^5.3.1
   google_maps_flutter: ^0.5.25+3
+  image_picker: ^0.6.7+2
   launch_review: ^2.0.0
   multi_image_picker: ^4.6.7
   permission_handler: ^5.0.1
@@ -52,6 +53,7 @@ dependencies:
   # ui
   cached_network_image: ^2.2.0+1
   code_input: ^1.0.3
+  dotted_border: ^1.0.5
   fl_chart: ^0.10.0
   flash: ^1.2.0
   flutter_rounded_date_picker: ^1.0.4

@@ -152,7 +152,7 @@ class _HomeState extends State<Home> {
           transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
           child: _selectedIndex > 1 ? SizedBox() : FloatingActionButton(
             onPressed: () async {
-              final results = await Navigator.of(context).pushNamed(ROUTE_TAMBAH, arguments: {'tipe': _selectedIndex}) as Map;
+              final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': _selectedIndex}) as Map;
               print(" ... ROUTE TAMBAH result: $results");
               if (results != null && results.containsKey('isSubmit')) {
 

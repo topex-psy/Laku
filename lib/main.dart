@@ -13,9 +13,10 @@ import 'login.dart';
 import 'register.dart';
 import 'datalist.dart';
 import 'home.dart';
+import 'pasang.dart';
 import 'peta.dart';
+import 'profil.dart';
 import 'splash.dart';
-import 'tambah.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -74,8 +75,9 @@ class MyApp extends StatelessWidget {
             case ROUTE_SPLASH:   page = Splash(); break;
             case ROUTE_HOME:     page = Home(analytics: analytics, observer: observer,); break;
             case ROUTE_DAFTAR:   page = Register(); break;
-            case ROUTE_TAMBAH:   page = Tambah(arguments); break;
+            case ROUTE_PASANG:   page = Pasang(arguments); break;
             case ROUTE_PETA:     page = Peta(); break;
+            case ROUTE_PROFIL:   page = Profil(); break;
             case ROUTE_DATA:     page = DataList(arguments); break;
           }
 

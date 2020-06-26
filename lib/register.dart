@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'models/basic.dart';
+import 'models/user.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
-
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:debounce_throttle/debounce_throttle.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:geocoder/geocoder.dart';
-import 'package:geolocator/geolocator.dart';
-
-
-const jenisKelaminLbl  = <String>['Laki-laki', 'Perempuan'];
-const jenisKelaminVal  = <String>['L', 'P'];
 
 class Register extends StatefulWidget {
   @override

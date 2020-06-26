@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash/flash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import '../models/user.dart';
 import '../plugins/toast.dart';
@@ -281,6 +282,14 @@ class UIHelper {
         );
       },
     );
+  }
+
+  /// fungsi untuk menampilkan notifikasi flashbar sukses
+  showFlashbarSuccess(String title, String message, {int duration = 5000}) {
+    showFlashBar(title, message, duration: duration, showDismiss: false, icon: Padding(
+      padding: EdgeInsets.only(left: 15, right: 4),
+      child: Icon(LineIcons.check_circle, color: Colors.green, size: 40,),
+    ));
   }
 
   /// fungsi untuk menampilkan popup pesan gagal konek

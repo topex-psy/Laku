@@ -5,13 +5,11 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:laku/utils/widgets.dart';
 import 'package:line_icons/line_icons.dart';
-// import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../models/iklan.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import '../utils/mixins.dart';
-// import '../utils/styles.dart' as style;
 
 const ITEM_PER_PAGE = 12;
 const ITEM_PER_ROW = 2;
@@ -94,20 +92,16 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
   }
 
   _showToolbar() {
-    // print(" ... will show toolbar: ${!_isToolbarVisible}");
     if (!_isToolbarVisible) {
       _isToolbarVisible = true;
       _animationController.reverse();
-      // print(" ... show toolbar");
     }
   }
 
   _hideToolbar() {
-    // print(" ... will hide toolbar: ${_isToolbarVisible}");
     if (_isToolbarVisible) {
       _isToolbarVisible = false;
       _animationController.forward();
-      // print(" ... hide toolbar");
     }
   }
 
@@ -220,7 +214,6 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
 
           Container(
             child: StaggeredGridView.countBuilder(
-              // physics: NeverScrollableScrollPhysics(),
               controller: _scrollController,
               padding: EdgeInsets.only(left: 15, right: 15, bottom: 15, top: _toolbarHeight),
               crossAxisCount: ITEM_PER_ROW, // TODO responsive based on resolution
@@ -256,7 +249,6 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
                 offset: Offset(0, -_toolbarHeight * _animation.value),
                 child: Container(
                   height: _toolbarHeight,
-                  // padding: EdgeInsets.only(left: 15, right: 15, top: 15),
                   child: Material(
                     color: THEME_BACKGROUND,
                     elevation: 0,
@@ -280,7 +272,6 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
               );
             }
           ),
-
         ],
       ),
     );

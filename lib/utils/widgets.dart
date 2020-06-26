@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -853,7 +855,7 @@ class UiMenuList extends StatelessWidget {
 
 class UiAvatar extends StatelessWidget {
   UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.placeholder = SETUP_USER_IMAGE, this.onPressed, this.onTapEdit}) : super(key: key);
-  final String pic;
+  final dynamic pic;
   final String placeholder;
   final double size;
   final String heroTag;
@@ -864,16 +866,21 @@ class UiAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _imageDefault = Image.asset(placeholder, width: size, height: size, fit: BoxFit.cover);
-    var _imageWidget;
-    if (pic == null || pic.isEmpty) _imageWidget = _imageDefault;
-    else if (f.isValudURL(pic)) _imageWidget = CachedNetworkImage(
-      imageUrl: Uri.encodeFull(pic),
-      placeholder: (context, url) => SizedBox(width: size, height: size, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
-      errorWidget: (context, url, error) => _imageDefault,
-      width: size, height: size,
-      fit: BoxFit.cover,
-    );
-    else _imageWidget = Image.asset(pic, width: size, height: size, fit: BoxFit.cover);
+    Widget _imageWidget = _imageDefault;
+    if (pic != null) {
+      if (pic is File) {
+        _imageWidget = Image.file(pic, width: size, height: size, fit: BoxFit.cover);
+      } else if (pic.isNotEmpty) {
+        if (f.isValudURL(pic)) _imageWidget = CachedNetworkImage(
+          imageUrl: Uri.encodeFull(pic),
+          placeholder: (context, url) => SizedBox(width: size, height: size, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+          errorWidget: (context, url, error) => _imageDefault,
+          width: size, height: size,
+          fit: BoxFit.cover,
+        );
+        else _imageWidget = Image.asset(pic, width: size, height: size, fit: BoxFit.cover);
+      }
+    }
     final _image = ClipOval(child: InkWell(onTap: onPressed, child: _imageWidget));
     return Stack(
       alignment: Alignment.bottomRight,

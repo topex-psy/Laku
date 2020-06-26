@@ -1,3 +1,6 @@
+const jenisKelaminLbl = <String>['Laki-laki', 'Perempuan'];
+const jenisKelaminVal = <String>['L', 'P'];
+
 class UserModel {
   UserModel({
     this.uid,
@@ -20,6 +23,8 @@ class UserModel {
   final bool isBanned;
   final DateTime banUntil;
   final String banReason;
+
+  String get namaLengkap => "$namaDepan $namaBelakang";
 
   UserModel.fromJson(Map<String, dynamic> parsedJson)
   : uid = parsedJson['FIREBASE_UID'],

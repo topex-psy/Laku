@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
@@ -17,15 +18,15 @@ import 'utils/styles.dart' as style;
 import 'utils/upload.dart';
 import 'utils/widgets.dart';
 
-class Tambah extends StatefulWidget {
-  Tambah(this.args, {Key key}) : super(key: key);
+class Pasang extends StatefulWidget {
+  Pasang(this.args, {Key key}) : super(key: key);
   final Map args;
 
   @override
-  _TambahState createState() => _TambahState();
+  _PasangState createState() => _PasangState();
 }
 
-class _TambahState extends State<Tambah> {
+class _PasangState extends State<Pasang> {
   var _imagesEdit = <String>[];
   var _images = <Asset>[];
   var _isLoading = true;
@@ -195,8 +196,28 @@ class _TambahState extends State<Tambah> {
                       onChanged: () {},
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                         Text("Foto:", style: style.textLabel),
-                        UiAvatar(_foto, size: 150, placeholder: SETUP_NONE_IMAGE, onPressed: () {}, onTapEdit: _pickImages),
                         SizedBox(height: 8.0,),
+                        DottedBorder(
+                          dashPattern: <double>[10, 6],
+                          color: Colors.blueGrey[100],
+                          strokeWidth: 2,
+                          borderType: BorderType.RRect,
+                          radius: Radius.circular(THEME_CARD_RADIUS),
+                          padding: EdgeInsets.zero,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
+                            child: InkWell(
+                              onTap: _pickImages,
+                              child: Container(
+                                height: 100,
+                                child: Center(
+                                  child: Icon(LineIcons.camera, color: Colors.blueGrey[100], size: 50,),
+                                ),
+                              ),
+                            ),
+                          )
+                        ),
+                        SizedBox(height: 12.0,),
                         Text("Tipe:", style: style.textLabel),
                         SizedBox(height: 8.0,),
                         SizedBox(
@@ -229,7 +250,8 @@ class _TambahState extends State<Tambah> {
                         SizedBox(height: 4,),
                         Text("Kategori:", style: style.textLabel,),
                         SizedBox(height: 8,),
-                        UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'clipboardList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
+                        // MdiIcons.naturePeople
+                        UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'viewList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
                           setState(() { _kategori = val; });
                         },),
                         SizedBox(height: 20,),
