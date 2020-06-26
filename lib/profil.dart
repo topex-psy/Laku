@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:provider/provider.dart';
 // import 'package:permission_handler/permission_handler.dart';
 // import 'models/basic.dart';
 import 'models/user.dart';
+import 'providers/person.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -33,17 +35,19 @@ class _ProfilState extends State<Profil> {
   var _errorText = <String, String>{};
   var _isLoading = true;
   var _isChanged = false;
+  var _isEdit = false;
 
   var _jenisKelamin  = 'L';
   var _tanggalLahir  = '';
   String _imageName;
   File _image;
+  UserModel _userData;
 
-  _getAllData() {
-    Future.delayed(Duration(milliseconds: 3000), () {
-      setState(() {
-        _isLoading = false;
-      });
+  _getAllData() async {
+    var userApi = await api('user', data: {'uid': userSession.uid});
+    setState(() {
+      _userData = UserModel.fromJson(userApi.result.first);
+      _isLoading = false;
     });
   }
   
@@ -53,7 +57,20 @@ class _ProfilState extends State<Profil> {
     });
   }
 
+  _edit() {
+    setState(() {
+      _isChanged = false;
+      _isEdit = !_isEdit;
+    });
+  }
+
   _submit() async {
+    if (!_isChanged) {
+      setState(() {
+        _isEdit = false;
+      });
+      return;
+    }
     setState(() {
       _errorText.clear();
       if (_namaLengkapController.text.isEmpty) _errorText["name"] = "Harap masukkan nama lengkapmu!";
@@ -82,6 +99,7 @@ class _ProfilState extends State<Profil> {
           foto: updatedProfile.foto
         );
         setState(() {
+          _isEdit = false;
           _isChanged = false;
           _image = null;
         });
@@ -93,18 +111,23 @@ class _ProfilState extends State<Profil> {
     }
   }
 
+  _viewImage() {
+    var person = Provider.of<PersonProvider>(context, listen: false);
+    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': _image ?? person.foto});
+  }
+
   _pickImage([ImageSource source]) async {
     if (source == null) {
-        h.showAlert(title: "Unggah Foto Profil", showButton: false, body: Column(children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
+        source = await h.showAlert(title: "Unggah Foto Profil", showButton: false, body: Column(children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
         isLast: source == ImageSource.camera,
         icon: {ImageSource.camera: MdiIcons.camera, ImageSource.gallery: MdiIcons.imageMultiple}[source],
         teks: {ImageSource.camera: 'Kamera', ImageSource.gallery: 'Pilih dari Galeri'}[source],
         value: source,
         aksi: (val) {
-          h.closeDialog();
-          _pickImage(val as ImageSource);
+          Navigator.of(context).pop(val as ImageSource);
         },
       )).toList(),));
+      if (source != null) _pickImage(source);
     } else {
       final pickedFile = await _imagePicker.getImage(
         source: source,
@@ -154,8 +177,23 @@ class _ProfilState extends State<Profil> {
 
   Future<bool> _onWillPop() async {
     FocusScope.of(context).unfocus();
-    if (_isChanged) return await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
+    if (_isEdit && _isChanged) return await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
     return true;
+  }
+
+  Widget _actionButton() {
+    return Container(
+      height: double.infinity,
+      width: 60,
+      child: RaisedButton(
+        elevation: 0,
+        child: Icon(_isEdit ? MdiIcons.check : MdiIcons.pencil, size: 30,),
+        color: _isEdit ? Colors.green : Colors.teal,
+        textColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        onPressed: _isEdit ? _submit : _edit,
+      ),
+    );
   }
 
   @override
@@ -170,7 +208,7 @@ class _ProfilState extends State<Profil> {
               Container(child: Center(child: UiLoader())),
               Column(
                 children: <Widget>[
-                  UiAppBar("Profil Saya", icon: LineIcons.user),
+                  UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton(),),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.all(THEME_PADDING),
@@ -184,9 +222,40 @@ class _ProfilState extends State<Profil> {
                           });
                         },
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          Text("Foto:", style: style.textLabel),
-                          UiAvatar(_image, size: 150, placeholder: SETUP_USER_IMAGE, onPressed: () {}, onTapEdit: () => _pickImage()),
-                          SizedBox(height: 20,),
+                          // Text("Foto:", style: style.textLabel),
+                          Row(children: <Widget>[
+                            Expanded(child: Column(
+                              children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
+                                isLast: source == ImageSource.camera,
+                                icon: {ImageSource.camera: MdiIcons.camera, ImageSource.gallery: MdiIcons.imageMultiple}[source],
+                                teks: {ImageSource.camera: 'Kamera', ImageSource.gallery: 'Pilih dari Galeri'}[source],
+                                value: source,
+                                aksi: (val) => _pickImage(val as ImageSource),
+                              )).toList(),
+                            ),),
+                            Selector<PersonProvider, String>(
+                              selector: (buildContext, person) => person.foto,
+                              builder: (context, foto, child) => UiAvatar(
+                                _image ?? foto,
+                                size: 150,
+                                onPressed: _viewImage,
+                                onTapEdit: _isEdit ? () => _pickImage() : null,
+                              ),
+                            ),
+                          ],),
+                          // Align(
+                          //   alignment: Alignment.centerRight,
+                          //   child: Selector<PersonProvider, String>(
+                          //     selector: (buildContext, person) => person.foto,
+                          //     builder: (context, foto, child) => UiAvatar(
+                          //       _image ?? foto,
+                          //       size: 150,
+                          //       onPressed: _viewImage,
+                          //       onTapEdit: _isEdit ? () => _pickImage() : null,
+                          //     ),
+                          //   ),
+                          // ),
+                          // SizedBox(height: 20,),
                           UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],),
                           SizedBox(height: 4,),
                           UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],),

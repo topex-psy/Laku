@@ -939,10 +939,11 @@ class Copyright extends StatelessWidget {
 }
 
 class UiAppBar extends StatelessWidget {
-  UiAppBar(this.title, {Key key, this.icon, this.backButton = true}) : super(key: key);
+  UiAppBar(this.title, {Key key, this.icon, this.tool, this.backButton = true}) : super(key: key);
   final String title;
   final IconData icon;
   final bool backButton;
+  final Widget tool;
 
   @override
   Widget build(BuildContext context) {
@@ -950,6 +951,7 @@ class UiAppBar extends StatelessWidget {
       steps: [IconLabel(icon, title)],
       hideSteps: true,
       backButton: backButton,
+      tool: tool,
     );
   }
 }

@@ -38,9 +38,7 @@ class _MenuNavContentState extends State<MenuNavContent> {
         LaunchReview.launch();
         break;
       case MenuNavVal.profile:
-        // TODO edit profil (identitas, kontak, foto)
-        final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
-        print(" ... ROUTE PROFIL result: $results");
+        a.openProfile();
         break;
       case MenuNavVal.settings:
         // TODO ganti password, bind akun, hapus akun

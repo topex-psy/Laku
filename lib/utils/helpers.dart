@@ -56,6 +56,12 @@ class UserHelper {
   final BuildContext context;
   UserHelper(this.context);
 
+  openProfile() async {
+    // TODO edit profil (identitas, kontak, foto)
+    final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
+    print(" ... ROUTE PROFIL result: $results");
+  }
+
   Future<bool> firebaseLinkWithCredential(AuthCredential credential) async {
     final user = await firebaseAuth.currentUser();
     try {

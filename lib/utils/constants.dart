@@ -24,6 +24,7 @@ const ROUTE_PASANG         = '/Tambah';
 const ROUTE_PROFIL         = '/Profil';
 const ROUTE_PETA           = '/Peta';
 const ROUTE_DATA           = '/Data';
+const ROUTE_IMAGE          = '/Image';
 
 const SETUP_MAX_PERSON_AGE = 100;
 const SETUP_MIN_PERSON_AGE = 10;

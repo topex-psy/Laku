@@ -5,6 +5,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+import 'plugins/image_viewer.dart';
 import 'providers/person.dart';
 import 'providers/settings.dart';
 import 'utils/constants.dart';
@@ -79,6 +80,7 @@ class MyApp extends StatelessWidget {
             case ROUTE_PETA:     page = Peta(); break;
             case ROUTE_PROFIL:   page = Profil(); break;
             case ROUTE_DATA:     page = DataList(arguments); break;
+            case ROUTE_IMAGE:    page = ImageViewer(arguments); break;
           }
 
           // return MaterialPageRoute(settings: settings, builder: (_) => page);
