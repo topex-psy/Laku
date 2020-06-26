@@ -179,6 +179,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
           person.setPerson(
             namaDepan: user.namaDepan,
             namaBelakang: user.namaBelakang,
+            jenisKelamin: user.jenisKelamin,
+            tanggalLahir: user.tanggalLahir,
             email: user.email,
             foto: user.foto,
             isSignedIn: true,

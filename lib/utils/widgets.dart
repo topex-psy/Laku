@@ -197,9 +197,9 @@ class _UiInputState extends State<UiInput> {
 
   @override
   Widget build(BuildContext context) {
-    _textStyle = TextStyle(color: widget.readOnly ? Colors.white : _fontColor, fontSize: _fontSize, fontWeight: _fontWeight);
-    _prefixStyle = TextStyle(color: widget.readOnly ? Colors.white : _fontColor, fontSize: _fontSize, fontWeight: FontWeight.bold);
-    _icon = widget.icon == null ? SizedBox() : Padding(padding: EdgeInsets.only(left: 20), child: Icon(widget.icon, size: _iconSize, color: widget.readOnly ? Colors.white70 : Colors.grey));
+    _textStyle = TextStyle(color: _fontColor, fontSize: _fontSize, fontWeight: _fontWeight);
+    _prefixStyle = TextStyle(color: _fontColor, fontSize: _fontSize, fontWeight: FontWeight.bold);
+    _icon = widget.icon == null ? SizedBox() : Padding(padding: EdgeInsets.only(left: 20), child: Icon(widget.icon, size: _iconSize, color: widget.readOnly ? THEME_COLOR : Colors.grey));
     switch (widget.type) {
       case UiInputType.TEXT:
       case UiInputType.NAME:
@@ -390,7 +390,7 @@ class _UiInputState extends State<UiInput> {
             border: InputBorder.none,
             isDense: true,
           ),
-          resetIcon: widget.isClearable ? Icon(LineIcons.close, size: _fontSize,) : null,
+          resetIcon: !widget.readOnly && widget.isClearable ? Icon(LineIcons.close, size: _fontSize,) : null,
           onShowPicker: (context, currentValue) {
             DateTime now = DateTime.now();
             DateTime min = DateTime(2020);
@@ -431,9 +431,9 @@ class _UiInputState extends State<UiInput> {
           IgnorePointer(
             ignoring: widget.readOnly,
             child: Card(
-              color: (widget.color ?? Theme.of(context).cardColor).withOpacity(widget.readOnly ? 0.8 : 1),
+              color: widget.readOnly ? Colors.teal[300].withOpacity(.2) : (widget.color ?? Theme.of(context).cardColor),
               shape: RoundedRectangleBorder(borderRadius: widget.borderRadius ?? BorderRadius.circular(THEME_BORDER_RADIUS),),
-              elevation: widget.elevation,
+              elevation: widget.readOnly ? 0 : widget.elevation,
               clipBehavior: Clip.antiAlias,
               margin: EdgeInsets.zero,
               // TODO input note autosize height
@@ -939,10 +939,11 @@ class Copyright extends StatelessWidget {
 }
 
 class UiAppBar extends StatelessWidget {
-  UiAppBar(this.title, {Key key, this.icon, this.tool, this.backButton = true}) : super(key: key);
+  UiAppBar(this.title, {Key key, this.icon, this.tool, this.backButton = true, this.onBackPressed}) : super(key: key);
   final String title;
   final IconData icon;
   final bool backButton;
+  final VoidCallback onBackPressed;
   final Widget tool;
 
   @override
@@ -951,18 +952,20 @@ class UiAppBar extends StatelessWidget {
       steps: [IconLabel(icon, title)],
       hideSteps: true,
       backButton: backButton,
+      onBackPressed: onBackPressed,
       tool: tool,
     );
   }
 }
 
 class UiCaption extends StatelessWidget {
-  UiCaption({Key key, this.steps, this.currentIndex = 0, this.stepAction, this.hideSteps = false, this.backButton = false, this.tool}) : super(key: key);
+  UiCaption({Key key, this.steps, this.currentIndex = 0, this.stepAction, this.hideSteps = false, this.backButton = false, this.onBackPressed, this.tool}) : super(key: key);
   final List<IconLabel> steps;
   final int currentIndex;
   final void Function(int) stepAction;
   final bool hideSteps;
   final bool backButton;
+  final VoidCallback onBackPressed;
   final Widget tool;
 
   @override
@@ -974,7 +977,7 @@ class UiCaption extends StatelessWidget {
         iconSize: 32.0,
         color: Colors.white,
         icon: Icon(LineIcons.arrow_left),
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
       ),
     ) : (steps[currentIndex].icon == null ? SizedBox() : Padding(
       padding: EdgeInsets.symmetric(horizontal: 12),

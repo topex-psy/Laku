@@ -60,6 +60,9 @@ class UserHelper {
     // TODO edit profil (identitas, kontak, foto)
     final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
     print(" ... ROUTE PROFIL result: $results");
+    if (screenScaffoldKey.currentState.isEndDrawerOpen) {
+      Navigator.of(context).pop();
+    }
   }
 
   Future<bool> firebaseLinkWithCredential(AuthCredential credential) async {

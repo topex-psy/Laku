@@ -6,6 +6,8 @@ class UserModel {
     this.uid,
     this.namaDepan,
     this.namaBelakang,
+    this.jenisKelamin,
+    this.tanggalLahir,
     this.email,
     this.foto,
     this.jumlahLapak,
@@ -17,6 +19,8 @@ class UserModel {
   final String uid;
   final String namaDepan;
   final String namaBelakang;
+  final String jenisKelamin;
+  final DateTime tanggalLahir;
   final String email;
   final String foto;
   final int jumlahLapak;
@@ -25,11 +29,14 @@ class UserModel {
   final String banReason;
 
   String get namaLengkap => "$namaDepan $namaBelakang";
+  String get jenisKelaminLengkap => jenisKelamin == 'L' ? 'Laki-laki' : 'Perempuan';
 
   UserModel.fromJson(Map<String, dynamic> parsedJson)
   : uid = parsedJson['FIREBASE_UID'],
     namaDepan = parsedJson['NAMA_DEPAN'],
     namaBelakang = parsedJson['NAMA_BELAKANG'],
+    jenisKelamin = parsedJson['JENIS_KELAMIN'],
+    tanggalLahir = DateTime.parse(parsedJson['TANGGAL_LAHIR']),
     email = parsedJson['EMAIL'],
     foto = parsedJson['FOTO'],
     jumlahLapak = int.parse(parsedJson['JUMLAH_LAPAK']),
@@ -42,6 +49,8 @@ class UserModel {
   "\n  uid: $uid"
   "\n  namaDepan: $namaDepan"
   "\n  namaBelakang: $namaBelakang"
+  "\n  jenisKelamin: $jenisKelamin"
+  "\n  tanggalLahir: $tanggalLahir"
   "\n  email: $email"
   "\n  foto: $foto"
   "\n  isBanned: $isBanned"

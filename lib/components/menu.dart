@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:launch_review/launch_review.dart';
 import 'package:line_icons/line_icons.dart';
-import '../utils/constants.dart';
+// import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import '../utils/widgets.dart';
 

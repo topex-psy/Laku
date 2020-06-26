@@ -29,6 +29,7 @@ class _ProfilState extends State<Profil> {
   TextEditingController _namaLengkapController;
   TextEditingController _tanggalLahirController;
   TextEditingController _emailController;
+  TextEditingController _jenisKelaminController;
   FocusNode _namaLengkapFocusNode;
   FocusNode _tanggalLahirFocusNode;
   FocusNode _emailFocusNode;
@@ -37,18 +38,21 @@ class _ProfilState extends State<Profil> {
   var _isChanged = false;
   var _isEdit = false;
 
-  var _jenisKelamin  = 'L';
-  var _tanggalLahir  = '';
+  var _jenisKelamin = 'L';
+  DateTime _tanggalLahir;
   String _imageName;
   File _image;
   UserModel _userData;
 
   _getAllData() async {
     var userApi = await api('user', data: {'uid': userSession.uid});
-    setState(() {
-      _userData = UserModel.fromJson(userApi.result.first);
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _userData = UserModel.fromJson(userApi.result.first);
+        _setInitialValues();
+        _isLoading = false;
+      });
+    }
   }
   
   _dismissError(String tag) {
@@ -57,8 +61,18 @@ class _ProfilState extends State<Profil> {
     });
   }
 
+  _setInitialValues() {
+    _namaLengkapController.text = _userData.namaLengkap;
+    _emailController.text = _userData.email;
+    _jenisKelaminController.text = _userData.jenisKelaminLengkap;
+    _tanggalLahirController.text = f.formatDate(_userData.tanggalLahir);
+    _tanggalLahir  = _userData.tanggalLahir;
+    _jenisKelamin  = _userData.jenisKelamin;
+  }
+
   _edit() {
     setState(() {
+      _setInitialValues();
       _isChanged = false;
       _isEdit = !_isEdit;
     });
@@ -82,7 +96,7 @@ class _ProfilState extends State<Profil> {
       'uid': userSession.uid,
       'namaLengkap': _namaLengkapController.text,
       'gender': _jenisKelamin,
-      'tanggalLahir': _tanggalLahir,
+      'tanggalLahir': _tanggalLahir.toString().substring(0, 10),
       'email': _emailController.text,
       'imageName': _imageName ?? '',
       'image': _image != null ? 'data:image/png;base64,' + base64Encode(_image.readAsBytesSync()) : '',
@@ -109,6 +123,10 @@ class _ProfilState extends State<Profil> {
     } else {
       h.failAlert("Gagal Memproses", "Terjadi kendala saat menyimpan profil.");
     }
+  }
+
+  _changePassword() {
+    // TODO modal change password
   }
 
   _viewImage() {
@@ -150,6 +168,7 @@ class _ProfilState extends State<Profil> {
     _namaLengkapController = TextEditingController()..addListener(() => _dismissError("name"));
     _emailController = TextEditingController()..addListener(() => _dismissError("email"));
     _tanggalLahirController = TextEditingController();
+    _jenisKelaminController = TextEditingController();
     _namaLengkapFocusNode = FocusNode();
     _emailFocusNode = FocusNode();
     _tanggalLahirFocusNode = FocusNode();
@@ -169,6 +188,7 @@ class _ProfilState extends State<Profil> {
     _namaLengkapController.dispose();
     _emailController.dispose();
     _tanggalLahirController.dispose();
+    _jenisKelaminController.dispose();
     _namaLengkapFocusNode.dispose();
     _emailFocusNode.dispose();
     _tanggalLahirFocusNode.dispose();
@@ -177,8 +197,21 @@ class _ProfilState extends State<Profil> {
 
   Future<bool> _onWillPop() async {
     FocusScope.of(context).unfocus();
-    if (_isEdit && _isChanged) return await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
+    // if (_isEdit) return await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
+    if (_isEdit) {
+      var confirm = true;
+      if (_isChanged) confirm = await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
+      if (confirm) setState(() {
+        _isChanged = false;
+        _isEdit = false;
+      });
+      return false;
+    }
     return true;
+  }
+
+  _backPressed() async {
+    if (await _onWillPop()) Navigator.of(context).pop();
   }
 
   Widget _actionButton() {
@@ -198,6 +231,7 @@ class _ProfilState extends State<Profil> {
 
   @override
   Widget build(BuildContext context) {
+    var person = Provider.of<PersonProvider>(context, listen: false);
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -208,10 +242,10 @@ class _ProfilState extends State<Profil> {
               Container(child: Center(child: UiLoader())),
               Column(
                 children: <Widget>[
-                  UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton(),),
+                  UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton(), onBackPressed: _backPressed),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.all(THEME_PADDING),
+                      padding: EdgeInsets.only(left: 20, right: 20, top: 15, bottom: 30,),
                       child: Form(
                         key: _formKey,
                         autovalidate: false,
@@ -222,50 +256,41 @@ class _ProfilState extends State<Profil> {
                           });
                         },
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          // Text("Foto:", style: style.textLabel),
                           Row(children: <Widget>[
-                            Expanded(child: Column(
+                            Expanded(child: _isEdit ? Column(
                               children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
+                                menuPaddingHorizontal: 8,
                                 isLast: source == ImageSource.camera,
                                 icon: {ImageSource.camera: MdiIcons.camera, ImageSource.gallery: MdiIcons.imageMultiple}[source],
                                 teks: {ImageSource.camera: 'Kamera', ImageSource.gallery: 'Pilih dari Galeri'}[source],
                                 value: source,
                                 aksi: (val) => _pickImage(val as ImageSource),
                               )).toList(),
+                            ) : Column(
+                              children: <Widget>[
+                                Text(_userData?.namaLengkap ?? '', style: style.textHeadline,),
+                                Divider(color: Colors.grey[400],),
+                                Text(_userData?.email ?? '',),
+                              ],
                             ),),
-                            Selector<PersonProvider, String>(
-                              selector: (buildContext, person) => person.foto,
-                              builder: (context, foto, child) => UiAvatar(
-                                _image ?? foto,
-                                size: 150,
-                                onPressed: _viewImage,
-                                onTapEdit: _isEdit ? () => _pickImage() : null,
-                              ),
+                            UiAvatar(
+                              _image ?? person.foto,
+                              size: 150,
+                              onPressed: _viewImage,
+                              onTapEdit: _isEdit ? () => _pickImage() : null,
                             ),
                           ],),
-                          // Align(
-                          //   alignment: Alignment.centerRight,
-                          //   child: Selector<PersonProvider, String>(
-                          //     selector: (buildContext, person) => person.foto,
-                          //     builder: (context, foto, child) => UiAvatar(
-                          //       _image ?? foto,
-                          //       size: 150,
-                          //       onPressed: _viewImage,
-                          //       onTapEdit: _isEdit ? () => _pickImage() : null,
-                          //     ),
-                          //   ),
-                          // ),
-                          // SizedBox(height: 20,),
-                          UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],),
+                          _isEdit
+                            ? UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],)
+                            : SizedBox(),
                           SizedBox(height: 4,),
-                          UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],),
+                          _isEdit
+                            ? UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],)
+                            : SizedBox(),
                           SizedBox(height: 4,),
-                          UiInput("Tanggal lahir", isRequired: true, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
+                          UiInput("Tanggal lahir", isRequired: true, readOnly: !_isEdit, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, initialValue: _tanggalLahir ?? person.tanggalLahir, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
                             try {
-                              setState(() {
-                                _tanggalLahir = val == null ? '' : (val as DateTime).toString().substring(0, 10);
-                                if (_errorText.containsKey("dob")) _errorText.remove("dob");
-                              });
+                              setState(() { _tanggalLahir = val as DateTime; });
                             } catch (e) {
                               print("DATETIME PICKER ERROR = $e");
                             }
@@ -273,7 +298,7 @@ class _ProfilState extends State<Profil> {
                           SizedBox(height: 4,),
                           Text("Jenis kelamin:", style: style.textLabel),
                           SizedBox(height: 8.0,),
-                          SizedBox(
+                          _isEdit ? SizedBox(
                             height: 45.0,
                             child: ToggleButtons(
                               borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
@@ -303,9 +328,9 @@ class _ProfilState extends State<Profil> {
                                 _jenisKelamin == jenisKelaminVal[1],
                               ],
                             ),
-                          ),
-                          // SizedBox(height: 30,),
-                          // UiButton("Simpan", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
+                          ) : UiInput("", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _jenisKelaminController,),
+                          SizedBox(height: 30,),
+                          _isEdit ? SizedBox() : UiButton("Ganti Password", width: 250, height: style.heightButton, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _changePassword,),
                           SizedBox(height: 12,),
                         ],)
                       ),

@@ -106,30 +106,34 @@ class _HomeState extends State<Home> {
               child: ClipRRect(
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
                 child: Drawer(semanticLabel: "Menu panel", child: Column(children: <Widget>[
-                  Container(
+                  Material(
                     color: THEME_COLOR,
-                    width: double.infinity,
-                    padding: EdgeInsets.all(20),
-                    child: Row(children: <Widget>[
-                      Selector<PersonProvider, String>(
-                        selector: (buildContext, person) => person.foto,
-                        builder: (context, foto, child) => UiAvatar(foto, size: 70, onPressed: () {
-                          a.openProfile();
-                        },),
+                    child: InkWell(
+                      splashColor: Colors.white10,
+                      highlightColor: Colors.white10,
+                      onTap: a.openProfile,
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Row(children: <Widget>[
+                          Selector<PersonProvider, String>(
+                            selector: (buildContext, person) => person.foto,
+                            builder: (context, foto, child) => UiAvatar(foto, size: 70,),
+                          ),
+                          SizedBox(width: 12,),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                            Selector<PersonProvider, String>(
+                              selector: (buildContext, person) => person.namaDepan,
+                              builder: (context, namaDepan, child) => Text("${'prompt_hello'.tr()}, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
+                            ),
+                            SizedBox(height: 2),
+                            Selector<PersonProvider, String>(
+                              selector: (buildContext, person) => person.email,
+                              builder: (context, email, child) => Text(email, style: style.textWhite,),
+                            ),
+                          ],),)
+                        ],),
                       ),
-                      SizedBox(width: 12,),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                        Selector<PersonProvider, String>(
-                          selector: (buildContext, person) => person.namaDepan,
-                          builder: (context, namaDepan, child) => Text("${'prompt_hello'.tr()}, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
-                        ),
-                        SizedBox(height: 2),
-                        Selector<PersonProvider, String>(
-                          selector: (buildContext, person) => person.email,
-                          builder: (context, email, child) => Text(email, style: style.textWhite,),
-                        ),
-                      ],),)
-                    ],),
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.all(10),
