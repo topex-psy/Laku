@@ -261,7 +261,7 @@ class _UiInputState extends State<UiInput> {
             decoration: InputDecoration(
               contentPadding: _contentPadding,
               prefixStyle: _prefixStyle,
-              prefix: Text(widget.prefix ?? "+62 ", style: _prefixStyle),
+              prefix: Text(widget.prefix ?? "$APP_COUNTRY_CODE ", style: _prefixStyle),
               hintStyle: _hintStyle,
               hintText: _hintText,
               icon: _icon,
@@ -421,7 +421,7 @@ class _UiInputState extends State<UiInput> {
     }
 
     return Padding(
-      padding: widget.margin ?? EdgeInsets.only(bottom: 8.0),
+      padding: widget.margin ?? EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

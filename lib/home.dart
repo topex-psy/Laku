@@ -77,7 +77,6 @@ class _HomeState extends State<Home> {
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
-        if (!Provider.of<PersonProvider>(context, listen: false).isSignedIn) return true;
         if (_pageController.page.round() > 1) {
           _openPage(1);
           return false;

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:line_icons/line_icons.dart';
@@ -8,6 +9,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:provider/provider.dart';
 // import 'package:permission_handler/permission_handler.dart';
 // import 'models/basic.dart';
+import 'components/forms/reset_pin.dart';
 import 'models/user.dart';
 import 'providers/person.dart';
 import 'utils/api.dart';
@@ -30,9 +32,11 @@ class _ProfilState extends State<Profil> {
   TextEditingController _tanggalLahirController;
   TextEditingController _emailController;
   TextEditingController _jenisKelaminController;
+  TextEditingController _nomorPonselController;
   FocusNode _namaLengkapFocusNode;
   FocusNode _tanggalLahirFocusNode;
   FocusNode _emailFocusNode;
+  FocusNode _nomorPonselFocusNode;
   var _errorText = <String, String>{};
   var _isLoading = true;
   var _isChanged = false;
@@ -65,6 +69,7 @@ class _ProfilState extends State<Profil> {
     _namaLengkapController.text = _userData.namaLengkap;
     _emailController.text = _userData.email;
     _jenisKelaminController.text = _userData.jenisKelaminLengkap;
+    _nomorPonselController.text = _userData.phone;
     _tanggalLahirController.text = f.formatDate(_userData.tanggalLahir);
     _tanggalLahir  = _userData.tanggalLahir;
     _jenisKelamin  = _userData.jenisKelamin;
@@ -80,44 +85,68 @@ class _ProfilState extends State<Profil> {
 
   _submit() async {
     if (!_isChanged) {
-      setState(() {
-        _isEdit = false;
-      });
+      setState(() { _isEdit = false; });
       return;
     }
     setState(() {
       _errorText.clear();
       if (_namaLengkapController.text.isEmpty) _errorText["name"] = "Harap masukkan nama lengkapmu!";
       if (_emailController.text.isEmpty) _errorText["email"] = "Harap masukkan alamat emailmu!";
+      if (_nomorPonselController.text.isEmpty) _errorText["phone"] = "Harap masukkan nomor ponselmu!";
     });
     if (_errorText.isNotEmpty) return;
+
+    var email = _emailController.text;
+    var phone = _nomorPonselController.text;
+    FirebaseUser user;
+    var isEmailChanged = _userData.email != _emailController.text;
+    var isPhoneChanged = _userData.phone != _nomorPonselController.text;
+    if (isEmailChanged || isPhoneChanged) {
+      user = await a.inputPIN(_userData);
+      if (user == null) return;
+    }
 
     final postData = <String, String>{
       'uid': userSession.uid,
       'namaLengkap': _namaLengkapController.text,
       'gender': _jenisKelamin,
       'tanggalLahir': _tanggalLahir.toString().substring(0, 10),
-      'email': _emailController.text,
+      'email': email,
       'imageName': _imageName ?? '',
       'image': _image != null ? 'data:image/png;base64,' + base64Encode(_image.readAsBytesSync()) : '',
     };
 
     h.loadAlert();
-
     var postApi = await api('user', sub1: 'profile', type: 'post', data: postData);
-    Navigator.of(context).pop();
+    h.closeDialog();
+
     if (postApi.isSuccess) {
-        var updatedProfile = UserModel.fromJson(postApi.result.first);
-        a.firebaseUpdateProfile(
-          namaLengkap: updatedProfile.namaLengkap,
-          foto: updatedProfile.foto
-        );
-        setState(() {
-          _isEdit = false;
-          _isChanged = false;
-          _image = null;
-        });
-      Future.delayed(Duration(milliseconds: 300), () => 
+      var updatedProfile = UserModel.fromJson(postApi.result.first);
+      var person = Provider.of<PersonProvider>(context, listen: false);
+      person.setPerson(
+        namaDepan: updatedProfile.namaDepan,
+        namaBelakang: updatedProfile.namaBelakang,
+        jenisKelamin: updatedProfile.jenisKelamin,
+        tanggalLahir: updatedProfile.tanggalLahir,
+        email: updatedProfile.email,
+        foto: updatedProfile.foto,
+      );
+      a.firebaseUpdateProfile(
+        namaLengkap: updatedProfile.namaLengkap,
+        foto: updatedProfile.foto
+      );
+      if (isEmailChanged) user.updateEmail(email);
+      if (isPhoneChanged) {
+        // TODO launch phone verification
+        // user.updatePhoneNumberCredential(phone);
+      }
+      setState(() {
+        _userData = updatedProfile;
+        _isEdit = false;
+        _isChanged = false;
+        _image = null;
+      });
+      Future.delayed(Duration(milliseconds: 200), () => 
         h.showFlashbarSuccess("Profil Disunting!", "Informasi profil Anda telah berhasil disimpan.")
       );
     } else {
@@ -125,13 +154,13 @@ class _ProfilState extends State<Profil> {
     }
   }
 
-  _changePassword() {
-    // TODO modal change password
+  _resetPIN() {
+    h.showAlert(title: "Ganti Nomor PIN", showButton: false, body: ResetPIN());
   }
 
   _viewImage() {
     var person = Provider.of<PersonProvider>(context, listen: false);
-    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': _image ?? person.foto});
+    h.viewImage(_image ?? person.foto);
   }
 
   _pickImage([ImageSource source]) async {
@@ -167,19 +196,16 @@ class _ProfilState extends State<Profil> {
   void initState() {
     _namaLengkapController = TextEditingController()..addListener(() => _dismissError("name"));
     _emailController = TextEditingController()..addListener(() => _dismissError("email"));
+    _nomorPonselController = TextEditingController()..addListener(() => _dismissError("phone"));
     _tanggalLahirController = TextEditingController();
     _jenisKelaminController = TextEditingController();
     _namaLengkapFocusNode = FocusNode();
     _emailFocusNode = FocusNode();
+    _nomorPonselFocusNode = FocusNode();
     _tanggalLahirFocusNode = FocusNode();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _getAllData();
-      // var isGranted = await Permission.location.request().isGranted;
-      // if (isGranted) {
-      // } else {
-      //   Navigator.of(context).pop({'isGranted': false});
-      // }
     });
   }
 
@@ -187,17 +213,18 @@ class _ProfilState extends State<Profil> {
   void dispose() {
     _namaLengkapController.dispose();
     _emailController.dispose();
+    _nomorPonselController.dispose();
     _tanggalLahirController.dispose();
     _jenisKelaminController.dispose();
     _namaLengkapFocusNode.dispose();
     _emailFocusNode.dispose();
+    _nomorPonselController.dispose();
     _tanggalLahirFocusNode.dispose();
     super.dispose();
   }
 
   Future<bool> _onWillPop() async {
     FocusScope.of(context).unfocus();
-    // if (_isEdit) return await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
     if (_isEdit) {
       var confirm = true;
       if (_isChanged) confirm = await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
@@ -250,7 +277,6 @@ class _ProfilState extends State<Profil> {
                         key: _formKey,
                         autovalidate: false,
                         onChanged: () {
-                          print("FOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOORM ONCHANGED!");
                           if (!_isChanged) setState(() {
                             _isChanged = true;
                           });
@@ -283,11 +309,10 @@ class _ProfilState extends State<Profil> {
                           _isEdit
                             ? UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],)
                             : SizedBox(),
-                          SizedBox(height: 4,),
+                          UiInput("Nomor Ponsel", isRequired: true, readOnly: !_isEdit, icon: LineIcons.mobile_phone, type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _errorText["phone"],),
                           _isEdit
                             ? UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],)
                             : SizedBox(),
-                          SizedBox(height: 4,),
                           UiInput("Tanggal lahir", isRequired: true, readOnly: !_isEdit, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, initialValue: _tanggalLahir ?? person.tanggalLahir, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
                             try {
                               setState(() { _tanggalLahir = val as DateTime; });
@@ -295,7 +320,6 @@ class _ProfilState extends State<Profil> {
                               print("DATETIME PICKER ERROR = $e");
                             }
                           },),
-                          SizedBox(height: 4,),
                           Text("Jenis kelamin:", style: style.textLabel),
                           SizedBox(height: 8.0,),
                           _isEdit ? SizedBox(
@@ -330,7 +354,8 @@ class _ProfilState extends State<Profil> {
                             ),
                           ) : UiInput("", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _jenisKelaminController,),
                           SizedBox(height: 30,),
-                          _isEdit ? SizedBox() : UiButton("Ganti Password", width: 250, height: style.heightButton, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _changePassword,),
+                          // TODO edit profil (kontak)
+                          _isEdit ? SizedBox() : UiButton("Ganti Nomor PIN", width: 250, height: style.heightButton, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _resetPIN,),
                           SizedBox(height: 12,),
                         ],)
                       ),

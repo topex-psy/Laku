@@ -183,7 +183,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             tanggalLahir: user.tanggalLahir,
             email: user.email,
             foto: user.foto,
-            isSignedIn: true,
           );
           print(" -> push ROUTE TO HOME");
           await Navigator.of(context).pushNamed(ROUTE_HOME, arguments: {'duration': 1000});
@@ -409,7 +408,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
       h.showFlashBar("Masukkan nomor ponsel!", "Harap masukkan nomor ponsel valid untuk login atau mendaftar ke aplikasi.");
       return;
     }
-    String phoneNumber = "+62${_nomorPonselController.text}";
+    final phoneNumber = "$APP_COUNTRY_CODE${_nomorPonselController.text}";
     FocusScope.of(context).unfocus();
     widget.setLoading(true);
     await firebaseAuth.verifyPhoneNumber(

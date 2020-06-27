@@ -8,10 +8,8 @@ class PersonProvider with ChangeNotifier {
   String _jenisKelamin;
   String _email;
   String _foto;
-  bool _isSignedIn;
 
   PersonProvider() {
-    _isSignedIn = false;
     // loadPreferences();
   }
 
@@ -21,7 +19,6 @@ class PersonProvider with ChangeNotifier {
   String get jenisKelamin => _jenisKelamin;
   String get email => _email;
   String get foto => _foto;
-  bool get isSignedIn => _isSignedIn;
 
   setPerson({
     String namaDepan,
@@ -30,7 +27,6 @@ class PersonProvider with ChangeNotifier {
     String jenisKelamin,
     String email,
     String foto,
-    bool isSignedIn,
   }) {
     if (namaDepan != null) _namaDepan = namaDepan;
     if (namaBelakang != null) _namaBelakang = namaBelakang;
@@ -38,7 +34,6 @@ class PersonProvider with ChangeNotifier {
     if (jenisKelamin != null) _jenisKelamin = jenisKelamin;
     if (email != null) _email = email;
     if (foto != null) _foto = foto;
-    if (isSignedIn != null) _isSignedIn = isSignedIn;
     notifyListeners();
     // savePreferences();
   }
@@ -64,5 +59,15 @@ class PersonProvider with ChangeNotifier {
       email: prefs.getString('person_email'),
       foto: prefs.getString('person_foto'),
     );
+  }
+
+  clearPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('person_namaDepan');
+    prefs.remove('person_namaBelakang');
+    prefs.remove('person_tanggalLahir');
+    prefs.remove('person_jenisKelamin');
+    prefs.remove('person_email');
+    prefs.remove('person_foto');
   }
 }

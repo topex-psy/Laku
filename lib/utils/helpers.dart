@@ -10,8 +10,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash/flash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:laku/components/forms/input_pin.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
+import '../extensions/string.dart';
 import '../models/user.dart';
 import '../plugins/toast.dart';
 import '../providers/person.dart';
@@ -57,12 +59,43 @@ class UserHelper {
   UserHelper(this.context);
 
   openProfile() async {
-    // TODO edit profil (identitas, kontak, foto)
     final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
     print(" ... ROUTE PROFIL result: $results");
     if (screenScaffoldKey.currentState.isEndDrawerOpen) {
       Navigator.of(context).pop();
     }
+  }
+
+  Future<FirebaseUser> firebaseLoginEmailPassword(String email, String password) async {
+    if (email.isEmptyOrNull || password.isEmptyOrNull) return null;
+    FirebaseUser user;
+    try {
+      AuthResult result = await firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      user = result.user;
+    } catch (error) {
+      print(error.toString());
+      switch (error.code) {
+        case "ERROR_INVALID_EMAIL":
+          h.failAlertLogin("Alamat email yang Anda masukkan salah!");
+          break;
+        case "ERROR_WRONG_PASSWORD":
+          h.failAlertLogin("Nomor PIN yang Anda masukkan salah!");
+          break;
+        case "ERROR_USER_NOT_FOUND":
+          h.failAlertLogin("Pengguna belum terdaftar!");
+          break;
+        case "ERROR_USER_DISABLED":
+          h.failAlertLogin("Status akun Anda sedang diblokir!");
+          break;
+        case "ERROR_TOO_MANY_REQUESTS":
+          h.failAlertLogin("Anda tidak dapat login untuk sementara waktu karena terlalu banyak salah memasukkan nomor PIN/kata sandi.");
+          break;
+        case "ERROR_OPERATION_NOT_ALLOWED":
+        default:
+          h.failAlertLogin();
+      }
+    }
+    return user;
   }
 
   Future<bool> firebaseLinkWithCredential(AuthCredential credential) async {
@@ -90,6 +123,15 @@ class UserHelper {
     user.updateProfile(info);
   }
 
+  Future<dynamic> forgotPIN(email) async {
+    await firebaseAuth.sendPasswordResetEmail(email: email);
+    return h.successAlert("Tautan Pemulihan Terkirim!", "Silakan periksa kotak masuk email Anda untuk membuat nomor PIN baru!");
+  }
+
+  Future<dynamic> inputPIN(UserModel me) {
+    return InputPIN(me).show();
+  }
+
   signOut() async {
     final user = await firebaseAuth.currentUser();
     if (user != null) {
@@ -97,7 +139,7 @@ class UserHelper {
       await firebaseAuth.signOut();
     }
     final person = Provider.of<PersonProvider>(context, listen: false);
-    person.setPerson(isSignedIn: false);
+    person.clearPreferences();
     userSession.clear();
     Future.delayed(Duration.zero, () {
       // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
@@ -120,7 +162,7 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan popup dialog berisi pesan atau konten apapun
-  Future showAlert({String title, Widget header, Widget dialog, Widget body, Widget listView, EdgeInsetsGeometry contentPadding, bool barrierDismissible = true, bool showButton = true, String buttonText = "OK", Widget customButton, Color warnaAksen}) {
+  Future showAlert({String title, Widget header, Widget dialog, Widget body, Widget listView, Color backgroundColor, EdgeInsetsGeometry contentPadding, bool barrierDismissible = true, bool showButton = true, String buttonText = "OK", Widget customButton, Color warnaAksen}) {
     return showGeneralDialog(
       barrierColor: Colors.black.withOpacity(0.5),
       barrierDismissible: barrierDismissible,
@@ -133,6 +175,7 @@ class UIHelper {
             child: Opacity(
               opacity: a1.value,
               child: dialog ?? AlertDialog(
+                backgroundColor: backgroundColor,
                 shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
                 title: header ?? (title != null ? Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),) : null),
                 titlePadding: header != null ? EdgeInsets.zero : EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0),
@@ -233,6 +276,15 @@ class UIHelper {
     showButton: false,
   );
 
+  /// fungsi untuk menampilkan popup pesan sukses
+  Future<dynamic> successAlert(String title, String message, {void Function() onUndo, undoLabel}) => customAlert(
+    title,
+    message,
+    icon: Icon(LineIcons.check_circle, color: Colors.green, size: 40,),
+    onAction: onUndo,
+    actionLabel: undoLabel ?? 'Batalkan',
+  );
+
   /// fungsi untuk menampilkan popup pesan gagal
   Future<dynamic> failAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onRetry}) => customAlert(
     title,
@@ -301,6 +353,11 @@ class UIHelper {
     ));
   }
 
+  /// fungsi untuk menampilkan popup pesan gagal login
+  failAlertLogin([String message]) {
+    failAlert("Login Gagal", message ?? "Terjadi masalah saat login. Coba kembali nanti!");
+  }
+
   /// fungsi untuk menampilkan popup pesan gagal konek
   failAlertInternet({String message, void Function() onRetry, String onRetryLabel}) {
     showFlashBar(
@@ -309,6 +366,11 @@ class UIHelper {
       actionLabel: onRetry == null ? 'TUTUP' : (onRetryLabel ?? 'REFRESH'),
       action: onRetry
     );
+  }
+
+  /// fungsi untuk menampilkan single image
+  viewImage(dynamic image) {
+    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': image});
   }
 
   /// fungsi yang mengembalikan teks versi html

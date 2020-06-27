@@ -8,6 +8,7 @@ class UserModel {
     this.namaBelakang,
     this.jenisKelamin,
     this.tanggalLahir,
+    this.phone,
     this.email,
     this.foto,
     this.jumlahLapak,
@@ -21,6 +22,7 @@ class UserModel {
   final String namaBelakang;
   final String jenisKelamin;
   final DateTime tanggalLahir;
+  final String phone;
   final String email;
   final String foto;
   final int jumlahLapak;
@@ -37,6 +39,7 @@ class UserModel {
     namaBelakang = parsedJson['NAMA_BELAKANG'],
     jenisKelamin = parsedJson['JENIS_KELAMIN'],
     tanggalLahir = DateTime.parse(parsedJson['TANGGAL_LAHIR']),
+    phone = parsedJson['NO_HP'],
     email = parsedJson['EMAIL'],
     foto = parsedJson['FOTO'],
     jumlahLapak = int.parse(parsedJson['JUMLAH_LAPAK']),
@@ -51,6 +54,7 @@ class UserModel {
   "\n  namaBelakang: $namaBelakang"
   "\n  jenisKelamin: $jenisKelamin"
   "\n  tanggalLahir: $tanggalLahir"
+  "\n  phone: $phone"
   "\n  email: $email"
   "\n  foto: $foto"
   "\n  isBanned: $isBanned"

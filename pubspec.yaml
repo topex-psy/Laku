@@ -51,6 +51,7 @@ dependencies:
   wakelock: ^0.1.4+1
 
   # ui
+  auto_size_text: ^2.1.0
   cached_network_image: ^2.2.0+1
   code_input: ^1.0.3
   dotted_border: ^1.0.5

@@ -155,6 +155,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   }
 
   _getAllData() async {
+    if (!mounted) return;
     print(" ==> GET ALL DATA ..................");
 
     var notifApi = await api('user_notif', data: {'uid': userSession.uid});
@@ -166,7 +167,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       _refreshController.refreshFailed();
     }
 
-    if (mounted) setState(() {
+    setState(() {
       _isLoading = false;
     });
   }

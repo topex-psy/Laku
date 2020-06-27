@@ -12,6 +12,7 @@ const APP_TERMS_URL        = "${APP_HOST}terms";
 const APP_PRIVACY_URL      = "${APP_HOST}privacy";
 const APP_ABOUT_URL        = "${APP_HOST}about";
 const APP_GOOGLE_MAP_KEY   = 'AIzaSyCJ0ddaiNK8nPVr7nXisrViLCG887KQZgE';
+const APP_COUNTRY_CODE     = '+62';
 
 const DEBUG_TOUR           = false;
 const DEBUG_ONBOARDING     = false;

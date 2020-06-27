@@ -107,7 +107,7 @@ class _RegisterState extends State<Register> {
   _submit() async {
     final registerData = <String, String>{
       'uid': userSession.uid,
-      'phone': userSession.phone,
+      'phone': userSession.phone.replaceFirst(APP_COUNTRY_CODE, ''),
       'namaLengkap': _namaLengkapController.text,
       'gender': _jenisKelamin,
       'tanggalLahir': _tanggalLahir,
@@ -216,9 +216,7 @@ class _RegisterState extends State<Register> {
                         ],),
                         SizedBox(height: 30,),
                         UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],),
-                        SizedBox(height: 4,),
                         UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],),
-                        SizedBox(height: 4,),
                         UiInput("Tanggal lahir", isRequired: true, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
                           try {
                             setState(() {
@@ -229,7 +227,6 @@ class _RegisterState extends State<Register> {
                             print("DATETIME PICKER ERROR = $e");
                           }
                         },),
-                        SizedBox(height: 4,),
                         Text("Jenis kelamin:", style: style.textLabel),
                         SizedBox(height: 8.0,),
                         SizedBox(
