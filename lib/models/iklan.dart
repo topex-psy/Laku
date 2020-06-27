@@ -1,23 +1,49 @@
 import 'package:flutter/material.dart';
 
-class IklanKategoriModel {
-  IklanKategoriModel({
+class IklanKelompokModel {
+  IklanKelompokModel({
     @required this.id,
     @required this.judul,
-    this.icon,
-    this.tier,
+    @required this.icon,
+    @required this.tipe,
   });
 
   final int id;
   final String judul;
   final String icon;
+  final String tipe;
+}
+
+class IklanKategoriModel {
+  IklanKategoriModel({
+    @required this.id,
+    @required this.idKelompok,
+    @required this.judul,
+    this.icon,
+    this.tier,
+    this.tipe,
+    this.kelompok,
+    this.iconKelompok,
+  });
+
+  final int id;
+  final int idKelompok;
+  final String judul;
+  final String icon;
   final int tier;
+  final String tipe;
+  final String kelompok;
+  final String iconKelompok;
 
   IklanKategoriModel.fromJson(Map<String, dynamic> parsedJson)
   : id = int.parse(parsedJson['ID']),
+    idKelompok = int.parse(parsedJson['ID_KELOMPOK']),
     judul = parsedJson['JUDUL'],
     icon = parsedJson['ICON'],
-    tier = int.parse(parsedJson['TIER']);
+    tier = int.parse(parsedJson['TIER']),
+    tipe = parsedJson['TIPE'],
+    kelompok = parsedJson['KELOMPOK'],
+    iconKelompok = parsedJson['ICON_KELOMPOK'];
 
   @override
   String toString() => judul;

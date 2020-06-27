@@ -7,6 +7,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'extensions/widget.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
 import 'models/user.dart';
@@ -30,7 +31,10 @@ class _PasangState extends State<Pasang> {
   var _imagesEdit = <String>[];
   var _images = <Asset>[];
   var _isLoading = true;
-  var _maxImageSelect = 3;
+  var _isLoadingCategory = true;
+  var _errorText = <String, String>{};
+  var _listKelompok = <IklanKelompokModel>[];
+  var _listKategori = <IklanKategoriModel>[];
 
   final _formKey = GlobalKey<FormState>();
   final _listTipe = <IconLabel>[
@@ -42,12 +46,11 @@ class _PasangState extends State<Pasang> {
   TextEditingController _deskripsiController;
   FocusNode _judulFocusNode;
   FocusNode _deskripsiFocusNode;
-  var _errorText = <String, String>{};
-  var _listKategori = <IklanKategoriModel>[];
 
+  UserTierModel _tier;
+  IklanKelompokModel _kelompok;
   IklanKategoriModel _kategori;
   String _tipe;
-  String _foto;
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) setState(() {
@@ -126,13 +129,13 @@ class _PasangState extends State<Pasang> {
   }
 
   _pickImages() async {
-    if (_imagesEdit.length + _images.length == _maxImageSelect) {
-      h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak $_maxImageSelect foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
+    if (_imagesEdit.length + _images.length == _tier.maxListingPic) {
+      h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak ${_tier.maxListingPic} foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
       return;
     }
     var resultList = <Asset>[];
     try {
-      resultList = await MultiImagePicker.pickImages(maxImages: _maxImageSelect - _imagesEdit.length - _images.length, enableCamera: true);
+      resultList = await MultiImagePicker.pickImages(maxImages: _tier.maxListingPic - _imagesEdit.length - _images.length, enableCamera: true);
     } on Exception catch (e) {
       print("PICK IMAGES ERROOOOOOOOOOOOOOOOOR: $e");
     }
@@ -140,6 +143,102 @@ class _PasangState extends State<Pasang> {
     if (mounted && resultList.isNotEmpty) setState(() {
       _images.addAll(resultList);
     });
+  }
+
+  _loadCategory() async {
+    setState(() {
+      _isLoadingCategory = true;
+    });
+    var listingCategoryApi = await api('listing_category', data: {'tier': _tier});
+    var listKategori = listingCategoryApi.result.map((res) => IklanKategoriModel.fromJson(res)).toList();
+    var listKelompok = <int, IklanKelompokModel>{};
+    listKategori.forEach((kat) {
+      listKelompok[kat.idKelompok] = IklanKelompokModel(
+        id: kat.idKelompok,
+        judul: kat.kelompok,
+        icon: kat.iconKelompok,
+        tipe: kat.tipe,
+      );
+    });
+    setState(() {
+      _listKelompok = listKelompok.values.toList();
+      _listKategori = listKategori;
+      _isLoadingCategory = false;
+      _resetKategori();
+    });
+  }
+
+  _resetKategori() {
+    _kelompok = _tipe == "WTS" ? null : _listKelompok.where((kelompok) => kelompok.id == 1).toList().first;
+    _kategori = null;
+  }
+
+  _clearKategori() {
+    setState(() {
+      _kategori = null;
+      _kelompok = null;
+    });
+  }
+
+  List<Widget> _selectKelompok() {
+    return _listKelompok
+    // .where((k) => k.tipe == _tipe)
+    .map((kelompok) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Card(elevation: 1, shape: CircleBorder(), clipBehavior: Clip.antiAlias, child: InkWell(
+            child: Container(width: 60, height: 60, child: Center(child: Icon(MdiIcons.fromString(kelompok.icon ?? 'circleOutline'), size: 30, color: THEME_COLOR))),
+            onTap: () => setState(() { _kelompok = kelompok; }),
+          )),
+          SizedBox(height: 3),
+          Text(kelompok.judul, textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+        ],
+      );
+    }).toList();
+  }
+
+  Widget _selectKategori() {
+    if (_isLoadingCategory) return Icon(MdiIcons.formatListBulleted, color: Colors.grey, size: 100,).shimmerIt();
+    return Wrap(
+      spacing: _kelompok == null ? 12 : 0,
+      runSpacing: _kelompok == null ? 12 : 5,
+      children: _kelompok == null ? _selectKelompok() : (
+        <Widget>[
+          _tipe == "WTS" ? Container(
+            width: MediaQuery.of(context).size.width - 60,
+            child: Row(children: <Widget>[
+              IconButton(icon: Icon(MdiIcons.chevronLeft), onPressed: _clearKategori,),
+              Expanded(child: GestureDetector(
+                child: Text(_kelompok.judul, style: TextStyle(fontWeight: FontWeight.bold)),
+                onTap: _clearKategori,
+              )),
+            ],),
+          ) : SizedBox(),
+        ]
+        ..addAll(_listKategori.where((kat) => kat.idKelompok == _kelompok.id).map((kat) => _chipKategori(kat))?.toList() ?? [])
+        // ..add(_chipKategori())
+      ),
+    );
+  }
+
+  Widget _chipKategori([IklanKategoriModel kat]) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+      clipBehavior: Clip.antiAlias,
+      color: _kategori == kat ? THEME_COLOR : Colors.white,
+      child: InkWell(
+        onTap: () => setState(() { _kategori = _kategori == kat ? null : kat; }),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            Icon(MdiIcons.fromString(kat?.icon ?? 'circleOutline'), size: 20, color: _kategori == kat ? Colors.white : THEME_COLOR),
+            SizedBox(width: 5,),
+            Text(kat?.judul ?? 'Lainnya', style: TextStyle(color: _kategori == kat ? Colors.white : Colors.black)),
+          ],),
+        ),
+      ),
+    );
   }
 
   @override
@@ -155,12 +254,11 @@ class _PasangState extends State<Pasang> {
       if (isGranted) {
         var tierApi = await api('user_tier', data: {'uid': userSession.uid});
         var tier = UserTierModel.fromJson(tierApi.result.first);
-        var listingCategoryApi = await api('listing_category', data: {'tier': tier.tier});
         setState(() {
-          _listKategori = listingCategoryApi.result.map((res) => IklanKategoriModel.fromJson(res)).toList();
-          _maxImageSelect = tier.maxListingPic;
+          _tier = tier;
           _isLoading = false;
         });
+        _loadCategory();
       } else {
         Navigator.of(context).pop({'isGranted': false});
       }
@@ -226,29 +324,7 @@ class _PasangState extends State<Pasang> {
                         autovalidate: false,
                         onChanged: () {},
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          Text("Foto:", style: style.textLabel),
-                          SizedBox(height: 8.0,),
-                          DottedBorder(
-                            dashPattern: <double>[10, 6],
-                            color: Colors.blueGrey[100],
-                            strokeWidth: 2,
-                            borderType: BorderType.RRect,
-                            radius: Radius.circular(THEME_CARD_RADIUS),
-                            padding: EdgeInsets.zero,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
-                              child: InkWell(
-                                onTap: _pickImages,
-                                child: Container(
-                                  height: 150,
-                                  child: Center(
-                                    child: Icon(LineIcons.camera, color: Colors.blueGrey[100], size: 50,),
-                                  ),
-                                ),
-                              ),
-                            )
-                          ),
-                          SizedBox(height: 12.0,),
+                          
                           Text("Tipe:", style: style.textLabel),
                           SizedBox(height: 8.0,),
                           SizedBox(
@@ -270,20 +346,60 @@ class _PasangState extends State<Pasang> {
                               onPressed: (int index) {
                                 setState(() {
                                   _tipe = _listTipe[index].value;
+                                  _resetKategori();
                                 });
                               },
                             ),
                           ),
                           SizedBox(height: 12,),
-                          UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
+
+                          Text("Foto:", style: style.textLabel),
+                          SizedBox(height: 8.0,),
+                          DottedBorder(
+                            dashPattern: <double>[10, 6],
+                            color: Colors.blueGrey[100],
+                            strokeWidth: 2,
+                            borderType: BorderType.RRect,
+                            radius: Radius.circular(THEME_CARD_RADIUS),
+                            padding: EdgeInsets.zero,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
+                              child: InkWell(
+                                onTap: _pickImages,
+                                child: Container(
+                                  height: 100,
+                                  child: Center(
+                                    child: Icon(LineIcons.camera, color: Colors.blueGrey[100], size: 50,),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ),
+                          SizedBox(height: 12.0,),
+
+                          UiInput(_tipe == "WTS" ? "Judul iklan" : "Judul produk", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
                           SizedBox(height: 4,),
+
                           UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
                           SizedBox(height: 4,),
-                          Text("Kategori:", style: style.textLabel,),
-                          SizedBox(height: 8,),
-                          UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'viewList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
-                            setState(() { _kategori = val; });
-                          },),
+
+                          Text("Kategori:", style: style.textLabel),
+                          SizedBox(height: 12,),
+                          // TODO fetch api recent kategori
+                          _selectKategori(),
+
+                          // Text("Kategori:", style: style.textLabel,),
+                          // SizedBox(height: 8,),
+                          // UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'viewList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
+                          //   setState(() { _kategori = val; });
+                          // },),
+                          // RichText(text: TextSpan(
+                          //   style: Theme.of(context).textTheme.bodyText1,
+                          //   children: <TextSpan>[
+                          //     TextSpan(text: 'Kategori: ', style: style.textLabel),
+                          //     TextSpan(text: '(Opsional)', style: style.textLabelGrey),
+                          //   ],
+                          // ),),
                           SizedBox(height: 20,),
                         ],)
                       ),

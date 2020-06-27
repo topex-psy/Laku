@@ -8,7 +8,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'components/menu.dart';
-// import 'pages/akun.dart';
+import 'extensions/widget.dart';
 import 'pages/beranda.dart';
 import 'pages/favorit.dart';
 import 'pages/temukan.dart';
@@ -166,7 +166,7 @@ class _HomeState extends State<Home> {
             backgroundColor: Colors.teal[400],
             tooltip: 'menu_create'.tr(),
             child: Icon(LineIcons.plus),
-          ),
+          ).pulseIt(pulse: false),
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(

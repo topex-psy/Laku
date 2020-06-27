@@ -10,6 +10,7 @@ var textHeadlineLWhite = TextStyle(fontWeight: FontWeight.bold, fontSize: 24, co
 var textHeadlineXL = TextStyle(fontWeight: FontWeight.bold, fontSize: 28);
 var textHeadlineXLWhite = TextStyle(fontWeight: FontWeight.bold, fontSize: 28, color: Colors.white);
 var textLabel      = TextStyle(fontWeight: FontWeight.bold, fontSize: 14);
+var textLabelGrey  = TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey);
 var textLabelWhite = TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white);
 var textButton     = TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white);
 var textButtonL    = TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white);
