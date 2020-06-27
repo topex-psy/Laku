@@ -156,7 +156,7 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
             value: item.judul,
             image: true,
             child: FadeInImage.assetNetwork(
-              placeholder: SETUP_NONE_IMAGE,
+              placeholder: IMAGE_DEFAULT_NONE,
               image: item.foto.first.foto,
               width: double.infinity,
               height: double.infinity,

@@ -158,7 +158,7 @@ class _HomeState extends State<Home> {
           child: _selectedIndex > 1 ? SizedBox() : FloatingActionButton(
             onPressed: () async {
               final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': _selectedIndex}) as Map;
-              print(" ... ROUTE TAMBAH result: $results");
+              print(" ... ROUTE PASANG result: $results");
               if (results != null && results.containsKey('isSubmit')) {
 
               }

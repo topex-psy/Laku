@@ -18,6 +18,7 @@ import 'pasang.dart';
 import 'peta.dart';
 import 'profil.dart';
 import 'splash.dart';
+import 'verifikasi.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -81,6 +82,7 @@ class MyApp extends StatelessWidget {
             case ROUTE_PROFIL:   page = Profil(); break;
             case ROUTE_DATA:     page = DataList(arguments); break;
             case ROUTE_IMAGE:    page = ImageViewer(arguments); break;
+            case ROUTE_OTP:      page = Verifikasi(arguments); break;
           }
 
           // return MaterialPageRoute(settings: settings, builder: (_) => page);

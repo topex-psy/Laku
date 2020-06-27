@@ -92,18 +92,24 @@ class _ProfilState extends State<Profil> {
       _errorText.clear();
       if (_namaLengkapController.text.isEmpty) _errorText["name"] = "Harap masukkan nama lengkapmu!";
       if (_emailController.text.isEmpty) _errorText["email"] = "Harap masukkan alamat emailmu!";
+      else if (!f.isValidEmail(_emailController.text)) _errorText["email"] = "Harap masukkan alamat email valid!";
       if (_nomorPonselController.text.isEmpty) _errorText["phone"] = "Harap masukkan nomor ponselmu!";
     });
     if (_errorText.isNotEmpty) return;
 
     var email = _emailController.text;
     var phone = _nomorPonselController.text;
-    FirebaseUser user;
     var isEmailChanged = _userData.email != _emailController.text;
     var isPhoneChanged = _userData.phone != _nomorPonselController.text;
-    if (isEmailChanged || isPhoneChanged) {
+    FirebaseUser user;
+    AuthCredential cred;
+    if (isEmailChanged) {
       user = await a.inputPIN(_userData);
       if (user == null) return;
+    }
+    if (isPhoneChanged) {
+      cred = await a.inputOTP(phone);
+      if (cred == null) return;
     }
 
     final postData = <String, String>{
@@ -135,11 +141,8 @@ class _ProfilState extends State<Profil> {
         namaLengkap: updatedProfile.namaLengkap,
         foto: updatedProfile.foto
       );
-      if (isEmailChanged) user.updateEmail(email);
-      if (isPhoneChanged) {
-        // TODO launch phone verification
-        // user.updatePhoneNumberCredential(phone);
-      }
+      if (isEmailChanged) a.firebaseUpdateEmail(email);
+      if (isPhoneChanged) a.firebaseUpdatePhoneNumber(cred);
       setState(() {
         _userData = updatedProfile;
         _isEdit = false;
@@ -164,31 +167,32 @@ class _ProfilState extends State<Profil> {
   }
 
   _pickImage([ImageSource source]) async {
-    if (source == null) {
-        source = await h.showAlert(title: "Unggah Foto Profil", showButton: false, body: Column(children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
-        isLast: source == ImageSource.camera,
-        icon: {ImageSource.camera: MdiIcons.camera, ImageSource.gallery: MdiIcons.imageMultiple}[source],
-        teks: {ImageSource.camera: 'Kamera', ImageSource.gallery: 'Pilih dari Galeri'}[source],
-        value: source,
-        aksi: (val) {
-          Navigator.of(context).pop(val as ImageSource);
-        },
-      )).toList(),));
-      if (source != null) _pickImage(source);
-    } else {
-      final pickedFile = await _imagePicker.getImage(
-        source: source,
-        imageQuality: PIC_UPLOAD_QUALITY,
-        maxWidth: PIC_UPLOAD_SIZE_NORMAL,
-        maxHeight: PIC_UPLOAD_SIZE_NORMAL
-      );
-      var image = File(pickedFile.path);
-      if (image != null) {
-        setState(() {
-          _imageName = "${image.path.split('/scaled_').last}";
-          _image = image;
-        });
-      }
+    source ??= await h.showAlert(
+      title: "Unggah Foto Profil",
+      showButton: false,
+      body: Column(children: [ImageSource.gallery, ImageSource.camera].map((source) =>
+        UiMenuList(
+          isLast: source == ImageSource.camera,
+          icon: {ImageSource.camera: MdiIcons.camera, ImageSource.gallery: MdiIcons.imageMultiple}[source],
+          teks: {ImageSource.camera: 'Kamera', ImageSource.gallery: 'Pilih dari Galeri'}[source],
+          aksi: (val) => Navigator.of(context).pop(val as ImageSource),
+          value: source,
+        )
+      ).toList(),)
+    );
+    if (source == null) return;
+    final pickedFile = await _imagePicker.getImage(
+      source: source,
+      imageQuality: IMAGE_UPLOAD_QUALITY,
+      maxWidth: IMAGE_UPLOAD_SIZE,
+      maxHeight: IMAGE_UPLOAD_SIZE
+    );
+    var image = File(pickedFile.path);
+    if (image != null) {
+      setState(() {
+        _imageName = "${image.path.split('/scaled_').last}";
+        _image = image;
+      });
     }
   }
 
@@ -218,7 +222,7 @@ class _ProfilState extends State<Profil> {
     _jenisKelaminController.dispose();
     _namaLengkapFocusNode.dispose();
     _emailFocusNode.dispose();
-    _nomorPonselController.dispose();
+    _nomorPonselFocusNode.dispose();
     _tanggalLahirFocusNode.dispose();
     super.dispose();
   }
@@ -229,6 +233,7 @@ class _ProfilState extends State<Profil> {
       var confirm = true;
       if (_isChanged) confirm = await h.showConfirm("Batalkan?", "Apakah Anda yakin untuk tidak menyimpan perubahan data profil?") ?? false;
       if (confirm) setState(() {
+        _setInitialValues();
         _isChanged = false;
         _isEdit = false;
       });
@@ -269,7 +274,12 @@ class _ProfilState extends State<Profil> {
               Container(child: Center(child: UiLoader())),
               Column(
                 children: <Widget>[
-                  UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton(), onBackPressed: _backPressed),
+                  UiAppBar(
+                    "Profil Saya",
+                    icon: LineIcons.user,
+                    tool: _actionButton(),
+                    onBackPressed: _backPressed
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.only(left: 20, right: 20, top: 15, bottom: 30,),

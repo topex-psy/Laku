@@ -46,7 +46,8 @@ class FormatHelper {
   String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
   String formatDate(DateTime date, {String format = 'dd/MM/yyyy'}) => date == null ? null : DateFormat(format).format(date);
   String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => nominal == null ? null : NumberFormat.currency(locale: APP_LOCALE, symbol: symbol).format(nominal);
-  bool isValudURL(String url) => Uri.parse(url).isAbsolute;
+  bool isValidURL(String url) => Uri.parse(url).isAbsolute;
+  bool isValidEmail(String email) => !email.isEmptyOrNull && RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
   num roundNumber(num nominal, {int maxDecimal = 1}) => num.parse((nominal / 1000).toStringAsFixed(maxDecimal));
   String distanceLabel(double meter) {
     if (meter > 999) return "${roundNumber(meter / 1000)} km";
@@ -58,12 +59,11 @@ class UserHelper {
   final BuildContext context;
   UserHelper(this.context);
 
-  openProfile() async {
+  Future<dynamic> openProfile() async {
     final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
     print(" ... ROUTE PROFIL result: $results");
-    if (screenScaffoldKey.currentState.isEndDrawerOpen) {
-      Navigator.of(context).pop();
-    }
+    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
+    return results;
   }
 
   Future<FirebaseUser> firebaseLoginEmailPassword(String email, String password) async {
@@ -115,12 +115,22 @@ class UserHelper {
     return await firebaseLinkWithCredential(credential);
   }
 
-  firebaseUpdateProfile({String namaLengkap, String foto}) async {
+  Future<void> firebaseUpdateProfile({String namaLengkap, String foto}) async {
     final user = await firebaseAuth.currentUser();
     final info = UserUpdateInfo();
     if (namaLengkap != null) info.displayName = namaLengkap;
     if (foto != null) info.photoUrl = foto;
-    user.updateProfile(info);
+    return user.updateProfile(info);
+  }
+
+  Future<void> firebaseUpdatePhoneNumber(AuthCredential credential) async {
+    final user = await firebaseAuth.currentUser();
+    return user.updatePhoneNumberCredential(credential);
+  }
+
+  Future<void> firebaseUpdateEmail(String email) async {
+    final user = await firebaseAuth.currentUser();
+    return user.updateEmail(email);
   }
 
   Future<dynamic> forgotPIN(email) async {
@@ -128,8 +138,13 @@ class UserHelper {
     return h.successAlert("Tautan Pemulihan Terkirim!", "Silakan periksa kotak masuk email Anda untuk membuat nomor PIN baru!");
   }
 
-  Future<dynamic> inputPIN(UserModel me) {
-    return InputPIN(me).show();
+  Future<dynamic> inputPIN(UserModel me, {bool pinOnly = false, String title}) {
+    return InputPIN(me, pinOnly: pinOnly, title: title).show();
+  }
+
+  Future<AuthCredential> inputOTP(String phone) async {
+    AuthCredential credential = await Navigator.of(context).pushNamed(ROUTE_OTP, arguments: {'phone': phone});
+    return credential;
   }
 
   signOut() async {
@@ -167,11 +182,12 @@ class UIHelper {
       barrierColor: Colors.black.withOpacity(0.5),
       barrierDismissible: barrierDismissible,
       transitionBuilder: (context, a1, a2, widget) {
-        final curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
+        final _curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
+        final _contentPadding = contentPadding ?? EdgeInsets.only(left: 24.0, top: (title ?? header) == null ? 24.0 : 16.0, right: 24.0, bottom: 24.0);
         return Theme(
           data: Theme.of(context),
           child: Transform(
-            transform: Matrix4.identity()..scale(1.0, 1.0 + curvedValue, 1.0),
+            transform: Matrix4.identity()..scale(1.0, 1.0 + _curvedValue, 1.0),
             child: Opacity(
               opacity: a1.value,
               child: dialog ?? AlertDialog(
@@ -179,8 +195,9 @@ class UIHelper {
                 shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
                 title: header ?? (title != null ? Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),) : null),
                 titlePadding: header != null ? EdgeInsets.zero : EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0),
-                content: listView ?? SingleChildScrollView(child: body,),
-                contentPadding: contentPadding ?? EdgeInsets.only(left: 24.0, top: (title ?? header) == null ? 24.0 : 12.0, right: 24.0, bottom: 24.0),
+                content: listView ?? SingleChildScrollView(padding: _contentPadding, child: body,),
+                // contentPadding: _contentPadding,
+                contentPadding: EdgeInsets.zero,
                 actions: showButton ? <Widget>[
                   customButton ?? SizedBox(),
                   FlatButton(
@@ -205,11 +222,11 @@ class UIHelper {
     return await showGeneralDialog(
       barrierColor: Colors.black.withOpacity(0.5),
       transitionBuilder: (context, a1, a2, widget) {
-        final curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
+        final _curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
         return Theme(
           data: Theme.of(context),
           child: Transform(
-            transform: Matrix4.identity()..scale(1.0, 1.0 + curvedValue, 1.0),
+            transform: Matrix4.identity()..scale(1.0, 1.0 + _curvedValue, 1.0),
             child: Opacity(
               opacity: a1.value,
               child: AlertDialog(
@@ -310,8 +327,8 @@ class UIHelper {
   );
 
   /// fungsi untuk menampilkan notifikasi flashbar
-  showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, VoidCallback action}) {
-    showFlash(
+  Future<dynamic> showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, VoidCallback action}) {
+    return showFlash(
       context: context,
       duration: Duration(milliseconds: duration),
       persistent: true,

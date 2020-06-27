@@ -361,10 +361,14 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                           final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'user_shop'}) as Map;
                           print(results);
                         },),
-                        IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'user_notif'}) as Map;
+                        IconButton(icon: Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
+                          final results = await a.openProfile() as Map;
                           print(results);
                         },),
+                        // IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
+                        //   final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'user_notif'}) as Map;
+                        //   print(results);
+                        // },),
                         SizedBox(width: 8,)
                       ],
                       backgroundColor: THEME_COLOR,

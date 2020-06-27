@@ -21,20 +21,20 @@ const ROUTE_SPLASH         = '/Splash';
 const ROUTE_LOGIN          = '/Login';
 const ROUTE_DAFTAR         = '/Daftar';
 const ROUTE_HOME           = '/Home';
-const ROUTE_PASANG         = '/Tambah';
+const ROUTE_PASANG         = '/Pasang';
 const ROUTE_PROFIL         = '/Profil';
 const ROUTE_PETA           = '/Peta';
 const ROUTE_DATA           = '/Data';
 const ROUTE_IMAGE          = '/Image';
+const ROUTE_OTP            = '/Verifikasi';
 
 const SETUP_MAX_PERSON_AGE = 100;
 const SETUP_MIN_PERSON_AGE = 10;
-const SETUP_NONE_IMAGE     = "images/none.png";
-const SETUP_USER_IMAGE     = "images/anon.png";
 
-const PIC_UPLOAD_QUALITY     = 80;
-const PIC_UPLOAD_SIZE_NORMAL = 800.0;
-const PIC_UPLOAD_SIZE_LARGE  = 1200.0;
+const IMAGE_DEFAULT_NONE   = "images/none.png";
+const IMAGE_DEFAULT_USER   = "images/anon.png";
+const IMAGE_UPLOAD_QUALITY = 80;
+const IMAGE_UPLOAD_SIZE    = 800.0;
 
 const THEME_BACKGROUND     = Color(0XFFDEFFF3);
 const THEME_BORDER_RADIUS  = 12.0;

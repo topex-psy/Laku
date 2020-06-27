@@ -13,9 +13,6 @@ extension StringExtension on String {
     }
   }
 
-  /// fungsi untuk memeriksa validitas email
-  bool get isValidEmail => !this.isEmptyOrNull && RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(this);
-
   /// fungsi truncate teks ke panjang maksimum dengan penambahan ellipsis
   String truncate(int maxlength) => this.length > maxlength ? this.substring(0, maxlength) + "..." : this;
 

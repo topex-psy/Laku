@@ -518,7 +518,7 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
         ),
       ) : Padding(
         padding: EdgeInsets.all(4),
-        child: Detik("Mengirim SMS", duration: RESEND_CODE_TIMEOUT, onFinish: () {
+        child: UiCountdown("Mengirim SMS", duration: RESEND_CODE_TIMEOUT, onFinish: () {
           setState(() {
             _showResend = true;
           });
@@ -567,51 +567,5 @@ class FirstDisabledFocusNode extends FocusNode {
   @override
   bool consumeKeyboardToken() {
     return false;
-  }
-}
-
-class Detik extends StatefulWidget {
-  Detik(this.label, {Key key, @required this.duration, this.onFinish}) : super(key: key);
-  final String label;
-  final int duration;
-  final VoidCallback onFinish;
-
-  @override
-  _DetikState createState() => _DetikState();
-}
-
-class _DetikState extends State<Detik> {
-  int _detik;
-  Timer _timer;
-
-  @override
-  void initState() {
-    _detik = widget.duration;
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-        if (_detik > 0) setState(() { _detik--; }); else if (widget.onFinish != null) {
-          widget.onFinish();
-        }
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(widget.label, style: style.textWhite,),
-        SizedBox(width: 8,),
-        ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  $_detik  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white30, fontWeight: FontWeight.bold),),),
-      ],
-    );
   }
 }

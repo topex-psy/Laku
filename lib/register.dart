@@ -156,6 +156,7 @@ class _RegisterState extends State<Register> {
     if (_registerIndex >= 0 && invalidIndex < 0) {
       if (_namaLengkapController.text.isEmpty) _errorText["name"] = "Harap masukkan nama lengkapmu!";
       if (_emailController.text.isEmpty) _errorText["email"] = "Harap masukkan alamat emailmu!";
+      else if (!f.isValidEmail(_emailController.text)) _errorText["email"] = "Harap masukkan alamat email valid!";
       if (_tanggalLahir.isEmpty) _errorText["dob"] = "Harap masukkan tanggal lahirmu!";
       if (_errorText.isNotEmpty) {
         invalidIndex = 0;

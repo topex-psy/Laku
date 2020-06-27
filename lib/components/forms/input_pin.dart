@@ -11,9 +11,10 @@ const INPUT_PIN_MAXLENGTH = 6;
 const PROFILE_PICTURE_SIZE = 80.0;
 
 class InputPIN extends StatefulWidget {
-  InputPIN(this.person, {this.pinOnly = false});
+  InputPIN(this.person, {this.pinOnly = false, this.title});
   final UserModel person;
   final bool pinOnly;
+  final String title;
 
   Future<dynamic> show() => h.showAlert(
     barrierDismissible: false,
@@ -28,7 +29,7 @@ class InputPIN extends StatefulWidget {
           height: PROFILE_PICTURE_SIZE,
           child: ClipOval(
             child: person.foto == null
-              ? Image.asset(SETUP_USER_IMAGE, width: PROFILE_PICTURE_SIZE, height: PROFILE_PICTURE_SIZE, fit: BoxFit.cover,)
+              ? Image.asset(IMAGE_DEFAULT_USER, width: PROFILE_PICTURE_SIZE, height: PROFILE_PICTURE_SIZE, fit: BoxFit.cover,)
               : Image.network(person.foto, width: PROFILE_PICTURE_SIZE, height: PROFILE_PICTURE_SIZE, fit: BoxFit.cover,),
           ),
         ),

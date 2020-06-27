@@ -35,7 +35,7 @@ class _PasangState extends State<Pasang> {
   final _formKey = GlobalKey<FormState>();
   final _listTipe = <IconLabel>[
     IconLabel(LineIcons.bullhorn, "Pasang Iklan", value: 'WTS'),
-    IconLabel(LineIcons.search, "Cari Iklan", value: 'WTB'),
+    IconLabel(LineIcons.search, "Cari Produk", value: 'WTB'),
   ];
 
   TextEditingController _judulController;
@@ -176,94 +176,123 @@ class _PasangState extends State<Pasang> {
     super.dispose();
   }
 
+  Future<bool> _onWillPop() async {
+    FocusScope.of(context).unfocus();
+    return true;
+  }
+
+  _backPressed() async {
+    if (await _onWillPop()) Navigator.of(context).pop();
+  }
+
+  Widget _actionButton() {
+    return Container(
+      height: double.infinity,
+      width: 60,
+      child: RaisedButton(
+        elevation: 0,
+        child: Icon(MdiIcons.check, size: 30,),
+        color: Colors.green,
+        textColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        onPressed: _submit,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: IndexedStack(
-          index: _isLoading ? 0 : 1,
-          children: <Widget>[
-            Container(child: Center(child: UiLoader())),
-            Column(
-              children: <Widget>[
-                UiAppBar(_listTipe.where((t) => t.value == _tipe).first.label, icon: LineIcons.plus),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(THEME_PADDING),
-                    child: Form(
-                      key: _formKey,
-                      autovalidate: false,
-                      onChanged: () {},
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                        Text("Foto:", style: style.textLabel),
-                        SizedBox(height: 8.0,),
-                        DottedBorder(
-                          dashPattern: <double>[10, 6],
-                          color: Colors.blueGrey[100],
-                          strokeWidth: 2,
-                          borderType: BorderType.RRect,
-                          radius: Radius.circular(THEME_CARD_RADIUS),
-                          padding: EdgeInsets.zero,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
-                            child: InkWell(
-                              onTap: _pickImages,
-                              child: Container(
-                                height: 100,
-                                child: Center(
-                                  child: Icon(LineIcons.camera, color: Colors.blueGrey[100], size: 50,),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: SafeArea(
+          child: IndexedStack(
+            index: _isLoading ? 0 : 1,
+            children: <Widget>[
+              Container(child: Center(child: UiLoader())),
+              Column(
+                children: <Widget>[
+                  UiAppBar(
+                    _listTipe.where((t) => t.value == _tipe).first.label,
+                    icon: LineIcons.plus,
+                    tool: _actionButton(),
+                      onBackPressed: _backPressed
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(THEME_PADDING),
+                      child: Form(
+                        key: _formKey,
+                        autovalidate: false,
+                        onChanged: () {},
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text("Foto:", style: style.textLabel),
+                          SizedBox(height: 8.0,),
+                          DottedBorder(
+                            dashPattern: <double>[10, 6],
+                            color: Colors.blueGrey[100],
+                            strokeWidth: 2,
+                            borderType: BorderType.RRect,
+                            radius: Radius.circular(THEME_CARD_RADIUS),
+                            padding: EdgeInsets.zero,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
+                              child: InkWell(
+                                onTap: _pickImages,
+                                child: Container(
+                                  height: 150,
+                                  child: Center(
+                                    child: Icon(LineIcons.camera, color: Colors.blueGrey[100], size: 50,),
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                        ),
-                        SizedBox(height: 12.0,),
-                        Text("Tipe:", style: style.textLabel),
-                        SizedBox(height: 8.0,),
-                        SizedBox(
-                          height: 45.0,
-                          child: ToggleButtons(
-                            borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
-                            children: _listTipe.asMap().map((index, tipe) {
-                              var isFirst = index == 0;
-                              var isLast = index == _listTipe.length - 1;
-                              return MapEntry(index, Row(children: <Widget>[
-                                SizedBox(width: isFirst ? 20.0 : 15.0),
-                                Icon(tipe.icon, size: 17,),
-                                SizedBox(width: 8.0),
-                                Text(tipe.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                                SizedBox(width: isLast ? 20.0 : 15.0),
-                              ],));
-                            }).values.toList(),
-                            isSelected: _listTipe.map((t) => t.value == _tipe).toList(),
-                            onPressed: (int index) {
-                              setState(() {
-                                _tipe = _listTipe[index].value;
-                              });
-                            },
+                            )
                           ),
-                        ),
-                        SizedBox(height: 12,),
-                        UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
-                        SizedBox(height: 4,),
-                        UiInput("Deskripsi", isRequired: true, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
-                        SizedBox(height: 4,),
-                        Text("Kategori:", style: style.textLabel,),
-                        SizedBox(height: 8,),
-                        // MdiIcons.naturePeople
-                        UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'viewList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
-                          setState(() { _kategori = val; });
-                        },),
-                        SizedBox(height: 20,),
-                        UiButton("Pasang", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
-                        SizedBox(height: 8,),
-                      ],)
+                          SizedBox(height: 12.0,),
+                          Text("Tipe:", style: style.textLabel),
+                          SizedBox(height: 8.0,),
+                          SizedBox(
+                            height: 45.0,
+                            child: ToggleButtons(
+                              borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
+                              children: _listTipe.asMap().map((index, tipe) {
+                                var isFirst = index == 0;
+                                var isLast = index == _listTipe.length - 1;
+                                return MapEntry(index, Row(children: <Widget>[
+                                  SizedBox(width: isFirst ? 20.0 : 15.0),
+                                  Icon(tipe.icon, size: 17,),
+                                  SizedBox(width: 8.0),
+                                  Text(tipe.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+                                  SizedBox(width: isLast ? 20.0 : 15.0),
+                                ],));
+                              }).values.toList(),
+                              isSelected: _listTipe.map((t) => t.value == _tipe).toList(),
+                              onPressed: (int index) {
+                                setState(() {
+                                  _tipe = _listTipe[index].value;
+                                });
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 12,),
+                          UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
+                          SizedBox(height: 4,),
+                          UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
+                          SizedBox(height: 4,),
+                          Text("Kategori:", style: style.textLabel,),
+                          SizedBox(height: 8,),
+                          UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'viewList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
+                            setState(() { _kategori = val; });
+                          },),
+                          SizedBox(height: 20,),
+                        ],)
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

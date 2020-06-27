@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -186,7 +187,7 @@ class _UiInputState extends State<UiInput> {
       if (widget.isRequired && value.isEmpty) {
         result = "${widget.label ?? 'Kolom ini'} harus diisi";
       }
-      if (widget.type == UiInputType.EMAIL && value.isNotEmpty && !value.isValidEmail) {
+      if (widget.type == UiInputType.EMAIL && !f.isValidEmail(value)) {
         result = "${widget.label ?? 'Alamat email'} tidak valid";
       }
       // widget.onValidate(result);
@@ -599,6 +600,52 @@ class _ErrorTextState extends State<ErrorText> with SingleTickerProviderStateMix
   }
 }
 
+class UiCountdown extends StatefulWidget {
+  UiCountdown(this.label, {Key key, @required this.duration, this.onFinish}) : super(key: key);
+  final String label;
+  final int duration;
+  final VoidCallback onFinish;
+
+  @override
+  _UiCountdownState createState() => _UiCountdownState();
+}
+
+class _UiCountdownState extends State<UiCountdown> {
+  int _detik;
+  Timer _timer;
+
+  @override
+  void initState() {
+    _detik = widget.duration;
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (_detik > 0) setState(() { _detik--; }); else if (widget.onFinish != null) {
+          widget.onFinish();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(widget.label, style: style.textWhite,),
+        SizedBox(width: 8,),
+        ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  $_detik  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white30, fontWeight: FontWeight.bold),),),
+      ],
+    );
+  }
+}
+
 class UiLoader extends StatelessWidget {
   UiLoader({Key key, this.loaderColor = THEME_COLOR, this.textStyle, this.label = "Tunggu sebentar ..."}) : super(key: key);
   final Color loaderColor;
@@ -854,7 +901,7 @@ class UiMenuList extends StatelessWidget {
 }
 
 class UiAvatar extends StatelessWidget {
-  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.placeholder = SETUP_USER_IMAGE, this.onPressed, this.onTapEdit}) : super(key: key);
+  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.placeholder = IMAGE_DEFAULT_USER, this.onPressed, this.onTapEdit}) : super(key: key);
   final dynamic pic;
   final String placeholder;
   final double size;
@@ -871,7 +918,7 @@ class UiAvatar extends StatelessWidget {
       if (pic is File) {
         _imageWidget = Image.file(pic, width: size, height: size, fit: BoxFit.cover);
       } else if (pic.isNotEmpty) {
-        if (f.isValudURL(pic)) _imageWidget = CachedNetworkImage(
+        if (f.isValidURL(pic)) _imageWidget = CachedNetworkImage(
           imageUrl: Uri.encodeFull(pic),
           placeholder: (context, url) => SizedBox(width: size, height: size, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
           errorWidget: (context, url, error) => _imageDefault,
