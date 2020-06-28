@@ -8,9 +8,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'components/menu.dart';
-import 'extensions/widget.dart';
 import 'pages/beranda.dart';
-import 'pages/favorit.dart';
 import 'pages/temukan.dart';
 import 'providers/person.dart';
 import 'utils/constants.dart';
@@ -85,8 +83,8 @@ class _HomeState extends State<Home> {
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
-        if (_pageController.page.round() > 1) {
-          _openPage(1);
+        if (_pageController.page.round() > 0) {
+          _openPage(0);
           return false;
         }
         if (_isWillExit) return SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
@@ -176,6 +174,7 @@ class _HomeState extends State<Home> {
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(THEME_BORDER_RADIUS), topRight: Radius.circular(THEME_BORDER_RADIUS)),
                 boxShadow: [
                   BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))
                 ]

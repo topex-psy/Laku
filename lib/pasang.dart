@@ -29,6 +29,7 @@ class Pasang extends StatefulWidget {
 class _PasangState extends State<Pasang> {
   var _imagesEdit = <String>[];
   var _images = <Asset>[];
+  var _isChanged = false;
   var _isLoading = true;
   var _isLoadingCategory = true;
   var _errorText = <String, String>{};
@@ -39,7 +40,7 @@ class _PasangState extends State<Pasang> {
   final _formKey = GlobalKey<FormState>();
   final _listTipe = <IconLabel>[
     IconLabel(LineIcons.bullhorn, "Pasang Iklan", value: 'WTS'),
-    IconLabel(LineIcons.search, "Cari Produk", value: 'WTB'),
+    IconLabel(LineIcons.search, "Cari Sesuatu", value: 'WTB'),
   ];
   final _listSteps = <IconLabel>[
     IconLabel(LineIcons.edit, "Detail Iklan"),
@@ -73,7 +74,7 @@ class _PasangState extends State<Pasang> {
       h.failAlert("Tambahkan Foto", "Unggah minimal 1 foto untuk iklan Anda.");
       return;
     }
-    if (_kelompok == null || (_tipe == "WTB" && _kategori == null)) {
+    if (_kelompok == null) {
       h.failAlert("Pilih Kategori", "Harap pilih kategori iklan Anda.");
       return;
     }
@@ -177,7 +178,8 @@ class _PasangState extends State<Pasang> {
         id: kat.idKelompok,
         judul: kat.kelompok,
         icon: kat.iconKelompok,
-        tipe: kat.tipe,
+        isWTS: kat.isWTS,
+        isWTB: kat.isWTB,
       );
     });
     setState(() {
@@ -189,20 +191,17 @@ class _PasangState extends State<Pasang> {
   }
 
   _resetKategori() {
-    _kelompok = _tipe == "WTS" ? null : _listKelompok.where((kelompok) => kelompok.id == 1).toList().first;
+    _kelompok = null;
     _kategori = null;
   }
 
   _clearKategori() {
-    setState(() {
-      _kategori = null;
-      _kelompok = null;
-    });
+    setState(_resetKategori);
   }
 
   List<Widget> _selectKelompok() {
     return _listKelompok
-    // .where((k) => k.tipe == _tipe)
+    .where((k) => _tipe == "WTS" ? k.isWTS : k.isWTB)
     .map((kelompok) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -225,16 +224,41 @@ class _PasangState extends State<Pasang> {
       runSpacing: _kelompok == null ? 12 : 5,
       children: _kelompok == null ? _selectKelompok() : (
         <Widget>[
-          _tipe == "WTS" ? Container(
-            width: MediaQuery.of(context).size.width - 60,
-            child: Row(children: <Widget>[
-              IconButton(icon: Icon(MdiIcons.chevronLeft), onPressed: _clearKategori,),
-              Expanded(child: GestureDetector(
-                child: Text(_kelompok.judul, style: TextStyle(fontWeight: FontWeight.bold)),
+          Padding(
+            padding: EdgeInsets.only(bottom: 4.0),
+            child: Material(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              elevation: 0,
+              color: style.colorSplash,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                splashColor: style.colorSplash,
+                highlightColor: style.colorSplash,
                 onTap: _clearKategori,
-              )),
-            ],),
-          ) : SizedBox(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
+                  child: Row(children: <Widget>[
+                    Icon(MdiIcons.chevronLeft),
+                    SizedBox(width: 8,),
+                    Expanded(child: GestureDetector(
+                      child: Text(_kelompok.judul, style: TextStyle(fontWeight: FontWeight.bold)),
+                      onTap: _clearKategori,
+                    )),
+                  ],),
+                ),
+              ),
+            ),
+          )
+          // Container(
+          //   width: MediaQuery.of(context).size.width - 60,
+          //   child: Row(children: <Widget>[
+          //     IconButton(icon: Icon(MdiIcons.chevronLeft), onPressed: _clearKategori,),
+          //     Expanded(child: GestureDetector(
+          //       child: Text(_kelompok.judul, style: TextStyle(fontWeight: FontWeight.bold)),
+          //       onTap: _clearKategori,
+          //     )),
+          //   ],),
+          // ),
         ]
         ..addAll(_listKategori.where((kat) => kat.idKelompok == _kelompok.id).map((kat) => _chipKategori(kat))?.toList() ?? [])
         // ..add(_chipKategori())
@@ -296,6 +320,13 @@ class _PasangState extends State<Pasang> {
 
   Future<bool> _onWillPop() async {
     FocusScope.of(context).unfocus();
+    if (_stepIndex > 0) {
+      setState(() {
+        _stepIndex--;
+      });
+      return false;
+    }
+    if (_isChanged || _images.isNotEmpty) return await h.showConfirm("Batalkan Iklan", "Apakah Anda yakin ingin membatalkan pemasangan iklan ini?") ?? false;
     return true;
   }
 
@@ -322,7 +353,9 @@ class _PasangState extends State<Pasang> {
                       child: Form(
                         key: _formKey,
                         autovalidate: false,
-                        onChanged: () {},
+                        onChanged: () {
+                          _isChanged = true;
+                        },
                         child: Column(children: <Widget>[
 
                           Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: _stepIndex == 0 ? <Widget>[
@@ -365,7 +398,7 @@ class _PasangState extends State<Pasang> {
                             ),
                             SizedBox(height: 12.0,),
 
-                            UiInput(_tipe == "WTS" ? "Judul iklan" : "Judul produk", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
+                            UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
                             SizedBox(height: 4,),
 
                             UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),

@@ -31,7 +31,7 @@ extension WidgetExtension on Widget {
   }
 
   // fungsi untuk menambahkan badge angka pada widget
-  Widget withBadge(int num, {bool showNum = true, Alignment alignment = Alignment.topRight, Color bgColor = Colors.blue, double fontSize = 14.0, Color fontColor = Colors.white, Color borderColor = Colors.white, double borderWidth = 2.0, show = true}) {
+  Widget withBadge(int num, {bool showNum = true, Alignment alignment = Alignment.topRight, Color bgColor = Colors.red, double fontSize = 14.0, Color fontColor = Colors.white, Color borderColor = Colors.red, double borderWidth = 2.0, show = true}) {
     return Stack(alignment: alignment, children: <Widget>[
       this,
       show && num > 0 ? Card(

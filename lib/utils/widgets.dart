@@ -681,11 +681,11 @@ class UiDropImages extends StatelessWidget {
           color: Colors.white,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
+            borderRadius: BorderRadius.all(Radius.circular(8.0)),
           ),
           child: InkWell(
-            splashColor: Colors.teal[300].withOpacity(0.1),
-            highlightColor: Colors.teal[300].withOpacity(0.1),
+            splashColor: style.colorSplash,
+            highlightColor: style.colorSplash,
             onTap: onTap,
             child: Center(
               child: Icon(MdiIcons.cameraPlusOutline, color: Colors.blueGrey[100], size: 50,),
@@ -720,7 +720,11 @@ class UiDropImages extends StatelessWidget {
         ),
       );
     }).toList();
-    if (listImages.length < maxImages) _gridItems.add(_getPlaceholder(width: height));
+
+    if (listImages.length < maxImages)
+      for (var i = 0; i < maxImages - listImages.length; i++)
+        _gridItems.add(_getPlaceholder(width: height));
+
     return Container(
       height: height,
       child: GridView.count(

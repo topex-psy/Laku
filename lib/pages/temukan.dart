@@ -5,6 +5,7 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:laku/utils/widgets.dart';
 import 'package:line_icons/line_icons.dart';
+import '../extensions/widget.dart';
 import '../models/iklan.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
@@ -199,6 +200,12 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
             },
             child: Container()
           ),
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(icon: Icon(LineIcons.heart_o), color: Colors.white, iconSize: 24, onPressed: () {
+              print("tap fav: ${item.id}");
+            },),
+          ),
         ],
       )
     );
@@ -264,6 +271,13 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
                           tooltip: 'prompt_sort'.tr(),
                           onPressed: () {},
                         ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(LineIcons.heart_o),
+                          color: Colors.grey[850],
+                          tooltip: 'menu_favorites'.tr(),
+                          onPressed: () {},
+                        ).withBadge(2),
                         SizedBox(width: 8,),
                       ],
                     ),
