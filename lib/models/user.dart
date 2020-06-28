@@ -77,6 +77,7 @@ class UserNotifModel {
   UserNotifModel({
     this.iklanUploadPic,
     this.iklanTerpasang,
+    this.iklanFavorit,
     this.pencarianTerpasang,
     this.pesanMasuk,
     this.notifikasi,
@@ -87,6 +88,7 @@ class UserNotifModel {
 
   final List<int> iklanUploadPic;
   final int iklanTerpasang;
+  final int iklanFavorit;
   final int pencarianTerpasang;
   final int pesanMasuk;
   final int notifikasi;
@@ -97,6 +99,7 @@ class UserNotifModel {
   UserNotifModel.fromJson(Map<String, dynamic> parsedJson)
   : iklanUploadPic = List.from(parsedJson['IKLAN_UPLOAD_PIC']).map((l) => int.parse(l['HASHCODE'])).toList(),
     iklanTerpasang = int.parse(parsedJson['IKLAN_TERPASANG']),
+    iklanFavorit = int.parse(parsedJson['IKLAN_FAVORIT']),
     pencarianTerpasang = int.parse(parsedJson['PENCARIAN_TERPASANG']),
     pesanMasuk = int.parse(parsedJson['PESAN_MASUK']),
     notifikasi = int.parse(parsedJson['NOTIFIKASI']),

@@ -9,45 +9,40 @@ const DEFAULT_ZOOM = 16.34;
 class SettingsProvider with ChangeNotifier {
   Address _address;
   bool _isGettingLocation;
-  bool _isShowGraphics;
   bool _isUploadListing;
+  bool _isViewFavorites;
   int _radius;
   UserNotifModel _notif;
-  // List<int> _iklanUploadPic;
 
   SettingsProvider() {
     _isGettingLocation = false;
-    _isShowGraphics = false;
     _isUploadListing = false;
+    _isViewFavorites = false;
     _radius = DEFAULT_RADIUS;
-    // _iklanUploadPic = [];
     // loadPreferences();
   }
 
   Address get address => _address;
   bool get isGettingLocation => _isGettingLocation;
-  bool get isShowGraphics => _isShowGraphics;
   bool get isUploadListing => _isUploadListing;
+  bool get isViewFavorites => _isViewFavorites;
   int get radius => _radius;
   UserNotifModel get notif => _notif;
-  // List<int> get iklanUploadPic => _iklanUploadPic;
 
   setSettings({
     Address address,
     bool isGettingLocation,
-    bool isShowGraphics,
     bool isUploadListing,
+    bool isViewFavorites,
     int radius,
     UserNotifModel notif,
-    // List<int> iklanUploadPic,
   }) {
     if (address != null) _address = address;
     if (isGettingLocation != null) _isGettingLocation = isGettingLocation;
-    if (isShowGraphics != null) _isShowGraphics = isShowGraphics;
     if (isUploadListing != null) _isUploadListing = isUploadListing;
+    if (isViewFavorites != null) _isViewFavorites = isViewFavorites;
     if (radius != null) _radius = radius;
     if (notif != null) _notif = notif;
-    // if (iklanUploadPic != null) _iklanUploadPic = iklanUploadPic;
     notifyListeners();
     // savePreferences();
   }

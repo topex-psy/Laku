@@ -4,24 +4,28 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:collection/collection.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:laku/providers/settings.dart';
 import 'package:laku/utils/widgets.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:provider/provider.dart';
 import '../extensions/widget.dart';
 import '../models/iklan.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
-import '../utils/mixins.dart';
 
 const ITEM_PER_PAGE = 12;
 const ITEM_PER_ROW = 2;
 
 class Temukan extends StatefulWidget {
+  Temukan({Key key, this.isOpen = false}) : super(key: key);
+  final bool isOpen;
+
   @override
   _TemukanState createState() => _TemukanState();
 }
 
-class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProviderStateMixin {
+class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
 
   final _scrollController = ScrollController();
   final _searchDebouncer = Debouncer<String>(Duration(milliseconds: 1000));
@@ -34,22 +38,11 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
   var _total = 0;
   var _isGettingData = false;
   var _isToolbarVisible = true;
-  var _isFavorit = false;
   var _lastParam = <String, dynamic>{};
   var _lastScrollPixel = 0.0;
 
   AnimationController _animationController;
   Animation _animation;
-
-  @override
-  void onPageVisible() {
-    print(" -> onPageVisible TEMUKAN");
-  }
-
-  @override
-  void onPageInvisible() {
-    print(" -> onPageInvisible TEMUKAN");
-  }
 
   @override
   void initState() {
@@ -89,8 +82,15 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
       _lastScrollPixel = currentScroll;
     });
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(Temukan oldWidget) {
+    super.didUpdateWidget(oldWidget);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _getAllData();
+      if (!oldWidget.isOpen && widget.isOpen) {
+        _getAllData(true);
+      }
     });
   }
 
@@ -116,7 +116,7 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
     super.dispose();
   }
 
-  _getAllData() async {
+  _getAllData([bool force = false]) async {
     if (_isGettingData) return;
     var keyword = _searchController.text ?? '';
     var limit = _page * ITEM_PER_PAGE;
@@ -124,9 +124,10 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
     setState(() {
       _isGettingData = true;
     });
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     var listingApi = await api('listing', data: {
       'uid': userSession.uid,
-      'mode': _isFavorit ? 'fav' : 'near',
+      'mode': settings.isViewFavorites ? 'fav' : 'near',
       'limit': limit,
       'keyword': keyword,
     });
@@ -134,7 +135,7 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
       _isGettingData = false;
     });
     if (listingApi.isSuccess) {
-      if (MapEquality().equals(_lastParam, listingApi.meta)) return;
+      if (!force && MapEquality().equals(_lastParam, listingApi.meta)) return;
       _lastParam = listingApi.meta;
       setState(() {
         _listItem = listingApi.result.map((res) => IklanModel.fromJson(res)).toList();
@@ -143,6 +144,15 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
       });
     }
   }
+
+  // List<IklanModel> get _listingItems {
+  //   return _listItem.where((item) {
+  //     var keyword = _searchController.text ?? '';
+  //     var filterKeyword = keyword.isEmpty ? true : item.judul.toLowerCase().contains(keyword.toLowerCase());
+  //     var filterFav = _isFavorit ? item.isFavorit : true;
+  //     return filterKeyword && filterFav;
+  //   }).toList();
+  // }
 
   Widget _buildListingItem(int index) {
     var item = _listItemFiltered[index];
@@ -217,9 +227,14 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
                   'mode': item.isFavorit ? 'del' : 'add',
                   'id': item.id
                 });
-                if (favApi.isSuccess) setState(() {
-                  item.toggleFav();
-                });
+                if (favApi.isSuccess) {
+                  final settings = Provider.of<SettingsProvider>(context, listen: false);
+                  setState(() {
+                    if (settings.isViewFavorites) _listItemFiltered.remove(item);
+                    else item.toggleFav();
+                  });
+                  a.loadNotif();
+                }
               },
             ),
           ),
@@ -230,16 +245,18 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    var _toolbarHeight = THEME_INPUT_HEIGHT + 32;
+    final toolbarHeight = THEME_INPUT_HEIGHT + 32;
     return SafeArea(
       child: Stack(
         alignment: Alignment.topCenter,
         children: <Widget>[
 
+          _listItemFiltered.length > 0 ? Container() : Container(child: UiPlaceholder(label: "Tidak ada iklan yang sesuai.",),),
+
           Container(
             child: StaggeredGridView.countBuilder(
               controller: _scrollController,
-              padding: EdgeInsets.only(left: 15, right: 15, bottom: 15, top: _toolbarHeight),
+              padding: EdgeInsets.only(left: 15, right: 15, bottom: 15, top: toolbarHeight),
               crossAxisCount: ITEM_PER_ROW, // TODO responsive based on resolution
               itemCount: _listItemFiltered.length + 1, // add loader
               itemBuilder: (context, index) {
@@ -270,16 +287,21 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
           AnimatedBuilder(
             animation: _animationController, builder: (context, child) {
               return Transform.translate(
-                offset: Offset(0, -_toolbarHeight * _animation.value),
+                offset: Offset(0, -toolbarHeight * _animation.value),
                 child: Container(
-                  height: _toolbarHeight,
+                  height: toolbarHeight,
                   child: Material(
                     color: THEME_BACKGROUND,
                     elevation: 0,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Expanded(child: UiInput('prompt_search_listing'.tr(), isClearable: true, margin: EdgeInsets.only(left: 15, top: 15), showLabel: false, icon: LineIcons.search, type: UiInputType.SEARCH, controller: _searchController, focusNode: _searchFocusNode,)),
+                        Expanded(
+                          child: Selector<SettingsProvider, bool>(
+                            selector: (buildContext, settings) => settings.isViewFavorites,
+                            builder: (context, isViewFavorites, child) => UiInput((isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing').tr(), key: ValueKey(isViewFavorites), isClearable: true, margin: EdgeInsets.only(left: 15, top: 15), showLabel: false, icon: LineIcons.search, type: UiInputType.SEARCH, controller: _searchController, focusNode: _searchFocusNode,),
+                          ),
+                        ),
                         SizedBox(width: 8,),
                         IconButton(
                           padding: EdgeInsets.zero,
@@ -288,18 +310,27 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
                           tooltip: 'prompt_sort'.tr(),
                           onPressed: () {},
                         ),
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: Icon(_isFavorit ? LineIcons.heart : LineIcons.heart_o),
-                          color: _isFavorit ? Colors.pink : Colors.grey[850],
-                          tooltip: 'menu_favorites'.tr(),
-                          onPressed: () {
-                            setState(() {
-                              _isFavorit = !_isFavorit;
-                            });
-                            _getAllData();
+                        Consumer<SettingsProvider>(
+                          builder: (context, settings, child) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
+                                shape: BoxShape.circle
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: Icon(settings.isViewFavorites ? LineIcons.heart : LineIcons.heart_o),
+                                color: settings.isViewFavorites ? Colors.pink : Colors.grey[850],
+                                tooltip: 'menu_favorites'.tr(),
+                                onPressed: () {
+                                  settings.setSettings(isViewFavorites: !settings.isViewFavorites);
+                                  // setState(() { _isFavorit = !_isFavorit; });
+                                  _getAllData();
+                                },
+                              ).pulseIt(pulse: settings.isViewFavorites).withBadge(settings.notif?.iklanFavorit),
+                            );
                           },
-                        ).withBadge(2),
+                        ),
                         SizedBox(width: 8,),
                       ],
                     ),

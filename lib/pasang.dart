@@ -287,7 +287,7 @@ class _PasangState extends State<Pasang> {
 
   @override
   void initState() {
-    _tipe = widget.args['tipe'] == 0 ? "WTS" : "WTB";
+    _tipe = screenPageController.page.round() == 0 ? "WTS" : "WTB";
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
     _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
     _judulFocusNode = FocusNode();

@@ -34,7 +34,7 @@ extension WidgetExtension on Widget {
   Widget withBadge(int num, {bool showNum = true, Alignment alignment = Alignment.topRight, Color bgColor = Colors.red, double fontSize = 14.0, Color fontColor = Colors.white, Color borderColor = Colors.red, double borderWidth = 2.0, show = true}) {
     return Stack(alignment: alignment, children: <Widget>[
       this,
-      show && num > 0 ? Card(
+      show && (num ?? 0) > 0 ? Card(
         shape: CircleBorder(side: BorderSide(color: borderColor, width: borderWidth),),
         color: bgColor,
         child: showNum ? Text("$num", style: TextStyle(fontSize: fontSize, color: fontColor),).withPadding(5) : SizedBox(width: 12, height: 12,)

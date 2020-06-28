@@ -17,7 +17,6 @@ import '../providers/settings.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
-import '../utils/mixins.dart';
 import '../utils/styles.dart' as style;
 import '../utils/widgets.dart';
 
@@ -25,11 +24,14 @@ const SECTION_MARGIN = 26.0;
 const TIMER_INTERVAL_SECONDS = 10;
 
 class Beranda extends StatefulWidget {
+  Beranda({Key key, this.isOpen = false}) : super(key: key);
+  final bool isOpen;
+
   @override
   _BerandaState createState() => _BerandaState();
 }
 
-class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProviderStateMixin {
+class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
   final _refreshController = RefreshController(initialRefresh: false);
   final _scrollController = ScrollController();
   AnimationController _spinController;
@@ -37,24 +39,18 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   var _isLoading = true;
   Timer _timer;
 
-  // var _isChartExpand = false;
-  // var _isChartButton = true;
-
   AnimationController _headerOffsetAnimationController;
   AnimationController _headerOpacityAnimationController;
   Animation<Offset> _headerOffsetAnimation;
   Animation<double> _headerOpacityAnimation;
 
   @override
-  void onPageVisible() {
-    print(" -> onPageVisible BERANDA");
-    _runTimer();
-  }
-
-  @override
-  void onPageInvisible() {
-    print(" -> onPageInvisible BERANDA");
-    _timer.cancel();
+  void didUpdateWidget(Beranda oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!oldWidget.isOpen && widget.isOpen) _runTimer();
+      if (oldWidget.isOpen && !widget.isOpen) _timer?.cancel();
+    });
   }
 
   @override
@@ -68,9 +64,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
       vsync: this,
     );
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _getMyLocation();
-      // _runTimer();
     });
   }
 
@@ -85,8 +80,14 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
   }
 
   _runTimer() {
+    print("RUN TIMEEEEEEEEEEEEEEEEER");
     _getAllData();
     _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getAllData());
+  }
+
+  _revokeTimer() {
+    _timer?.cancel();
+    _runTimer();
   }
 
   _getMyLocation() async {
@@ -158,10 +159,8 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
     if (!mounted) return;
     print(" ==> GET ALL DATA ..................");
 
-    var notifApi = await api('user_notif', data: {'uid': userSession.uid});
-    if (notifApi.isSuccess) {
-      final settings = Provider.of<SettingsProvider>(context, listen: false);
-      settings.setSettings(notif: UserNotifModel.fromJson(notifApi.result.first));
+    var loadNotif = await a.loadNotif();
+    if (loadNotif) {
       _refreshController.refreshCompleted();
     } else {
       _refreshController.refreshFailed();
@@ -294,20 +293,13 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final _mediaQuery = MediaQuery.of(context);
     if (!_isGranted) return Container(
       padding: EdgeInsets.all(THEME_PADDING),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Image.asset('images/onboarding/2.png', width: _mediaQuery.size.width * .69,),
-          SizedBox(height: 20,),
-          Text("Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.", textAlign: TextAlign.center,),
-          SizedBox(height: 20,),
-          UiButton("Izinkan", height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: _getMyLocation,),
-        ],
-      ),
+      child: UiPlaceholder(
+        label: "Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.",
+        actionLabel: "Izinkan",
+        action: _getMyLocation,
+      )
     );
 
     return Stack(
@@ -358,7 +350,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                       ),
                       actions: [
                         IconButton(icon: Icon(LineIcons.map_o, color: Colors.white,), tooltip: 'Lokasi Saya', onPressed: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'user_shop'}) as Map;
+                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'}) as Map;
                           print(results);
                         },),
                         IconButton(icon: Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
@@ -470,11 +462,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                       enablePullUp: false,
                       header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR),
                       controller: _refreshController,
-                      onRefresh: () {
-                        _timer?.cancel();
-                        _runTimer();
-                        // _getAllData();
-                      },
+                      onRefresh: _revokeTimer,
                       child: SingleChildScrollView(
                         child: AnimatedOpacity(
                           opacity: _isLoading ? 0 : 1,
@@ -530,6 +518,7 @@ class _BerandaState extends State<Beranda> with MainPageStateMixin, TickerProvid
                                   SizedBox(height: 12,),
                                   CardList('iklanTerpasang'),
                                   CardList('pencarianTerpasang'),
+                                  CardList('iklanFavorit'),
                                   CardList('pesanMasuk'),
 
                                   SizedBox(height: SECTION_MARGIN,),
@@ -599,21 +588,28 @@ class _CardBoxState extends State<CardBox> {
         color = Colors.blue;
         icon = LineIcons.map_marker;
         label = 'menu_listing'.plural(angka ?? 1);
-        buka = () {};
+        buka = () {
+          settings.setSettings(isViewFavorites: false);
+          screenPageController.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
+        };
         break;
       case 'pengguna':
         angka = settings.notif?.pengguna;
         color = Colors.green;
         icon = LineIcons.users;
         label = 'menu_user'.plural(angka ?? 1);
-        buka = () {};
+        buka = () {
+          // TODO list shop near
+        };
         break;
       case 'pencari':
         angka = settings.notif?.pencari;
         color = Colors.orange;
         icon = LineIcons.binoculars;
         label = 'menu_seeker'.plural(angka ?? 1);
-        buka = () {};
+        buka = () {
+          // TODO list iklan WTB near
+        };
         break;
     }
     if ((angka ?? 0) == 0 && widget.notif != 'iklan') return SizedBox();
@@ -684,7 +680,20 @@ class _CardListState extends State<CardList> {
     String buttonLabel, label;
     IconData buttonIcon;
     double buttonWidth;
+    Color buttonColor = Colors.teal[300];
     switch (widget.notif) {
+      case 'iklanFavorit':
+        angka = settings.notif?.iklanTerpasang;
+        label = "Iklan favorit";
+        buttonColor = Colors.pink[300];
+        buttonLabel = "Cek";
+        buttonWidth = 90;
+        buttonIcon = LineIcons.shopping_cart;
+        buka = () {
+          settings.setSettings(isViewFavorites: true);
+          screenPageController.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
+        };
+        break;
       case 'iklanTerpasang':
         angka = settings.notif?.iklanTerpasang;
         label = "Iklan terpasang";
@@ -708,6 +717,7 @@ class _CardListState extends State<CardList> {
       case 'pesanMasuk':
         angka = settings.notif?.pesanMasuk;
         label = "Pesan masuk";
+        buttonColor = Colors.orange[300];
         buttonLabel = "Cek";
         buttonWidth = 90;
         buttonIcon = LineIcons.inbox;
@@ -730,7 +740,7 @@ class _CardListState extends State<CardList> {
           UiButton(
             buttonLabel,
             width: buttonWidth,
-            color: Colors.teal[300],
+            color: buttonColor,
             textStyle: style.textButton,
             icon: buttonIcon,
             iconRight: true,

@@ -35,11 +35,9 @@ class _DataListState extends State<DataList> {
     switch (widget.args['tipe']) {
       case 'listing':
         return IconLabel(LineIcons.list, "Iklan Saya");
-      case 'user_shop':
-        return IconLabel(LineIcons.map, "Lokasi Saya");
-      case 'user_notif':
+      case 'shop':
       default:
-        return IconLabel(LineIcons.bell_o, "Notifikasi");
+        return IconLabel(LineIcons.map, "Lokasi Saya");
     }
   }
 
@@ -51,11 +49,9 @@ class _DataListState extends State<DataList> {
         switch (widget.args['tipe']) {
           case 'listing':
             return IklanModel.fromJson(res);
-          case 'user_shop':
-            return TokoModel.fromJson(res);
-          case 'user_notif':
+          case 'shop':
           default:
-            return NotifModel.fromJson(res);
+            return TokoModel.fromJson(res);
         }
       }).toList();
     });
@@ -113,7 +109,8 @@ class _DataListState extends State<DataList> {
             ),
           ),
         );
-      case 'user_shop':
+      case 'shop':
+      default:
         TokoModel _data = _listData[index];
         return Material(
           color: Colors.white,
@@ -159,25 +156,6 @@ class _DataListState extends State<DataList> {
             ),
           ),
         );
-      case 'user_notif':
-      default:
-        NotifModel _data = _listData[index];
-        return Container(
-          color: Colors.white,
-          padding: EdgeInsets.all(20),
-          child: Row(children: <Widget>[
-            Icon(LineIcons.envelope_o, size: 50, color: THEME_COLOR,),
-            SizedBox(width: 20,),
-            Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(_data.judul, style: style.textLabel,),
-                SizedBox(height: 2),
-                Text(_data.deskripsi),
-              ],
-            ))
-          ],),
-        );
     }
   }
 
@@ -201,7 +179,7 @@ class _DataListState extends State<DataList> {
             ),
           ),
         ),
-        widget.args['tipe'] == 'user_shop' ? Container(
+        widget.args['tipe'] == 'shop' && widget.args['mode'] == 'mine' ? Container(
           width: double.infinity,
           height: 180,
           padding: EdgeInsets.all(20.0),

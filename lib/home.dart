@@ -37,37 +37,36 @@ class _HomeState extends State<Home> {
   final FirebaseAnalytics analytics;
   final FirebaseAnalyticsObserver observer;
 
-  final _pageController = PreloadPageController();
-  final _listPages = <Page>[
-    Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
-    Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
-  ];
-
   var _selectedIndex = 0;
   var _isWillExit = false;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   screenPageController = PreloadPageController();
+  //   super.initState();
+  // }
   
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   screenPageController.dispose();
+  //   super.dispose();
+  // }
+
+  // int get _currentPage {
+  //   return (screenPageController?.page ?? 0.0).round();
+  // }
 
   _openPage(int index) {
     FocusScope.of(context).unfocus();
     setState(() { _selectedIndex = index; });
-    if (_pageController.page.round() != index) {
-      print("page move: ${_pageController.page.round()} -> $index");
-      _pageController.animateToPage(index, duration: Duration(milliseconds: 500), curve: Curves.ease);
+    if (screenPageController.page.round() != index) {
+      print("page move: ${screenPageController.page.round()} -> $index");
+      screenPageController.animateToPage(index, duration: Duration(milliseconds: 500), curve: Curves.ease);
     }
   }
 
   _createAd() async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': _selectedIndex}) as Map;
+    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG) as Map;
     print(" ... ROUTE PASANG result: $results");
     if (results != null && results.containsKey('isSubmit')) {
 
@@ -76,10 +75,15 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final _listPages = <Page>[
+      Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
+      Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
+    ];
+
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
-        if (_pageController.page.round() > 0) {
+        if (screenPageController.page.round() > 0) {
           _openPage(0);
           return false;
         }
@@ -145,7 +149,7 @@ class _HomeState extends State<Home> {
         ),
         body: PreloadPageView.builder(
           preloadPagesCount: 2,
-          controller: _pageController,
+          controller: screenPageController,
           itemCount: _listPages.length,
           itemBuilder: (context, index) => _listPages[index].content,
           onPageChanged: _openPage,

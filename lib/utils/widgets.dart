@@ -603,6 +603,30 @@ class _ErrorTextState extends State<ErrorText> with SingleTickerProviderStateMix
   }
 }
 
+class UiPlaceholder extends StatelessWidget {
+  UiPlaceholder({Key key, this.label, this.actionLabel, this.action}) : super(key: key);
+  final String label;
+  final String actionLabel;
+  final VoidCallback action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Image.asset('images/onboarding/2.png', width: MediaQuery.of(context).size.width * .69,),
+        SizedBox(height: 20,),
+        Text(label, textAlign: TextAlign.center,),
+        action == null ? SizedBox() : Padding(
+          padding: EdgeInsets.only(top: 20.0),
+          child: UiButton(actionLabel ?? 'Muat ulang', height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: action,),
+        ),
+      ],
+    );
+  }
+}
+
 class UiCountdown extends StatefulWidget {
   UiCountdown(this.label, {Key key, @required this.duration, this.onFinish}) : super(key: key);
   final String label;

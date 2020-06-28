@@ -10,18 +10,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash/flash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:laku/components/forms/input_pin.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
+import '../components/forms/input_pin.dart';
 import '../extensions/string.dart';
 import '../models/user.dart';
 import '../plugins/toast.dart';
 import '../providers/person.dart';
-import '../utils/api.dart' as api;
+import '../providers/settings.dart';
+import '../utils/api.dart';
 import 'constants.dart';
 
 final firebaseAuth = FirebaseAuth.instance;
 final screenScaffoldKey = GlobalKey<ScaffoldState>();
+final screenPageController = PreloadPageController();
+// PreloadPageController screenPageController;
 UserSessionModel userSession = UserSessionModel();
 bool isTour1Completed = false;
 bool isTour2Completed = false;
@@ -58,6 +62,15 @@ class FormatHelper {
 class UserHelper {
   final BuildContext context;
   UserHelper(this.context);
+
+  Future<bool> loadNotif() async {
+    var notifApi = await api('user_notif', data: {'uid': userSession.uid});
+    if (notifApi.isSuccess) {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      settings.setSettings(notif: UserNotifModel.fromJson(notifApi.result.first));
+    }
+    return notifApi.isSuccess;
+  }
 
   Future<dynamic> openProfile() async {
     final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
@@ -150,7 +163,7 @@ class UserHelper {
   signOut() async {
     final user = await firebaseAuth.currentUser();
     if (user != null) {
-      api.auth('logout', {'uid': user.uid});
+      auth('logout', {'uid': user.uid});
       await firebaseAuth.signOut();
     }
     final person = Provider.of<PersonProvider>(context, listen: false);
