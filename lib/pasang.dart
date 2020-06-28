@@ -303,21 +303,6 @@ class _PasangState extends State<Pasang> {
     if (await _onWillPop()) Navigator.of(context).pop();
   }
 
-  Widget _actionButton() {
-    return Container(
-      height: double.infinity,
-      width: 60,
-      child: RaisedButton(
-        elevation: 0,
-        child: Icon(MdiIcons.check, size: 30,),
-        color: Colors.green,
-        textColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        onPressed: _submit,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -330,29 +315,7 @@ class _PasangState extends State<Pasang> {
               Container(child: Center(child: UiLoader())),
               Column(
                 children: <Widget>[
-                  UiCaption(
-                    steps: _listSteps,
-                    currentIndex: _stepIndex,
-                    backButton: true,
-                    onBackPressed: _backPressed,
-                    stepAction: (index) {},
-                  ),
-
-                  // UiAppBar(
-                  //   _listTipe.where((t) => t.value == _tipe).first.label,
-                  //   icon: LineIcons.plus,
-                  //   tool: _actionButton(),
-                  //   onBackPressed: _backPressed
-                  // ),
-                  // SizedBox(height: 30,),
-                  // UiStepIndicator(
-                  //   list: <IconLabel>[
-                  //     IconLabel(LineIcons.edit, "Detail Iklan"),
-                  //     IconLabel(LineIcons.users, "Sasaran"),
-                  //   ],
-                  //   currentIndex: 0,
-                  //   onTapDot: (index) {},
-                  // ),
+                  UiCaption(steps: _listSteps, currentIndex: _stepIndex, stepAction: (index) {}, backButton: true, onBackPressed: _backPressed,),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.all(THEME_PADDING),
@@ -360,60 +323,63 @@ class _PasangState extends State<Pasang> {
                         key: _formKey,
                         autovalidate: false,
                         onChanged: () {},
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                          
-                          Text("Tipe:", style: style.textLabel),
-                          SizedBox(height: 8.0,),
-                          SizedBox(
-                            height: 45.0,
-                            child: ToggleButtons(
-                              borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
-                              children: _listTipe.asMap().map((index, tipe) {
-                                var isFirst = index == 0;
-                                var isLast = index == _listTipe.length - 1;
-                                return MapEntry(index, Row(children: <Widget>[
-                                  SizedBox(width: isFirst ? 20.0 : 15.0),
-                                  Icon(tipe.icon, size: 17,),
-                                  SizedBox(width: 8.0),
-                                  Text(tipe.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                                  SizedBox(width: isLast ? 20.0 : 15.0),
-                                ],));
-                              }).values.toList(),
-                              isSelected: _listTipe.map((t) => t.value == _tipe).toList(),
-                              onPressed: (int index) {
-                                setState(() {
-                                  _tipe = _listTipe[index].value;
-                                  _resetKategori();
-                                });
-                              },
+                        child: Column(children: <Widget>[
+
+                          Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: _stepIndex == 0 ? <Widget>[
+                            Text("Tipe:", style: style.textLabel),
+                            SizedBox(height: 8.0,),
+                            SizedBox(
+                              height: 45.0,
+                              child: ToggleButtons(
+                                borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
+                                children: _listTipe.asMap().map((index, tipe) {
+                                  var isFirst = index == 0;
+                                  var isLast = index == _listTipe.length - 1;
+                                  return MapEntry(index, Row(children: <Widget>[
+                                    SizedBox(width: isFirst ? 20.0 : 15.0),
+                                    Icon(tipe.icon, size: 17,),
+                                    SizedBox(width: 8.0),
+                                    Text(tipe.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+                                    SizedBox(width: isLast ? 20.0 : 15.0),
+                                  ],));
+                                }).values.toList(),
+                                isSelected: _listTipe.map((t) => t.value == _tipe).toList(),
+                                onPressed: (int index) {
+                                  setState(() {
+                                    _tipe = _listTipe[index].value;
+                                    _resetKategori();
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 12,),
+                            SizedBox(height: 12,),
 
-                          Text("Foto:", style: style.textLabel),
-                          SizedBox(height: 8.0,),
-                          UiDropImages(
-                            onTap: _pickImages,
-                            onDeleteImage: (Asset asset) => setState(() { _images.remove(asset); }),
-                            listImages: _images,
-                            maxImages: _tier?.maxListingPic,
-                            height: 200,
-                          ),
-                          SizedBox(height: 12.0,),
+                            Text("Foto:", style: style.textLabel),
+                            SizedBox(height: 8.0,),
+                            UiDropImages(
+                              onTap: _pickImages,
+                              onDeleteImage: (Asset asset) => setState(() { _images.remove(asset); }),
+                              listImages: _images,
+                              maxImages: _tier?.maxListingPic,
+                              height: 200,
+                            ),
+                            SizedBox(height: 12.0,),
 
-                          UiInput(_tipe == "WTS" ? "Judul iklan" : "Judul produk", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
-                          SizedBox(height: 4,),
+                            UiInput(_tipe == "WTS" ? "Judul iklan" : "Judul produk", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
+                            SizedBox(height: 4,),
 
-                          UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
-                          SizedBox(height: 4,),
+                            UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
+                            SizedBox(height: 4,),
 
-                          Text("Kategori:", style: style.textLabel),
-                          SizedBox(height: 12,),
-                          // TODO fetch api recent kategori
-                          _selectKategori(),
-
+                            Text("Kategori:", style: style.textLabel),
+                            SizedBox(height: 12,),
+                            // TODO fetch api recent kategori
+                            _selectKategori(),
+                          ] : <Widget>[
+                          ],),
+                          
                           SizedBox(height: 30,),
-                          UiButton(_stepIndex == 0 ? "Lanjut" : "Pasang", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
+                          UiButton(_stepIndex == 0 ? "Selanjutnya" : "Pasang Iklan", height: style.heightButtonL, color: Colors.green, icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
 
                           // Text("Kategori:", style: style.textLabel,),
                           // SizedBox(height: 8,),

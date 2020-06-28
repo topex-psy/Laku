@@ -66,12 +66,20 @@ class _HomeState extends State<Home> {
     }
   }
 
+  _createAd() async {
+    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': _selectedIndex}) as Map;
+    print(" ... ROUTE PASANG result: $results");
+    if (results != null && results.containsKey('isSubmit')) {
+
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final _pages = <Page>[
       Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
       Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
-      Page(title: 'menu_favorites'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
+      // Page(title: 'menu_favorites'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
       // Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
     ];
     return WillPopScope(
@@ -150,33 +158,28 @@ class _HomeState extends State<Home> {
           itemBuilder: (context, index) => _pages[index].content,
           onPageChanged: _openPage,
         ),
-        floatingActionButton: AnimatedSwitcher(
-          duration: Duration(milliseconds: 500),
-          switchInCurve: Curves.easeInBack,
-          switchOutCurve: Curves.easeOutBack,
-          transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
-          child: _selectedIndex > 1 ? SizedBox() : FloatingActionButton(
-            onPressed: () async {
-              final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': _selectedIndex}) as Map;
-              print(" ... ROUTE PASANG result: $results");
-              if (results != null && results.containsKey('isSubmit')) {
-
-              }
-            },
-            backgroundColor: Colors.teal[400],
-            tooltip: 'menu_create'.tr(),
-            child: Icon(LineIcons.plus),
-          ).pulseIt(pulse: false),
-        ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))
-            ]
-          ),
-          child: SafeArea(
-            child: Padding(
+        // floatingActionButton: AnimatedSwitcher(
+        //   duration: Duration(milliseconds: 500),
+        //   switchInCurve: Curves.easeInBack,
+        //   switchOutCurve: Curves.easeOutBack,
+        //   transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
+        //   child: _selectedIndex > 1 ? SizedBox() : FloatingActionButton(
+        //     onPressed: _createAd,
+        //     backgroundColor: Colors.teal[400],
+        //     tooltip: 'menu_create'.tr(),
+        //     child: Icon(LineIcons.plus),
+        //   ).pulseIt(pulse: false),
+        // ),
+        bottomNavigationBar: Stack(
+          alignment: Alignment.bottomCenter,
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))
+                ]
+              ),
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: GNav(
                 gap: 8,
@@ -187,12 +190,27 @@ class _HomeState extends State<Home> {
                 tabBackgroundColor: Theme.of(context).accentColor,
                 tabs: _pages.map((page) => GButton(icon: page.icon, text: page.title)).toList(),
                 selectedIndex: _selectedIndex,
-                onTabChange: (index) {
-                  _openPage(index);
-                }
+                onTabChange: (index) => _openPage(index),
               ),
             ),
-          ),
+            Transform.translate(
+              offset: Offset(0, -18),
+              child: Transform.scale(
+                scale: 1.4,
+                child: Container(
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white60),
+                  child: FloatingActionButton(
+                    mini: true,
+                    elevation: 0,
+                    onPressed: _createAd,
+                    backgroundColor: Colors.teal[400],
+                    tooltip: 'menu_create'.tr(),
+                    child: Icon(LineIcons.plus),
+                  ),
+                ),
+              )
+            ),
+          ],
         ),
       ),
     );

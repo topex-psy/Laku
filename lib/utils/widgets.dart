@@ -675,7 +675,7 @@ class UiDropImages extends StatelessWidget {
         color: Colors.blueGrey[100],
         strokeWidth: 2,
         borderType: BorderType.RRect,
-        radius: Radius.circular(THEME_CARD_RADIUS),
+        radius: Radius.circular(8.0),
         padding: EdgeInsets.zero,
         child: Material(
           color: Colors.white,
@@ -831,7 +831,7 @@ class UiButton extends StatelessWidget {
 }
 
 class UiButtonIcon extends StatelessWidget {
-  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color = THEME_COLOR, this.iconColor = Colors.white, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed}) : super(key: key);
+  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color = THEME_COLOR, this.iconColor = Colors.white, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed, this.tooltip}) : super(key: key);
   final IconData icon;
   final double size;
   final double iconSize;
@@ -840,6 +840,7 @@ class UiButtonIcon extends StatelessWidget {
   final Color iconColor;
   final double elevation;
   final VoidCallback onPressed;
+  final String tooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -848,26 +849,26 @@ class UiButtonIcon extends StatelessWidget {
 }
 
 class UiStepIndicator extends StatelessWidget {
-  UiStepIndicator({Key key, this.list = const [], this.currentIndex = 0, this.onTapDot}) : super(key: key);
-  final List<IconLabel> list;
+  UiStepIndicator({Key key, this.steps = const [], this.currentIndex = 0, this.stepAction}) : super(key: key);
+  final List<IconLabel> steps;
   final int currentIndex;
-  final void Function(int) onTapDot;
+  final void Function(int) stepAction;
 
   @override
   Widget build(BuildContext context) {
     var _screenWidth = MediaQuery.of(context).size.width;
-    var _barWidth = _screenWidth - _screenWidth / list.length;
+    var _barWidth = _screenWidth - _screenWidth / steps.length;
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
         Container(width: _barWidth, height: 3, color: THEME_COLOR,),
         StepProgressIndicator(
-          totalSteps: list.length,
+          totalSteps: steps.length,
           currentStep: currentIndex + 1,
           size: 36,
           selectedColor: THEME_COLOR,
           unselectedColor: Colors.teal[400],
-          customStep: (index, color, _) => UiStepIndicatorDot(index, item: list[index], currentIndex: currentIndex, onTap: onTapDot,),
+          customStep: (index, color, _) => UiStepIndicatorDot(index, item: steps[index], currentIndex: currentIndex, onTap: stepAction,),
         ),
       ],
     );
