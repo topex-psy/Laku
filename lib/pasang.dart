@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
@@ -35,11 +34,16 @@ class _PasangState extends State<Pasang> {
   var _errorText = <String, String>{};
   var _listKelompok = <IklanKelompokModel>[];
   var _listKategori = <IklanKategoriModel>[];
+  var _stepIndex = 0;
 
   final _formKey = GlobalKey<FormState>();
   final _listTipe = <IconLabel>[
     IconLabel(LineIcons.bullhorn, "Pasang Iklan", value: 'WTS'),
     IconLabel(LineIcons.search, "Cari Produk", value: 'WTB'),
+  ];
+  final _listSteps = <IconLabel>[
+    IconLabel(LineIcons.edit, "Detail Iklan"),
+    IconLabel(LineIcons.users, "Sasaran"),
   ];
 
   TextEditingController _judulController;
@@ -59,8 +63,18 @@ class _PasangState extends State<Pasang> {
   }
 
   _submit() async {
+    if (_stepIndex == 0) {
+      setState(() {
+        _stepIndex = 1;
+      });
+      return;
+    }
     if (_images.isEmpty) {
       h.failAlert("Tambahkan Foto", "Unggah minimal 1 foto untuk iklan Anda.");
+      return;
+    }
+    if (_kelompok == null || (_tipe == "WTB" && _kategori == null)) {
+      h.failAlert("Pilih Kategori", "Harap pilih kategori iklan Anda.");
       return;
     }
 
@@ -83,12 +97,14 @@ class _PasangState extends State<Pasang> {
     );
 
     int byteCount = 0;
+    int byteProgress = 0;
 
     uploadImages('listing', _images, hash).then((response) {
       print("IMAGES UPLOAD RESPONSE: $response");
       if (response == null) {
         h.failAlertInternet(message: "Terjadi masalah saat mengunggah foto transaksi Anda. Coba lagi nanti!");
       } else {
+        print("IMAGES UPLOAD CONTENT LENGTH: ${response.contentLength}");
         print("IMAGES UPLOAD STATUS CODE: ${response.statusCode}");
         print("IMAGES UPLOAD HEADERS: ${response.headers}");
         response.stream.transform(
@@ -96,7 +112,7 @@ class _PasangState extends State<Pasang> {
           StreamTransformer.fromHandlers(
             handleData: (data, sink) {
               byteCount += data.length;
-              print(" -> byteCount: $byteCount");
+              print(" -> byteCount: $byteCount / ${response.contentLength}");
               sink.add(data);
             },
             handleError: (error, stack, sink) {},
@@ -106,8 +122,12 @@ class _PasangState extends State<Pasang> {
           ),
         ).listen((value) {
           print("IMAGES UPLOAD PROGRESS: $value");
+          byteProgress += value.length;
+          print("IMAGES UPLOAD PROGRESS CURRENT: $byteProgress / ${response.contentLength}");
         }).onDone(() {
           print("IMAGES UPLOAD DONE");
+          print("IMAGES UPLOAD BYTE COUNT: $byteCount");
+          print("IMAGES UPLOAD BYTE PROGRESS: $byteProgress");
           // var iklanUploadPicAfter = settings.iklanUploadPic.where((i) => i != hash).toList();
           settings.setSettings(
             // iklanUploadPic: iklanUploadPicAfter,
@@ -310,12 +330,29 @@ class _PasangState extends State<Pasang> {
               Container(child: Center(child: UiLoader())),
               Column(
                 children: <Widget>[
-                  UiAppBar(
-                    _listTipe.where((t) => t.value == _tipe).first.label,
-                    icon: LineIcons.plus,
-                    tool: _actionButton(),
-                      onBackPressed: _backPressed
+                  UiCaption(
+                    steps: _listSteps,
+                    currentIndex: _stepIndex,
+                    backButton: true,
+                    onBackPressed: _backPressed,
+                    stepAction: (index) {},
                   ),
+
+                  // UiAppBar(
+                  //   _listTipe.where((t) => t.value == _tipe).first.label,
+                  //   icon: LineIcons.plus,
+                  //   tool: _actionButton(),
+                  //   onBackPressed: _backPressed
+                  // ),
+                  // SizedBox(height: 30,),
+                  // UiStepIndicator(
+                  //   list: <IconLabel>[
+                  //     IconLabel(LineIcons.edit, "Detail Iklan"),
+                  //     IconLabel(LineIcons.users, "Sasaran"),
+                  //   ],
+                  //   currentIndex: 0,
+                  //   onTapDot: (index) {},
+                  // ),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.all(THEME_PADDING),
@@ -355,25 +392,12 @@ class _PasangState extends State<Pasang> {
 
                           Text("Foto:", style: style.textLabel),
                           SizedBox(height: 8.0,),
-                          DottedBorder(
-                            dashPattern: <double>[10, 6],
-                            color: Colors.blueGrey[100],
-                            strokeWidth: 2,
-                            borderType: BorderType.RRect,
-                            radius: Radius.circular(THEME_CARD_RADIUS),
-                            padding: EdgeInsets.zero,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
-                              child: InkWell(
-                                onTap: _pickImages,
-                                child: Container(
-                                  height: 100,
-                                  child: Center(
-                                    child: Icon(LineIcons.camera, color: Colors.blueGrey[100], size: 50,),
-                                  ),
-                                ),
-                              ),
-                            )
+                          UiDropImages(
+                            onTap: _pickImages,
+                            onDeleteImage: (Asset asset) => setState(() { _images.remove(asset); }),
+                            listImages: _images,
+                            maxImages: _tier?.maxListingPic,
+                            height: 200,
                           ),
                           SizedBox(height: 12.0,),
 
@@ -387,6 +411,9 @@ class _PasangState extends State<Pasang> {
                           SizedBox(height: 12,),
                           // TODO fetch api recent kategori
                           _selectKategori(),
+
+                          SizedBox(height: 30,),
+                          UiButton(_stepIndex == 0 ? "Lanjut" : "Pasang", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
 
                           // Text("Kategori:", style: style.textLabel,),
                           // SizedBox(height: 8,),

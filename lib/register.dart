@@ -193,10 +193,6 @@ class _RegisterState extends State<Register> {
           child: Column(
             children: <Widget>[
               UiCaption(steps: _listSteps, currentIndex: _registerIndex, stepAction: _navigate,),
-
-              // SizedBox(height: 30,),
-              // UiStepIndicator(list: _listSteps, currentIndex: _registerIndex, onTapDot: _navigate,),
-              
               Expanded(
                 child: IndexedStack(
                   index: _registerIndex,

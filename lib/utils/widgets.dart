@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -9,6 +10,8 @@ import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 import '../extensions/string.dart';
 import '../models/basic.dart';
@@ -642,6 +645,89 @@ class _UiCountdownState extends State<UiCountdown> {
         SizedBox(width: 8,),
         ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  $_detik  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white30, fontWeight: FontWeight.bold),),),
       ],
+    );
+  }
+}
+
+class UiDropImages extends StatelessWidget {
+  UiDropImages({
+    Key key,
+    this.onTap,
+    this.onDeleteImage,
+    this.listImages = const [],
+    this.maxImages,
+    this.height = 100.0
+  }) : super(key: key);
+  
+  final VoidCallback onTap;
+  final void Function(Asset) onDeleteImage;
+  final double height;
+  final int maxImages;
+  final List<Asset> listImages;
+
+  Widget _getPlaceholder({double width = double.infinity}) {
+    return Container(
+      width: width,
+      height: height,
+      padding: EdgeInsets.all(4.0),
+      child: DottedBorder(
+        dashPattern: <double>[10, 6],
+        color: Colors.blueGrey[100],
+        strokeWidth: 2,
+        borderType: BorderType.RRect,
+        radius: Radius.circular(THEME_CARD_RADIUS),
+        padding: EdgeInsets.zero,
+        child: Material(
+          color: Colors.white,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(THEME_CARD_RADIUS)),
+          ),
+          child: InkWell(
+            splashColor: Colors.teal[300].withOpacity(0.1),
+            highlightColor: Colors.teal[300].withOpacity(0.1),
+            onTap: onTap,
+            child: Center(
+              child: Icon(MdiIcons.cameraPlusOutline, color: Colors.blueGrey[100], size: 50,),
+            ),
+          ),
+        )
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (listImages.isEmpty) return _getPlaceholder();
+    List<Widget> _gridItems = listImages.map((asset) {
+      return Container(
+        padding: EdgeInsets.all(4.0),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: <Widget>[
+            ClipRRect(borderRadius: BorderRadius.circular(8.0), child: AssetThumb(asset: asset, width: 300, height: 300,)),
+            GestureDetector(
+              onTap: () => onDeleteImage(asset),
+              child: Padding(
+                padding: EdgeInsets.all(4.0),
+                child: Container(
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                  child: Icon(MdiIcons.closeCircle, color: Colors.grey[850], size: 22,)
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+    if (listImages.length < maxImages) _gridItems.add(_getPlaceholder(width: height));
+    return Container(
+      height: height,
+      child: GridView.count(
+        scrollDirection: Axis.horizontal,
+        crossAxisCount: 1,
+        children: _gridItems,
+      ),
     );
   }
 }
