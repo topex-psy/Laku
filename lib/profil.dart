@@ -118,6 +118,7 @@ class _ProfilState extends State<Profil> {
       'gender': _jenisKelamin,
       'tanggalLahir': _tanggalLahir.toString().substring(0, 10),
       'email': email,
+      'phone': phone,
       'imageName': _imageName ?? '',
       'image': _image != null ? 'data:image/png;base64,' + base64Encode(_image.readAsBytesSync()) : '',
     };

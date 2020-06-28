@@ -93,6 +93,8 @@ class IklanModel {
     @required this.pengiklan,
     this.foto,
     this.tier,
+    this.isFavorit,
+    this.isDalamRadius,
   });
 
   final int id;
@@ -112,6 +114,15 @@ class IklanModel {
   final String pengiklan;
   final List<IklanPicModel> foto;
   final int tier;
+  bool isFavorit;
+  bool isDalamRadius;
+
+  toggleFav() {
+    isFavorit = !isFavorit;
+  }
+  bool isInRadius(double meter) {
+    return jarakMeter <= meter;
+  }
 
   IklanModel.fromJson(Map<String, dynamic> parsedJson)
   : id = int.parse(parsedJson['ID']),
@@ -130,5 +141,7 @@ class IklanModel {
     judulLapak = parsedJson['JUDUL_LAPAK'],
     pengiklan = parsedJson['PENGIKLAN'],
     foto = List.from(parsedJson['FOTO']).map((f) => IklanPicModel.fromJson(f)).toList(),
-    tier = int.parse(parsedJson['TIER']);
+    tier = int.parse(parsedJson['TIER']),
+    isFavorit = int.parse(parsedJson['IS_FAVORIT']) == 1,
+    isDalamRadius = int.parse(parsedJson['IS_DALAM_RADIUS']) == 1;
 }

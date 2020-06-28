@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:collection/collection.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:laku/utils/widgets.dart';
@@ -33,7 +34,8 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
   var _total = 0;
   var _isGettingData = false;
   var _isToolbarVisible = true;
-  var _lastKeyword = 'none';
+  var _isFavorit = false;
+  var _lastParam = <String, dynamic>{};
   var _lastScrollPixel = 0.0;
 
   AnimationController _animationController;
@@ -124,16 +126,16 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
     });
     var listingApi = await api('listing', data: {
       'uid': userSession.uid,
-      'mode': 'near',
+      'mode': _isFavorit ? 'fav' : 'near',
       'limit': limit,
-      'keyword': keyword
+      'keyword': keyword,
     });
     setState(() {
       _isGettingData = false;
     });
     if (listingApi.isSuccess) {
-      if (_lastKeyword == listingApi.meta['KEYWORD']) return;
-      _lastKeyword = listingApi.meta['KEYWORD'];
+      if (MapEquality().equals(_lastParam, listingApi.meta)) return;
+      _lastParam = listingApi.meta;
       setState(() {
         _listItem = listingApi.result.map((res) => IklanModel.fromJson(res)).toList();
         _listItemFiltered = _listItem;
@@ -164,6 +166,7 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
               fit: BoxFit.cover,
             ),
           ),
+          item.isDalamRadius ? Container() : Container(color: Colors.grey.withOpacity(.5),),
           Container(width: double.infinity, height: MediaQuery.of(context).size.width / 6, decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: FractionalOffset.topCenter,
@@ -202,9 +205,23 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
           ),
           Align(
             alignment: Alignment.topRight,
-            child: IconButton(icon: Icon(LineIcons.heart_o), color: Colors.white, iconSize: 24, onPressed: () {
-              print("tap fav: ${item.id}");
-            },),
+            child: IconButton(
+              icon: Icon(item.isFavorit ? LineIcons.heart : LineIcons.heart_o),
+              color: item.isFavorit ? Colors.pink : Colors.white,
+              iconSize: 24,
+              tooltip: item.isFavorit ? "Hapus favorit" : "Tambahkan ke favorit",
+              onPressed: () async {
+                print("tap fav: ${item.id}");
+                var favApi = await api('listing', sub1: 'fav', type: 'post', data: {
+                  'uid': userSession.uid,
+                  'mode': item.isFavorit ? 'del' : 'add',
+                  'id': item.id
+                });
+                if (favApi.isSuccess) setState(() {
+                  item.toggleFav();
+                });
+              },
+            ),
           ),
         ],
       )
@@ -262,7 +279,7 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Expanded(child: UiInput('prompt_search_listing'.tr(), margin: EdgeInsets.only(left: 15, top: 15), showLabel: false, icon: LineIcons.search, type: UiInputType.SEARCH, controller: _searchController, focusNode: _searchFocusNode,)),
+                        Expanded(child: UiInput('prompt_search_listing'.tr(), isClearable: true, margin: EdgeInsets.only(left: 15, top: 15), showLabel: false, icon: LineIcons.search, type: UiInputType.SEARCH, controller: _searchController, focusNode: _searchFocusNode,)),
                         SizedBox(width: 8,),
                         IconButton(
                           padding: EdgeInsets.zero,
@@ -273,10 +290,15 @@ class _TemukanState extends State<Temukan> with MainPageStateMixin, TickerProvid
                         ),
                         IconButton(
                           padding: EdgeInsets.zero,
-                          icon: Icon(LineIcons.heart_o),
-                          color: Colors.grey[850],
+                          icon: Icon(_isFavorit ? LineIcons.heart : LineIcons.heart_o),
+                          color: _isFavorit ? Colors.pink : Colors.grey[850],
                           tooltip: 'menu_favorites'.tr(),
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              _isFavorit = !_isFavorit;
+                            });
+                            _getAllData();
+                          },
                         ).withBadge(2),
                         SizedBox(width: 8,),
                       ],

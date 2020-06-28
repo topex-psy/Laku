@@ -623,9 +623,8 @@ class _UiCountdownState extends State<UiCountdown> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-        if (_detik > 0) setState(() { _detik--; }); else if (widget.onFinish != null) {
-          widget.onFinish();
-        }
+        if (_detik > 0) setState(() { _detik--; });
+        else if (widget.onFinish != null) widget.onFinish();
       });
     });
   }
@@ -680,16 +679,12 @@ class UiDropImages extends StatelessWidget {
         child: Material(
           color: Colors.white,
           clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0),),),
           child: InkWell(
             splashColor: style.colorSplash,
             highlightColor: style.colorSplash,
+            child: Center(child: Icon(MdiIcons.cameraPlusOutline, color: Colors.blueGrey[100], size: 50,),),
             onTap: onTap,
-            child: Center(
-              child: Icon(MdiIcons.cameraPlusOutline, color: Colors.blueGrey[100], size: 50,),
-            ),
           ),
         )
       ),

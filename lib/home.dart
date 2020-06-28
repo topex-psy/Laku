@@ -37,14 +37,18 @@ class _HomeState extends State<Home> {
   final FirebaseAnalytics analytics;
   final FirebaseAnalyticsObserver observer;
 
+  final _pageController = PreloadPageController();
+  final _listPages = <Page>[
+    Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
+    Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
+  ];
+
   var _selectedIndex = 0;
   var _isWillExit = false;
-  PreloadPageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PreloadPageController();
   }
   
   @override
@@ -55,9 +59,7 @@ class _HomeState extends State<Home> {
 
   _openPage(int index) {
     FocusScope.of(context).unfocus();
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() { _selectedIndex = index; });
     if (_pageController.page.round() != index) {
       print("page move: ${_pageController.page.round()} -> $index");
       _pageController.animateToPage(index, duration: Duration(milliseconds: 500), curve: Curves.ease);
@@ -74,12 +76,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    final _pages = <Page>[
-      Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda()),
-      Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan()), // favorit, featured ad, last viewed
-      // Page(title: 'menu_favorites'.tr(), icon: LineIcons.heart_o, content: Favorit()), // kelola iklan saya
-      // Page(title: 'menu_account'.tr(), icon: LineIcons.user, content: Akun()), // akun, kontak saya, pesan masuk, notifikasi
-    ];
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState.isEndDrawerOpen) return true;
@@ -103,9 +99,7 @@ class _HomeState extends State<Home> {
             child: Container(
               width: MediaQuery.of(context).size.width * 0.69,
               decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(color: Colors.black45, blurRadius: 25)
-                ],
+                boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 25)],
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
               ),
               child: ClipRRect(
@@ -152,8 +146,8 @@ class _HomeState extends State<Home> {
         body: PreloadPageView.builder(
           preloadPagesCount: 2,
           controller: _pageController,
-          itemCount: _pages.length,
-          itemBuilder: (context, index) => _pages[index].content,
+          itemCount: _listPages.length,
+          itemBuilder: (context, index) => _listPages[index].content,
           onPageChanged: _openPage,
         ),
         // floatingActionButton: AnimatedSwitcher(
@@ -174,10 +168,7 @@ class _HomeState extends State<Home> {
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(THEME_BORDER_RADIUS), topRight: Radius.circular(THEME_BORDER_RADIUS)),
-                boxShadow: [
-                  BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))
-                ]
+                boxShadow: [BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))]
               ),
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: GNav(
@@ -187,7 +178,7 @@ class _HomeState extends State<Home> {
                 padding: EdgeInsets.symmetric(horizontal: 18, vertical: 5),
                 duration: Duration(milliseconds: 500),
                 tabBackgroundColor: Theme.of(context).accentColor,
-                tabs: _pages.map((page) => GButton(icon: page.icon, text: page.title)).toList(),
+                tabs: _listPages.map((page) => GButton(icon: page.icon, text: page.title)).toList(),
                 selectedIndex: _selectedIndex,
                 onTabChange: (index) => _openPage(index),
               ),
