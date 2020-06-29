@@ -49,8 +49,10 @@ class _PasangState extends State<Pasang> {
 
   TextEditingController _judulController;
   TextEditingController _deskripsiController;
+  TextEditingController _hargaController;
   FocusNode _judulFocusNode;
   FocusNode _deskripsiFocusNode;
+  FocusNode _hargaFocusNode;
 
   UserTierModel _tier;
   IklanKelompokModel _kelompok;
@@ -85,6 +87,7 @@ class _PasangState extends State<Pasang> {
       'tipe': _tipe,
       'judul': _judulController.text,
       'deskripsi': _deskripsiController.text,
+      'harga': _hargaController.text,
       'kategori': _kategori.id.toString(),
       'hash': hash.toString(),
     };
@@ -180,6 +183,7 @@ class _PasangState extends State<Pasang> {
         icon: kat.iconKelompok,
         isWTS: kat.isWTS,
         isWTB: kat.isWTB,
+        isPriceable: kat.isPriceable,
       );
     });
     setState(() {
@@ -290,8 +294,10 @@ class _PasangState extends State<Pasang> {
     _tipe = screenPageController.page.round() == 0 ? "WTS" : "WTB";
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
     _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
+    _hargaController = TextEditingController()..addListener(() => _dismissError("harga"));
     _judulFocusNode = FocusNode();
     _deskripsiFocusNode = FocusNode();
+    _hargaFocusNode = FocusNode();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       var isGranted = await Permission.location.request().isGranted;
@@ -313,8 +319,10 @@ class _PasangState extends State<Pasang> {
   void dispose() {
     _judulController.dispose();
     _deskripsiController.dispose();
+    _hargaController.dispose();
     _judulFocusNode.dispose();
     _deskripsiFocusNode.dispose();
+    _hargaFocusNode.dispose();
     super.dispose();
   }
 
@@ -402,6 +410,9 @@ class _PasangState extends State<Pasang> {
                             SizedBox(height: 4,),
 
                             UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
+                            SizedBox(height: 4,),
+
+                            (_kelompok?.isPriceable ?? false) ? UiInput("Harga", icon: LineIcons.tag, type: UiInputType.CURRENCY, controller: _hargaController, focusNode: _hargaFocusNode, error: _errorText["harga"],) : SizedBox(),
                             SizedBox(height: 4,),
 
                             Text("Kategori:", style: style.textLabel),

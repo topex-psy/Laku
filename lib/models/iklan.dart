@@ -7,6 +7,7 @@ class IklanKelompokModel {
     @required this.icon,
     @required this.isWTS,
     @required this.isWTB,
+    @required this.isPriceable,
   });
 
   final int id;
@@ -14,6 +15,7 @@ class IklanKelompokModel {
   final String icon;
   final bool isWTS;
   final bool isWTB;
+  final bool isPriceable;
 }
 
 class IklanKategoriModel {
@@ -25,6 +27,7 @@ class IklanKategoriModel {
     this.tier,
     this.isWTS,
     this.isWTB,
+    this.isPriceable,
     this.kelompok,
     this.iconKelompok,
   });
@@ -36,6 +39,7 @@ class IklanKategoriModel {
   final int tier;
   final bool isWTS;
   final bool isWTB;
+  final bool isPriceable;
   final String kelompok;
   final String iconKelompok;
 
@@ -47,6 +51,7 @@ class IklanKategoriModel {
     tier = int.parse(parsedJson['TIER']),
     isWTS = int.parse(parsedJson['WTS']??'0') == 1,
     isWTB = int.parse(parsedJson['WTB']??'0') == 1,
+    isPriceable = int.parse(parsedJson['IS_PRICEABLE']??'0') == 1,
     kelompok = parsedJson['KELOMPOK'],
     iconKelompok = parsedJson['ICON_KELOMPOK'];
 

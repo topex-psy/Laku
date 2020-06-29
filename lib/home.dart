@@ -40,20 +40,8 @@ class _HomeState extends State<Home> {
   var _selectedIndex = 0;
   var _isWillExit = false;
 
-  // @override
-  // void initState() {
-  //   screenPageController = PreloadPageController();
-  //   super.initState();
-  // }
-  
-  // @override
-  // void dispose() {
-  //   screenPageController.dispose();
-  //   super.dispose();
-  // }
-
-  // int get _currentPage {
-  //   return (screenPageController?.page ?? 0.0).round();
+  // int get _selectedIndex {
+  //   return screenPageController.hasClients ? screenPageController.page.round() : 0;
   // }
 
   _openPage(int index) {

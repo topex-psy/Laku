@@ -251,7 +251,7 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
         alignment: Alignment.topCenter,
         children: <Widget>[
 
-          _listItemFiltered.length > 0 ? Container() : Container(child: UiPlaceholder(label: "Tidak ada iklan yang sesuai.",),),
+          _listItemFiltered.length > 0 || _isGettingData ? Container() : Container(child: UiPlaceholder(label: "Tidak ada iklan yang sesuai.",),),
 
           Container(
             child: StaggeredGridView.countBuilder(
