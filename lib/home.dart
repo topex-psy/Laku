@@ -3,8 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:laku/models/basic.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'components/menu.dart';
@@ -40,10 +43,6 @@ class _HomeState extends State<Home> {
   var _selectedIndex = 0;
   var _isWillExit = false;
 
-  // int get _selectedIndex {
-  //   return screenPageController.hasClients ? screenPageController.page.round() : 0;
-  // }
-
   _openPage(int index) {
     FocusScope.of(context).unfocus();
     setState(() { _selectedIndex = index; });
@@ -53,8 +52,13 @@ class _HomeState extends State<Home> {
     }
   }
 
-  _createAd() async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG) as Map;
+  _createAd([String tipe = "WTS"]) async {
+    if (tipe == "shop") {
+      final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'}) as Map;
+      print(results);
+      return;
+    }
+    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': tipe}) as Map;
     print(" ... ROUTE PASANG result: $results");
     if (results != null && results.containsKey('isSubmit')) {
 
@@ -63,9 +67,17 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+
     final _listPages = <Page>[
       Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
       Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
+      Page(title: 'menu_user'.tr(), icon: LineIcons.users, content: Container(),),
+    ];
+
+    final _listActions = <IconLabel>[
+      IconLabel(MdiIcons.bullhornOutline, "Pasang iklan", value: "WTS"),
+      IconLabel(MdiIcons.magnify, "Cari sesuatu", value: "WTB"),
+      IconLabel(MdiIcons.storefrontOutline, "Kelola toko", value: "shop"),
     ];
 
     return WillPopScope(
@@ -142,6 +154,37 @@ class _HomeState extends State<Home> {
           itemBuilder: (context, index) => _listPages[index].content,
           onPageChanged: _openPage,
         ),
+        floatingActionButton: AnimatedSwitcher(
+          duration: Duration(milliseconds: 500),
+          switchInCurve: Curves.easeInBack,
+          switchOutCurve: Curves.easeOutBack,
+          transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
+          child: _selectedIndex > 1 ? SizedBox() : FabCircularMenu(
+            fabOpenIcon: Icon(LineIcons.plus, color: Colors.white,),
+            fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
+            fabOpenColor: Colors.red[400],
+            fabCloseColor: Colors.teal[400],
+            ringColor: Colors.white,
+            ringWidth: 100,
+            ringDiameter: 300,
+            children: _listActions.map((action) {
+              return Material(
+                shape: CircleBorder(),
+                color: Colors.teal.withOpacity(.3),
+                clipBehavior: Clip.antiAlias,
+                child: IconButton(
+                  padding: EdgeInsets.all(20),
+                  icon: Icon(action.icon),
+                  color: THEME_COLOR,
+                  tooltip: action.label,
+                  onPressed: () {
+                    _createAd(action.value);
+                  }
+                ),
+              );
+            }).toList(),
+          ),
+        ),
         // floatingActionButton: AnimatedSwitcher(
         //   duration: Duration(milliseconds: 500),
         //   switchInCurve: Curves.easeInBack,
@@ -175,23 +218,23 @@ class _HomeState extends State<Home> {
                 onTabChange: (index) => _openPage(index),
               ),
             ),
-            Transform.translate(
-              offset: Offset(0, -18),
-              child: Transform.scale(
-                scale: 1.4,
-                child: Container(
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white60),
-                  child: FloatingActionButton(
-                    mini: true,
-                    elevation: 0,
-                    onPressed: _createAd,
-                    backgroundColor: Colors.teal[400],
-                    tooltip: 'menu_create'.tr(),
-                    child: Icon(LineIcons.plus),
-                  ),
-                ),
-              )
-            ),
+            // Transform.translate(
+            //   offset: Offset(0, -18),
+            //   child: Transform.scale(
+            //     scale: 1.4,
+            //     child: Container(
+            //       decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white60),
+            //       child: FloatingActionButton(
+            //         mini: true,
+            //         elevation: 0,
+            //         onPressed: _createAd,
+            //         backgroundColor: Colors.teal[400],
+            //         tooltip: 'menu_create'.tr(),
+            //         child: Icon(LineIcons.plus),
+            //       ),
+            //     ),
+            //   )
+            // ),
           ],
         ),
       ),

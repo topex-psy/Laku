@@ -348,9 +348,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
                         ),
                       ),
                       actions: [
-                        IconButton(icon: Icon(LineIcons.map_o, color: Colors.white,), tooltip: 'Lokasi Saya', onPressed: () async {
-                          final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'}) as Map;
-                          print(results);
+                        IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
                         },),
                         IconButton(icon: Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
                           final results = await a.openProfile() as Map;
