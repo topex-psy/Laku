@@ -4,7 +4,6 @@ import 'package:line_icons/line_icons.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'extensions/widget.dart';
 import 'models/basic.dart';
-import 'models/notif.dart';
 import 'models/toko.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';

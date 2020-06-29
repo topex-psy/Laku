@@ -295,6 +295,7 @@ class _ProfilState extends State<Profil> {
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                           Row(children: <Widget>[
                             Expanded(child: _isEdit ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
                                 menuPaddingHorizontal: 8,
                                 isLast: source == ImageSource.camera,
@@ -304,6 +305,7 @@ class _ProfilState extends State<Profil> {
                                 aksi: (val) => _pickImage(val as ImageSource),
                               )).toList(),
                             ) : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(_userData?.namaLengkap ?? '', style: style.textHeadline,),
                                 Divider(color: Colors.grey[400],),

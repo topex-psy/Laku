@@ -12,7 +12,6 @@ import 'package:line_icons/line_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import '../models/user.dart';
 import '../providers/settings.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
@@ -698,7 +697,7 @@ class _CardListState extends State<CardList> {
         angka = settings.notif?.iklanTerpasang;
         label = "Iklan terpasang";
         buttonLabel = angka == 0 ? "Buat" : "Kelola";
-        buttonWidth = angka == 0 ? 96 : 110;
+        buttonWidth = angka == 0 ? 98 : 110;
         buttonIcon = angka == 0 ? LineIcons.plus_circle : LineIcons.dropbox;
         buka = () {
           // TODO buka kelola iklan
