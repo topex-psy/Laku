@@ -495,12 +495,16 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
       Text("Kode verifikasi:", style: style.textLabelWhite),
       SizedBox(height: 8,),
       SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        child: CodeInput(
-          length: SMS_CODE_LENGTH,
-          keyboardType: TextInputType.number,
-          builder: CodeInputBuilders.lightCircle(),
-          onFilled: _signInWithCode,
+        child: Transform.scale(
+          scale: .7,
+          child: CodeInput(
+            length: SMS_CODE_LENGTH,
+            keyboardType: TextInputType.number,
+            builder: CodeInputBuilders.lightCircle(),
+            onFilled: _signInWithCode,
+          ),
         ),
       ),
       SizedBox(height: 12,),

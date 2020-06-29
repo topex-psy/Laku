@@ -15,6 +15,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../providers/settings.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
+import '../utils/curves.dart';
 import '../utils/helpers.dart';
 import '../utils/styles.dart' as style;
 import '../utils/widgets.dart';
@@ -157,15 +158,12 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
   _getAllData() async {
     if (!mounted) return;
     print(" ==> GET ALL DATA ..................");
-
-    var loadNotif = await a.loadNotif();
-    if (loadNotif) {
+    if (await a.loadNotif()) {
       _refreshController.refreshCompleted();
     } else {
       _refreshController.refreshFailed();
     }
-
-    setState(() {
+    if (mounted) setState(() {
       _isLoading = false;
     });
   }
@@ -349,6 +347,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
                       ),
                       actions: [
                         IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
+                          // TODO show popup notification
                         },),
                         IconButton(icon: Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
                           final results = await a.openProfile() as Map;
@@ -771,38 +770,5 @@ class UiMainHeader extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(UiMainHeader oldDelegate) {
     return false;
-  }
-}
-
-class CurvePainter extends CustomPainter {
-  CurvePainter({this.color = Colors.pink});
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint = Paint();
-    paint.color = color;
-    paint.style = PaintingStyle.fill; // Change this to fill
-
-    var path = Path();
-
-    // path.moveTo(0, size.height * 0.36);
-    // path.quadraticBezierTo(
-    //     size.width / 3, size.height / 2, size.width, size.height * 0.5);
-    // path.lineTo(size.width, 0);
-    // path.lineTo(0, 0);
-
-    path.moveTo(0, size.height * 0.72);
-    path.quadraticBezierTo(
-        size.width / 3, size.height, size.width, size.height);
-    path.lineTo(size.width, 0);
-    path.lineTo(0, 0);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
   }
 }

@@ -160,6 +160,11 @@ class UserHelper {
     return credential;
   }
 
+  logout() async {
+    bool confirm = await h.showConfirm("Akhiri Sesi?", "Apakah kamu yakin ingin mengakhiri sesi?") ?? false;
+    if (confirm) signOut();
+  }
+
   signOut() async {
     final user = await firebaseAuth.currentUser();
     if (user != null) {

@@ -308,15 +308,16 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
                           icon: Icon(Icons.sort),
                           color: Colors.grey[850],
                           tooltip: 'prompt_sort'.tr(),
-                          onPressed: () {},
+                          onPressed: () {
+                            // TODO show dialog
+                          },
                         ),
                         Consumer<SettingsProvider>(
                           builder: (context, settings, child) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
-                                shape: BoxShape.circle
-                              ),
+                            return Material(
+                              color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
+                              shape: CircleBorder(),
+                              clipBehavior: Clip.antiAlias,
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 icon: Icon(settings.isViewFavorites ? LineIcons.heart : LineIcons.heart_o),
@@ -324,7 +325,6 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
                                 tooltip: 'menu_favorites'.tr(),
                                 onPressed: () {
                                   settings.setSettings(isViewFavorites: !settings.isViewFavorites);
-                                  // setState(() { _isFavorit = !_isFavorit; });
                                   _getAllData();
                                 },
                               ).pulseIt(pulse: settings.isViewFavorites).withBadge(settings.notif?.iklanFavorit),

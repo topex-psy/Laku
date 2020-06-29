@@ -15,6 +15,7 @@ import 'pages/beranda.dart';
 import 'pages/temukan.dart';
 import 'providers/person.dart';
 import 'utils/constants.dart';
+import 'utils/curves.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
@@ -42,6 +43,7 @@ class _HomeState extends State<Home> {
 
   var _selectedIndex = 0;
   var _isWillExit = false;
+  var _isPopNotif = false;
 
   _openPage(int index) {
     FocusScope.of(context).unfocus();
@@ -52,16 +54,15 @@ class _HomeState extends State<Home> {
     }
   }
 
-  _createAd([String tipe = "WTS"]) async {
-    if (tipe == "shop") {
+  _action(String action) async {
+    switch (action) {
+    case "shop":
       final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'}) as Map;
       print(results);
-      return;
-    }
-    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': tipe}) as Map;
-    print(" ... ROUTE PASANG result: $results");
-    if (results != null && results.containsKey('isSubmit')) {
-
+      break;
+    default:
+      final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action ?? 'WTS'}) as Map;
+      print(" ... ROUTE PASANG result: $results");
     }
   }
 
@@ -70,7 +71,7 @@ class _HomeState extends State<Home> {
 
     final _listPages = <Page>[
       Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
-      Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
+      Page(title: 'menu_browse'.tr(), icon: LineIcons.list_ul, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
       Page(title: 'menu_user'.tr(), icon: LineIcons.users, content: Container(),),
     ];
 
@@ -159,7 +160,7 @@ class _HomeState extends State<Home> {
           switchInCurve: Curves.easeInBack,
           switchOutCurve: Curves.easeOutBack,
           transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
-          child: _selectedIndex > 1 ? SizedBox() : FabCircularMenu(
+          child: _selectedIndex > 0 ? SizedBox() : FabCircularMenu(
             fabOpenIcon: Icon(LineIcons.plus, color: Colors.white,),
             fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
             fabOpenColor: Colors.red[400],
@@ -178,34 +179,22 @@ class _HomeState extends State<Home> {
                   color: THEME_COLOR,
                   tooltip: action.label,
                   onPressed: () {
-                    _createAd(action.value);
+                    _action(action.value);
                   }
                 ),
               );
             }).toList(),
           ),
         ),
-        // floatingActionButton: AnimatedSwitcher(
-        //   duration: Duration(milliseconds: 500),
-        //   switchInCurve: Curves.easeInBack,
-        //   switchOutCurve: Curves.easeOutBack,
-        //   transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
-        //   child: _selectedIndex > 1 ? SizedBox() : FloatingActionButton(
-        //     onPressed: _createAd,
-        //     backgroundColor: Colors.teal[400],
-        //     tooltip: 'menu_create'.tr(),
-        //     child: Icon(LineIcons.plus),
-        //   ).pulseIt(pulse: false),
-        // ),
         bottomNavigationBar: Stack(
-          alignment: Alignment.bottomCenter,
+          alignment: Alignment.topCenter,
           children: <Widget>[
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [BoxShadow(blurRadius: 20, color: Colors.grey[800].withOpacity(0.5))]
               ),
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: EdgeInsets.all(8.0),
               child: GNav(
                 gap: 8,
                 iconSize: 24,
@@ -218,25 +207,37 @@ class _HomeState extends State<Home> {
                 onTabChange: (index) => _openPage(index),
               ),
             ),
-            // Transform.translate(
-            //   offset: Offset(0, -18),
-            //   child: Transform.scale(
-            //     scale: 1.4,
-            //     child: Container(
-            //       decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white60),
-            //       child: FloatingActionButton(
-            //         mini: true,
-            //         elevation: 0,
-            //         onPressed: _createAd,
-            //         backgroundColor: Colors.teal[400],
-            //         tooltip: 'menu_create'.tr(),
-            //         child: Icon(LineIcons.plus),
-            //       ),
-            //     ),
-            //   )
-            // ),
+            Transform.translate(
+              offset: Offset(35, -45),
+              child: AnimatedOpacity(
+                opacity: _isPopNotif ? 1 : 0,
+                duration: Duration(milliseconds: 1000),
+                child: UiTooltip(label: "2 Baru",),
+              ),
+            )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class UiTooltip extends StatelessWidget {
+  UiTooltip({Key key, this.label, this.color = Colors.red}) : super(key: key);
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: ShapeDecoration(
+        color: color,
+        shape: TooltipShapeBorder(arrowArc: 0.5),
+        shadows: [BoxShadow(color: Colors.black26, blurRadius: 4.0, offset: Offset(2, 2))],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(label, style: TextStyle(color: Colors.white)),
       ),
     );
   }

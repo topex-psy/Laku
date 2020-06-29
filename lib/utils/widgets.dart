@@ -627,6 +627,42 @@ class UiPlaceholder extends StatelessWidget {
   }
 }
 
+class UiToggleButton extends StatefulWidget {
+  UiToggleButton({Key key, this.height = THEME_INPUT_HEIGHT, this.listItem, this.currentValue, this.onSelect}) : super(key:key);
+  final double height;
+  final List<dynamic> listItem;
+  final dynamic currentValue;
+  final void Function(int) onSelect;
+
+  @override
+  _UiToggleButtonState createState() => _UiToggleButtonState();
+}
+
+class _UiToggleButtonState extends State<UiToggleButton> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: widget.height,
+      child: ToggleButtons(
+        borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
+        children: widget.listItem.asMap().map((index, item) {
+          var isFirst = index == 0;
+          var isLast = index == widget.listItem.length - 1;
+          return MapEntry(index, Row(children: <Widget>[
+            SizedBox(width: isFirst ? 20.0 : 15.0),
+            Icon(item.icon, size: 17,),
+            SizedBox(width: 8.0),
+            Text(item.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+            SizedBox(width: isLast ? 20.0 : 15.0),
+          ],));
+        }).values.toList(),
+        isSelected: widget.listItem.map((t) => t.value == widget.currentValue).toList(),
+        onPressed: widget.onSelect,
+      ),
+    );
+  }
+}
+
 class UiCountdown extends StatefulWidget {
   UiCountdown(this.label, {Key key, @required this.duration, this.onFinish}) : super(key: key);
   final String label;
@@ -1116,7 +1152,8 @@ class UiAppBar extends StatelessWidget {
 }
 
 class UiCaption extends StatelessWidget {
-  UiCaption({Key key, this.steps, this.currentIndex = 0, this.stepAction, this.hideSteps = false, this.backButton = false, this.onBackPressed, this.tool}) : super(key: key);
+  UiCaption({Key key, this.title, this.steps, this.currentIndex = 0, this.stepAction, this.hideSteps = false, this.backButton = false, this.onBackPressed, this.tool}) : super(key: key);
+  final String title;
   final List<IconLabel> steps;
   final int currentIndex;
   final void Function(int) stepAction;
@@ -1148,7 +1185,7 @@ class UiCaption extends StatelessWidget {
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         icon,
-        Text(steps[currentIndex].label, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
+        Text(title ?? steps[currentIndex].label, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
         Spacer(),
         hideSteps ? SizedBox() : Padding(
           padding: EdgeInsets.only(right: 12),

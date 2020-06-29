@@ -42,6 +42,10 @@ class _PasangState extends State<Pasang> {
     IconLabel(LineIcons.bullhorn, "Pasang Iklan", value: 'WTS'),
     IconLabel(LineIcons.search, "Cari Sesuatu", value: 'WTB'),
   ];
+  final _listKondisi = <IconLabel>[
+    IconLabel(LineIcons.check_circle, "Baru", value: 'new'),
+    IconLabel(LineIcons.check_circle_o, "Bekas", value: 'used'),
+  ];
   final _listSteps = <IconLabel>[
     IconLabel(LineIcons.edit, "Detail Iklan"),
     IconLabel(LineIcons.users, "Sasaran"),
@@ -57,7 +61,8 @@ class _PasangState extends State<Pasang> {
   UserTierModel _tier;
   IklanKelompokModel _kelompok;
   IklanKategoriModel _kategori;
-  String _tipe;
+  var _tipe = "WTS";
+  var _kondisi = "new";
   var _isNegotiable = false;
 
   _dismissError(String tag) {
@@ -293,7 +298,6 @@ class _PasangState extends State<Pasang> {
 
   @override
   void initState() {
-    // _tipe = screenPageController.page.round() == 0 ? "WTS" : "WTB";
     _tipe = widget.args['tipe'];
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
     _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
@@ -345,6 +349,10 @@ class _PasangState extends State<Pasang> {
     if (await _onWillPop()) Navigator.of(context).pop();
   }
 
+  String get _title {
+    return _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => null)?.label ?? _listTipe.first.label;
+  }
+
   bool get _isPriceable => _kelompok?.isPriceable ?? false; // jual-beli, jasa
   bool get _isConditionable => _kelompok?.id == 1 ?? false; // jual-beli
   bool get _isScheduleable => _kelompok?.isScheduleable ?? false; // acara, loker
@@ -361,7 +369,14 @@ class _PasangState extends State<Pasang> {
               Container(child: Center(child: UiLoader())),
               Column(
                 children: <Widget>[
-                  UiCaption(steps: _listSteps, currentIndex: _stepIndex, stepAction: (index) {}, backButton: true, onBackPressed: _backPressed,),
+                  UiCaption(
+                    title: _title,
+                    steps: _listSteps,
+                    currentIndex: _stepIndex,
+                    stepAction: (index) {},
+                    backButton: true,
+                    onBackPressed: _backPressed,
+                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.all(THEME_PADDING),
@@ -376,29 +391,16 @@ class _PasangState extends State<Pasang> {
                           Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: _stepIndex == 0 ? <Widget>[
                             Text("Tipe:", style: style.textLabel),
                             SizedBox(height: 8.0,),
-                            SizedBox(
+                            UiToggleButton(
                               height: 45.0,
-                              child: ToggleButtons(
-                                borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
-                                children: _listTipe.asMap().map((index, tipe) {
-                                  var isFirst = index == 0;
-                                  var isLast = index == _listTipe.length - 1;
-                                  return MapEntry(index, Row(children: <Widget>[
-                                    SizedBox(width: isFirst ? 20.0 : 15.0),
-                                    Icon(tipe.icon, size: 17,),
-                                    SizedBox(width: 8.0),
-                                    Text(tipe.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                                    SizedBox(width: isLast ? 20.0 : 15.0),
-                                  ],));
-                                }).values.toList(),
-                                isSelected: _listTipe.map((t) => t.value == _tipe).toList(),
-                                onPressed: (int index) {
-                                  setState(() {
-                                    _tipe = _listTipe[index].value;
-                                    _resetKategori();
-                                  });
-                                },
-                              ),
+                              listItem: _listTipe,
+                              currentValue: _tipe,
+                              onSelect: (int index) {
+                                setState(() {
+                                  _tipe = _listTipe[index].value;
+                                  _resetKategori();
+                                });
+                              },
                             ),
                             SizedBox(height: 12,),
 
@@ -414,10 +416,8 @@ class _PasangState extends State<Pasang> {
                             SizedBox(height: 12.0,),
 
                             UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
-                            // SizedBox(height: 4,),
 
                             UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
-                            // SizedBox(height: 4,),
 
                             _isPriceable ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,12 +447,25 @@ class _PasangState extends State<Pasang> {
                                         },
                                       ),
                                     ),
-                                    // TODO kondisi barang baru/bekas
                                   ],
                                 ),
+
+                                Text("Kondisi:", style: style.textLabel),
+                                SizedBox(height: 8.0,),
+                                UiToggleButton(
+                                  height: 45.0,
+                                  listItem: _listKondisi,
+                                  currentValue: _kondisi,
+                                  onSelect: (int index) {
+                                    setState(() {
+                                      _kondisi = _listKondisi[index].value;
+                                    });
+                                  },
+                                ),
+                                SizedBox(height: 12,),
+
                               ],
                             ) : SizedBox(),
-                            // SizedBox(height: 4,),
 
                             // TODO _isScheduleable
 
