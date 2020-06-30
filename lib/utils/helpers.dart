@@ -79,6 +79,13 @@ class UserHelper {
     return results;
   }
 
+  Future<dynamic> openMyShop() async {
+    final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'});
+    print(" ... ROUTE MY SHOP result: $results");
+    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
+    return results;
+  }
+
   Future<FirebaseUser> firebaseLoginEmailPassword(String email, String password) async {
     if (email.isEmptyOrNull || password.isEmptyOrNull) return null;
     FirebaseUser user;

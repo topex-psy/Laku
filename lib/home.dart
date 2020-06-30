@@ -57,8 +57,7 @@ class _HomeState extends State<Home> {
   _action(String action) async {
     switch (action) {
     case "shop":
-      final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'}) as Map;
-      print(results);
+      a.openMyShop();
       break;
     default:
       final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action ?? 'WTS'}) as Map;

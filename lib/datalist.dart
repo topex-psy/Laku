@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:laku/models/iklan.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'extensions/widget.dart';
 import 'models/basic.dart';
+import 'models/iklan.dart';
 import 'models/toko.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
@@ -21,13 +22,30 @@ class DataList extends StatefulWidget {
 
 class _DataListState extends State<DataList> {
   final _refreshController = RefreshController(initialRefresh: true);
+  final _searchDebouncer = Debouncer<String>(Duration(milliseconds: 1000));
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
   var _listData = [];
 
   @override
   void initState() {
+    _searchController.addListener(() {
+      var keyword = _searchController.text ?? '';
+      _searchDebouncer.value = keyword;
+    });
+    _searchDebouncer.values.listen((keyword) {
+      _getAllData();
+    });
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   IconLabel _getTitle() {
@@ -183,11 +201,15 @@ class _DataListState extends State<DataList> {
     return Scaffold(
       body: SafeArea(child: Column(children: <Widget>[
         UiAppBar(_title.label, icon: _title.icon, tool: _actionButton(),),
+        UiSearchBar(
+          searchController: _searchController,
+          searchFocusNode: _searchFocusNode,
+        ),
         Expanded(
           child: SmartRefresher(
             enablePullDown: true,
             enablePullUp: false,
-            header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR),
+            header: WaterDropMaterialHeader(color: THEME_COLOR, backgroundColor: THEME_BACKGROUND),
             controller: _refreshController,
             onRefresh: _getAllData,
             child: ListView.separated(

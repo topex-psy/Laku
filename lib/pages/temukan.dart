@@ -145,15 +145,6 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
     }
   }
 
-  // List<IklanModel> get _listingItems {
-  //   return _listItem.where((item) {
-  //     var keyword = _searchController.text ?? '';
-  //     var filterKeyword = keyword.isEmpty ? true : item.judul.toLowerCase().contains(keyword.toLowerCase());
-  //     var filterFav = _isFavorit ? item.isFavorit : true;
-  //     return filterKeyword && filterFav;
-  //   }).toList();
-  // }
-
   Widget _buildListingItem(int index) {
     var item = _listItemFiltered[index];
     return Card(
@@ -288,13 +279,14 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
             animation: _animationController, builder: (context, child) {
               return Transform.translate(
                 offset: Offset(0, -toolbarHeight * _animation.value),
-                child: UiSearchBar(
-                  searchController: _searchController,
-                  searchFocusNode: _searchFocusNode,
-                  height: toolbarHeight,
-                  tool: Consumer<SettingsProvider>(
-                    builder: (context, settings, child) {
-                      return Material(
+                child: Consumer<SettingsProvider>(
+                  builder: (context, settings, child) {
+                    return UiSearchBar(
+                      searchController: _searchController,
+                      searchFocusNode: _searchFocusNode,
+                      searchPlaceholder: (settings.isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing').tr(),
+                      height: toolbarHeight,
+                      tool: Material(
                         color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
                         shape: CircleBorder(),
                         clipBehavior: Clip.antiAlias,
@@ -308,9 +300,9 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
                             _getAllData();
                           },
                         ).pulseIt(pulse: settings.isViewFavorites).withBadge(settings.notif?.iklanFavorit),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  }
                 )
               );
             }

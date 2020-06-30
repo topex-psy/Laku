@@ -793,9 +793,10 @@ class UiDropImages extends StatelessWidget {
 }
 
 class UiSearchBar extends StatefulWidget {
-  UiSearchBar({Key key, this.tool, this.height, this.searchController, this.searchFocusNode}) : super(key: key);
+  UiSearchBar({Key key, this.tool, this.height, this.searchController, this.searchFocusNode, this.searchPlaceholder = "Cari data ..."}) : super(key: key);
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
+  final String searchPlaceholder;
   final Widget tool;
   final double height;
 
@@ -815,9 +816,16 @@ class _UiSearchBarState extends State<UiSearchBar> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Expanded(
-              child: Selector<SettingsProvider, bool>(
-                selector: (buildContext, settings) => settings.isViewFavorites,
-                builder: (context, isViewFavorites, child) => UiInput((isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing').tr(), key: ValueKey(isViewFavorites), isClearable: true, margin: EdgeInsets.only(left: 15, top: 15), showLabel: false, icon: LineIcons.search, type: UiInputType.SEARCH, controller: widget.searchController, focusNode: widget.searchFocusNode,),
+              child: UiInput(
+                widget.searchPlaceholder,
+                key: ValueKey(widget.searchPlaceholder),
+                isClearable: true,
+                margin: EdgeInsets.only(left: 15, top: 15),
+                showLabel: false,
+                icon: LineIcons.search,
+                type: UiInputType.SEARCH,
+                controller: widget.searchController,
+                focusNode: widget.searchFocusNode,
               ),
             ),
             SizedBox(width: 8,),

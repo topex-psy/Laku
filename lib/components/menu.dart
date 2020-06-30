@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:launch_review/launch_review.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 // import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import '../utils/widgets.dart';
 
 enum MenuNavVal {
   profile,
+  shop,
   feedback,
   settings,
   upgrade,
@@ -40,6 +42,9 @@ class _MenuNavContentState extends State<MenuNavContent> {
       case MenuNavVal.profile:
         a.openProfile();
         break;
+      case MenuNavVal.shop:
+        a.openMyShop();
+        break;
       case MenuNavVal.settings:
         // TODO ganti password, bind akun, hapus akun
         break;
@@ -58,7 +63,7 @@ class _MenuNavContentState extends State<MenuNavContent> {
   Widget build(BuildContext context) {
     final List<MenuNavItem> _menu = [
       MenuNavItem(value: MenuNavVal.upgrade, icon: LineIcons.certificate, teks: 'menu_upgrade'.tr()),
-      MenuNavItem(value: MenuNavVal.profile, icon: LineIcons.user, teks: 'menu_profile'.tr()),
+      MenuNavItem(value: MenuNavVal.shop, icon: MdiIcons.storefrontOutline, teks: 'menu_shop'.tr()),
       MenuNavItem(value: MenuNavVal.settings, icon: LineIcons.cog, teks: 'menu_settings'.tr()),
       MenuNavItem(value: MenuNavVal.feedback, icon: LineIcons.comment_o, teks: 'menu_feedback'.tr()),
       MenuNavItem(value: MenuNavVal.logout, icon: LineIcons.sign_out, teks: 'menu_logout'.tr()),
