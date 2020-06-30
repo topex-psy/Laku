@@ -275,12 +275,7 @@ class _ProfilState extends State<Profil> {
               Container(child: Center(child: UiLoader())),
               Column(
                 children: <Widget>[
-                  UiAppBar(
-                    "Profil Saya",
-                    icon: LineIcons.user,
-                    tool: _actionButton(),
-                    onBackPressed: _backPressed
-                  ),
+                  UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton(), onBackPressed: _backPressed),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.only(left: 20, right: 20, top: 15, bottom: 30,),

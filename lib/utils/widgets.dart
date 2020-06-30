@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -753,7 +754,7 @@ class UiDropImages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (listImages.isEmpty) return _getPlaceholder();
+    // if (listImages.isEmpty) return _getPlaceholder();
     List<Widget> _gridItems = listImages.map((asset) {
       return Container(
         padding: EdgeInsets.all(4.0),
@@ -786,6 +787,53 @@ class UiDropImages extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         crossAxisCount: 1,
         children: _gridItems,
+      ),
+    );
+  }
+}
+
+class UiSearchBar extends StatefulWidget {
+  UiSearchBar({Key key, this.tool, this.height, this.searchController, this.searchFocusNode}) : super(key: key);
+  final TextEditingController searchController;
+  final FocusNode searchFocusNode;
+  final Widget tool;
+  final double height;
+
+  @override
+  _UiSearchBarState createState() => _UiSearchBarState();
+}
+
+class _UiSearchBarState extends State<UiSearchBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: widget.height ?? (THEME_INPUT_HEIGHT + 32),
+      child: Material(
+        color: THEME_BACKGROUND,
+        elevation: 0,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: Selector<SettingsProvider, bool>(
+                selector: (buildContext, settings) => settings.isViewFavorites,
+                builder: (context, isViewFavorites, child) => UiInput((isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing').tr(), key: ValueKey(isViewFavorites), isClearable: true, margin: EdgeInsets.only(left: 15, top: 15), showLabel: false, icon: LineIcons.search, type: UiInputType.SEARCH, controller: widget.searchController, focusNode: widget.searchFocusNode,),
+              ),
+            ),
+            SizedBox(width: 8,),
+            IconButton(
+              padding: EdgeInsets.zero,
+              icon: Icon(Icons.sort),
+              color: Colors.grey[850],
+              tooltip: 'prompt_sort'.tr(),
+              onPressed: () {
+                // TODO show dialog
+              },
+            ),
+            widget.tool ?? SizedBox(),
+            SizedBox(width: 8,),
+          ],
+        ),
       ),
     );
   }

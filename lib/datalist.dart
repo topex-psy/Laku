@@ -158,12 +158,31 @@ class _DataListState extends State<DataList> {
     }
   }
 
+  _action(String action) {
+
+  }
+
+  Widget _actionButton() {
+    return Container(
+      height: double.infinity,
+      width: 60,
+      child: RaisedButton(
+        elevation: 0,
+        child: Icon(LineIcons.plus, size: 30,),
+        color: Colors.teal,
+        textColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        onPressed: () => _action('create'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final _title = _getTitle();
     return Scaffold(
       body: SafeArea(child: Column(children: <Widget>[
-        UiAppBar(_title.label, icon: _title.icon),
+        UiAppBar(_title.label, icon: _title.icon, tool: _actionButton(),),
         Expanded(
           child: SmartRefresher(
             enablePullDown: true,

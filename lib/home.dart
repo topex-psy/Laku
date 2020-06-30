@@ -71,8 +71,8 @@ class _HomeState extends State<Home> {
 
     final _listPages = <Page>[
       Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
-      Page(title: 'menu_browse'.tr(), icon: LineIcons.list_ul, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
-      Page(title: 'menu_user'.tr(), icon: LineIcons.users, content: Container(),),
+      Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
+      Page(title: 'menu_user'.tr(), icon: LineIcons.map_o, content: Container(),),
     ];
 
     final _listActions = <IconLabel>[
@@ -156,34 +156,42 @@ class _HomeState extends State<Home> {
           onPageChanged: _openPage,
         ),
         floatingActionButton: AnimatedSwitcher(
-          duration: Duration(milliseconds: 500),
-          switchInCurve: Curves.easeInBack,
-          switchOutCurve: Curves.easeOutBack,
-          transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
+          duration: Duration(milliseconds: 1000),
+          switchInCurve: Curves.easeOutBack,
+          switchOutCurve: Curves.linear,
+          // transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            final  offsetAnimation = Tween<Offset>(begin: Offset(1, 0), end: Offset(0, 0)).animate(animation);
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
           child: _selectedIndex > 0 ? SizedBox() : FabCircularMenu(
             fabOpenIcon: Icon(LineIcons.plus, color: Colors.white,),
             fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
             fabOpenColor: Colors.red[400],
             fabCloseColor: Colors.teal[400],
-            ringColor: Colors.white,
+            ringColor: Colors.white.withOpacity(.9),
             ringWidth: 100,
             ringDiameter: 300,
-            children: _listActions.map((action) {
-              return Material(
+            children: _listActions.asMap().map((i, action) {
+              return MapEntry(i, Material(
                 shape: CircleBorder(),
                 color: Colors.teal.withOpacity(.3),
                 clipBehavior: Clip.antiAlias,
                 child: IconButton(
                   padding: EdgeInsets.all(20),
                   icon: Icon(action.icon),
+                  iconSize: 32.0 - 4 * i,
                   color: THEME_COLOR,
                   tooltip: action.label,
                   onPressed: () {
                     _action(action.value);
                   }
                 ),
-              );
-            }).toList(),
+              ));
+            }).values.toList(),
           ),
         ),
         bottomNavigationBar: Stack(

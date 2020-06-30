@@ -35,6 +35,7 @@ class _PasangState extends State<Pasang> {
   var _errorText = <String, String>{};
   var _listKelompok = <IklanKelompokModel>[];
   var _listKategori = <IklanKategoriModel>[];
+  var _listJarakAntar = ["100m", "500m", "< 1km", "< 2km", "< 5km", "< 10km"];
   var _stepIndex = 0;
 
   final _formKey = GlobalKey<FormState>();
@@ -43,8 +44,8 @@ class _PasangState extends State<Pasang> {
     IconLabel(LineIcons.search, "Cari Sesuatu", value: 'WTB'),
   ];
   final _listKondisi = <IconLabel>[
-    IconLabel(LineIcons.check_circle, "Baru", value: 'new'),
-    IconLabel(LineIcons.check_circle_o, "Bekas", value: 'used'),
+    IconLabel(LineIcons.check_circle_o, "Baru", value: 'new'),
+    IconLabel(LineIcons.warning, "Bekas", value: 'used'),
   ];
   final _listSteps = <IconLabel>[
     IconLabel(LineIcons.edit, "Detail Iklan"),
@@ -64,6 +65,8 @@ class _PasangState extends State<Pasang> {
   var _tipe = "WTS";
   var _kondisi = "new";
   var _isNegotiable = false;
+  var _isDeliverable = false;
+  String _jarakAntar;
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) setState(() {
@@ -158,6 +161,8 @@ class _PasangState extends State<Pasang> {
     }
   }
 
+  int get _selectedPicsTotal => _imagesEdit.length + _images.length;
+
   _pickImages() async {
     if (_imagesEdit.length + _images.length == _tier.maxListingPic) {
       h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak ${_tier.maxListingPic} foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
@@ -165,7 +170,7 @@ class _PasangState extends State<Pasang> {
     }
     var resultList = <Asset>[];
     try {
-      resultList = await MultiImagePicker.pickImages(maxImages: _tier.maxListingPic - _imagesEdit.length - _images.length, enableCamera: true);
+      resultList = await MultiImagePicker.pickImages(maxImages: _tier.maxListingPic - _selectedPicsTotal, enableCamera: true);
     } on Exception catch (e) {
       print("PICK IMAGES ERROOOOOOOOOOOOOOOOOR: $e");
     }
@@ -350,12 +355,98 @@ class _PasangState extends State<Pasang> {
   }
 
   String get _title {
-    return _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => null)?.label ?? _listTipe.first.label;
+    // return _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => null)?.label ?? _listTipe.first.label;
+    return _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => _listTipe.first).label;
   }
 
-  bool get _isPriceable => _kelompok?.isPriceable ?? false; // jual-beli, jasa
-  bool get _isConditionable => _kelompok?.id == 1 ?? false; // jual-beli
+  bool get _isBuyAndSell => _kelompok?.id == 1 ?? false; // jual-beli
   bool get _isScheduleable => _kelompok?.isScheduleable ?? false; // acara, loker
+
+  Widget get _inputPrice {
+    var _isPriceable = _kelompok?.isPriceable ?? false; // jual-beli, jasa
+    return _isPriceable ? Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        // Text("Harga:", style: style.textLabel),
+        RichText(text: TextSpan(
+          style: Theme.of(context).textTheme.bodyText1,
+          children: <TextSpan>[
+            TextSpan(text: 'Harga: ', style: style.textLabel),
+            TextSpan(text: '(Opsional)', style: style.textLabelGrey),
+          ],
+        ),),
+        SizedBox(height: 8,),
+        Row(
+          children: <Widget>[
+            Expanded(child: UiInput("Harga", showLabel: false, icon: LineIcons.tag, type: UiInputType.CURRENCY, controller: _hargaController, focusNode: _hargaFocusNode, error: _errorText["harga"],)),
+            Container(
+              width: 150,
+              child: CheckboxListTile(
+                activeColor: Colors.green,
+                controlAffinity: ListTileControlAffinity.leading,
+                dense: true,
+                title: Text("Bisa nego"),
+                value: _isNegotiable,
+                onChanged: (val) {
+                  setState(() { _isNegotiable = val; });
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    ) : SizedBox();
+  }
+
+  Widget get _inputCondition {
+    return _isBuyAndSell ? Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text("Kondisi:", style: style.textLabel),
+        SizedBox(height: 8.0,),
+        UiToggleButton(
+          height: 45.0,
+          listItem: _listKondisi,
+          currentValue: _kondisi,
+          onSelect: (int index) {
+            setState(() {
+              _kondisi = _listKondisi[index].value;
+            });
+          },
+        ),
+        SizedBox(height: 12,),
+      ],
+    ) : SizedBox();
+  }
+
+  Widget get _inputDelivery {
+    var _isPriceable = _kelompok?.isPriceable ?? false; // jual-beli, jasa
+    var _what = _isBuyAndSell ? "Antar" : "Datang";
+    return _isPriceable ? Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text("Layanan $_what:", style: style.textLabel),
+        SizedBox(height: 8.0,),
+        CheckboxListTile(
+          activeColor: Colors.green,
+          controlAffinity: ListTileControlAffinity.leading,
+          dense: true,
+          title: Text("Bisa ${_what.toLowerCase()}"),
+          value: _isDeliverable,
+          onChanged: (val) {
+            setState(() { _isDeliverable = val; });
+          },
+        ),
+        _isDeliverable ? UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
+          setState(() { _jarakAntar = val; });
+        },) : SizedBox(),
+        SizedBox(height: 12,),
+      ],
+    ) : SizedBox();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +495,13 @@ class _PasangState extends State<Pasang> {
                             ),
                             SizedBox(height: 12,),
 
-                            Text("Foto:", style: style.textLabel),
+                            RichText(text: TextSpan(
+                              style: Theme.of(context).textTheme.bodyText1,
+                              children: <TextSpan>[
+                                TextSpan(text: 'Foto: ', style: style.textLabel),
+                                TextSpan(text: _tier == null ? '' : '$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textLabelGrey),
+                              ],
+                            ),),
                             SizedBox(height: 8.0,),
                             UiDropImages(
                               onTap: _pickImages,
@@ -419,53 +516,11 @@ class _PasangState extends State<Pasang> {
 
                             UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
 
-                            _isPriceable ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                RichText(text: TextSpan(
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                  children: <TextSpan>[
-                                    TextSpan(text: 'Harga: ', style: style.textLabel),
-                                    TextSpan(text: '(Opsional)', style: style.textLabelGrey),
-                                  ],
-                                ),),
-                                SizedBox(height: 8,),
-                                Row(
-                                  children: <Widget>[
-                                    Expanded(child: UiInput("Harga", showLabel: false, icon: LineIcons.tag, type: UiInputType.CURRENCY, controller: _hargaController, focusNode: _hargaFocusNode, error: _errorText["harga"],)),
-                                    Container(
-                                      width: 150,
-                                      child: CheckboxListTile(
-                                        activeColor: Colors.green,
-                                        controlAffinity: ListTileControlAffinity.leading,
-                                        dense: true,
-                                        title: Text("Bisa nego"),
-                                        value: _isNegotiable,
-                                        onChanged: (val) {
-                                          setState(() { _isNegotiable = val; });
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            _inputPrice,
 
-                                Text("Kondisi:", style: style.textLabel),
-                                SizedBox(height: 8.0,),
-                                UiToggleButton(
-                                  height: 45.0,
-                                  listItem: _listKondisi,
-                                  currentValue: _kondisi,
-                                  onSelect: (int index) {
-                                    setState(() {
-                                      _kondisi = _listKondisi[index].value;
-                                    });
-                                  },
-                                ),
-                                SizedBox(height: 12,),
+                            _inputCondition,
 
-                              ],
-                            ) : SizedBox(),
+                            _inputDelivery,
 
                             // TODO _isScheduleable
 
@@ -479,11 +534,6 @@ class _PasangState extends State<Pasang> {
                           SizedBox(height: 30,),
                           UiButton(_stepIndex == 0 ? "Selanjutnya" : "Pasang Iklan", height: style.heightButtonL, color: Colors.green, icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
 
-                          // Text("Kategori:", style: style.textLabel,),
-                          // SizedBox(height: 8,),
-                          // UiSelect(icon: MdiIcons.fromString(_kategori?.icon ?? 'viewList'), listMenu: _listKategori, initialValue: _kategori, placeholder: "Pilih kategori", onSelect: (val) {
-                          //   setState(() { _kategori = val; });
-                          // },),
                           SizedBox(height: 20,),
                         ],)
                       ),

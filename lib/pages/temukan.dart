@@ -288,54 +288,30 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
             animation: _animationController, builder: (context, child) {
               return Transform.translate(
                 offset: Offset(0, -toolbarHeight * _animation.value),
-                child: Container(
+                child: UiSearchBar(
+                  searchController: _searchController,
+                  searchFocusNode: _searchFocusNode,
                   height: toolbarHeight,
-                  child: Material(
-                    color: THEME_BACKGROUND,
-                    elevation: 0,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Expanded(
-                          child: Selector<SettingsProvider, bool>(
-                            selector: (buildContext, settings) => settings.isViewFavorites,
-                            builder: (context, isViewFavorites, child) => UiInput((isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing').tr(), key: ValueKey(isViewFavorites), isClearable: true, margin: EdgeInsets.only(left: 15, top: 15), showLabel: false, icon: LineIcons.search, type: UiInputType.SEARCH, controller: _searchController, focusNode: _searchFocusNode,),
-                          ),
-                        ),
-                        SizedBox(width: 8,),
-                        IconButton(
+                  tool: Consumer<SettingsProvider>(
+                    builder: (context, settings, child) {
+                      return Material(
+                        color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
+                        shape: CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: IconButton(
                           padding: EdgeInsets.zero,
-                          icon: Icon(Icons.sort),
-                          color: Colors.grey[850],
-                          tooltip: 'prompt_sort'.tr(),
+                          icon: Icon(settings.isViewFavorites ? LineIcons.heart : LineIcons.heart_o),
+                          color: settings.isViewFavorites ? Colors.pink : Colors.grey[850],
+                          tooltip: 'menu_favorites'.tr(),
                           onPressed: () {
-                            // TODO show dialog
+                            settings.setSettings(isViewFavorites: !settings.isViewFavorites);
+                            _getAllData();
                           },
-                        ),
-                        Consumer<SettingsProvider>(
-                          builder: (context, settings, child) {
-                            return Material(
-                              color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
-                              shape: CircleBorder(),
-                              clipBehavior: Clip.antiAlias,
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                icon: Icon(settings.isViewFavorites ? LineIcons.heart : LineIcons.heart_o),
-                                color: settings.isViewFavorites ? Colors.pink : Colors.grey[850],
-                                tooltip: 'menu_favorites'.tr(),
-                                onPressed: () {
-                                  settings.setSettings(isViewFavorites: !settings.isViewFavorites);
-                                  _getAllData();
-                                },
-                              ).pulseIt(pulse: settings.isViewFavorites).withBadge(settings.notif?.iklanFavorit),
-                            );
-                          },
-                        ),
-                        SizedBox(width: 8,),
-                      ],
-                    ),
+                        ).pulseIt(pulse: settings.isViewFavorites).withBadge(settings.notif?.iklanFavorit),
+                      );
+                    },
                   ),
-                ),
+                )
               );
             }
           ),
