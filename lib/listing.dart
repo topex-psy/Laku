@@ -1,12 +1,16 @@
 import 'dart:math';
 
+import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
+import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'extensions/widget.dart';
+import 'models/basic.dart';
 import 'models/iklan.dart';
 import 'utils/constants.dart';
+import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
 
 class Listing extends StatefulWidget {
@@ -22,6 +26,12 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
   ScrollController _scrollController;
   TabController _tabController;
 
+  final _listActions = <IconLabel>[
+    IconLabel(MdiIcons.phone, "Telepon"),
+    IconLabel(MdiIcons.handshake, "COD"),
+    IconLabel(MdiIcons.message, "Chat"),
+  ];
+
   bool get isShrink => _scrollController.hasClients && _scrollController.offset > (200 - kToolbarHeight);
   // Color _titleColor = HSLColor.fromAHSL(1, 1, 1, 0).toColor();
   double _titleOpacity = 0.0;
@@ -35,6 +45,10 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
         _titleOpacity = opacity;
       });
     }
+  }
+
+  _action(String action) {
+    // TODO chat, telepon
   }
 
   @override
@@ -85,17 +99,19 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                         height: 150.0,
                         width: MediaQuery.of(context).size.width,
                         child: Carousel(
-                          images: _item.foto.map((pic) {
-                            return NetworkImage(pic.foto);
-                          }).toList(),
+                          images: _item.foto.map((pic) => GestureDetector(
+                            onTap: () => h.viewImage(_item.foto, page: _item.foto.indexOf(pic)),
+                            child: FadeInImage.assetNetwork(
+                              placeholder: IMAGE_DEFAULT_NONE,
+                              image: pic.foto,
+                              fit: BoxFit.cover,
+                            ),
+                          ),).toList(),
+                          dotSize: 8.0,
+                          dotSpacing: 20.0,
+                          dotBgColor: Colors.transparent,
                         )
                       ),),
-                      // Positioned.fill(child: CachedNetworkImage(
-                      //   imageUrl: Uri.encodeFull('https://img.freepik.com/free-vector/abstract-colorful-flow-shapes-background_23-2148258092.jpg?size=626&ext=jpg'),
-                      //   placeholder: (context, url) => Container(child: Center(child: SizedBox(width: 100, height: 100, child: Padding(padding: EdgeInsets.all(50), child: CircularProgressIndicator())))),
-                      //   errorWidget: (context, url, error) => Container(child: Center(child: SizedBox(width: 100, height: 100, child: Icon(Icons.error, color: Colors.grey,)))),
-                      //   fit: BoxFit.cover,
-                      // ),),
                       Positioned.fill(child: IgnorePointer(child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -137,7 +153,15 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                 children: <Widget>[
                   // tab 1: detail iklan
                   SingleChildScrollView(padding: EdgeInsets.all(THEME_PADDING), child: Column(children: <Widget>[
-
+                    Text(_item.judul, style: style.textHeadline),
+                    SizedBox(height: 8,),
+                    Row(children: <Widget>[
+                      Text("Kategori:"),
+                      SizedBox(width: 4,),
+                      Expanded(child: Text(_item.kategori, style: style.textLabel,),),
+                    ],),
+                    SizedBox(height: 16,),
+                    Text(_item.deskripsi, style: style.textMuted),
                   ])),
                   // tab 2: peta
                   SingleChildScrollView(padding: EdgeInsets.all(THEME_PADDING), child: Column(children: <Widget>[
@@ -152,6 +176,32 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FabCircularMenu(
+        fabOpenIcon: Icon(MdiIcons.message, color: Colors.white,),
+        fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
+        fabOpenColor: Colors.red[400],
+        fabCloseColor: Colors.teal[400],
+        ringColor: Colors.white.withOpacity(.9),
+        ringWidth: 100,
+        ringDiameter: 300,
+        children: _listActions.asMap().map((i, action) {
+          return MapEntry(i, Material(
+            shape: CircleBorder(),
+            color: Colors.teal.withOpacity(.3),
+            clipBehavior: Clip.antiAlias,
+            child: IconButton(
+              padding: EdgeInsets.all(20),
+              icon: Icon(action.icon),
+              iconSize: 32.0 - 4 * i,
+              color: THEME_COLOR,
+              tooltip: action.label,
+              onPressed: () {
+                _action(action.value);
+              }
+            ),
+          ));
+        }).values.toList(),
       ),
     );
   }
