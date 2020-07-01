@@ -214,12 +214,7 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
               tooltip: item.isFavorit ? "Hapus favorit" : "Tambahkan ke favorit",
               onPressed: () async {
                 print("tap fav: ${item.id}");
-                var favApi = await api('listing', sub1: 'fav', type: 'post', data: {
-                  'uid': userSession.uid,
-                  'mode': item.isFavorit ? 'del' : 'add',
-                  'id': item.id
-                });
-                if (favApi.isSuccess) {
+                if (await a.favListing(item.id, item.isFavorit ? 'del' : 'add')) {
                   final settings = Provider.of<SettingsProvider>(context, listen: false);
                   setState(() {
                     if (settings.isViewFavorites) _listItemFiltered.remove(item);
@@ -287,10 +282,11 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
                       searchFocusNode: _searchFocusNode,
                       searchPlaceholder: (settings.isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing').tr(),
                       height: toolbarHeight,
-                      tool: Material(
-                        color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
-                        shape: CircleBorder(),
-                        clipBehavior: Clip.antiAlias,
+                      tool: Container(
+                        decoration: BoxDecoration(
+                          color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,
+                          shape: BoxShape.circle
+                        ),
                         child: IconButton(
                           padding: EdgeInsets.zero,
                           icon: Icon(settings.isViewFavorites ? LineIcons.heart : LineIcons.heart_o),

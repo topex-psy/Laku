@@ -497,8 +497,10 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
       SingleChildScrollView(
         physics: NeverScrollableScrollPhysics(),
         scrollDirection: Axis.horizontal,
+        reverse: true,
         child: Transform.scale(
-          scale: .7,
+          scale: .8,
+          origin: Offset((MediaQuery.of(context).size.width - 60) / 2, 0),
           child: CodeInput(
             length: SMS_CODE_LENGTH,
             keyboardType: TextInputType.number,
@@ -518,11 +520,11 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
         },
         child: Padding(
           padding: EdgeInsets.all(4),
-          child: Text("Tidak menerima SMS?", style: style.textWhite,),
+          child: Text("Tidak menerima SMS?", style: style.textWhiteB,),
         ),
       ) : Padding(
         padding: EdgeInsets.all(4),
-        child: UiCountdown("Mengirim SMS", duration: RESEND_CODE_TIMEOUT, onFinish: () {
+        child: UiCountdown("Mengirim SMS verifikasi", duration: RESEND_CODE_TIMEOUT, onFinish: () {
           setState(() {
             _showResend = true;
           });

@@ -49,6 +49,7 @@ dependencies:
   multi_image_picker: ^4.6.7
   permission_handler: ^5.0.1
   wakelock: ^0.1.4+1
+  vibration: ^1.4.0
 
   # ui
   auto_size_text: ^2.1.0

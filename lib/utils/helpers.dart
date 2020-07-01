@@ -93,6 +93,15 @@ class UserHelper {
     return results;
   }
 
+  Future<bool> favListing(int id, String mode) async {
+    var favApi = await api('listing', sub1: 'fav', type: 'post', data: {
+      'uid': userSession.uid,
+      'mode': mode,
+      'id': id
+    });
+    return favApi.isSuccess;
+  }
+
   Future<FirebaseUser> firebaseLoginEmailPassword(String email, String password) async {
     if (email.isEmptyOrNull || password.isEmptyOrNull) return null;
     FirebaseUser user;
@@ -395,10 +404,10 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan notifikasi flashbar sukses
-  showFlashbarSuccess(String title, String message, {int duration = 5000}) {
+  showFlashbarSuccess(String title, String message, {int duration = 5000, IconData icon, Color iconColor}) {
     showFlashBar(title, message, duration: duration, showDismiss: false, icon: Padding(
-      padding: EdgeInsets.only(left: 15, right: 4),
-      child: Icon(LineIcons.check_circle, color: Colors.green, size: 40,),
+      padding: EdgeInsets.only(left: 15, right: 8),
+      child: Icon(icon ?? LineIcons.check_circle, color: iconColor ?? Colors.green, size: 40,),
     ));
   }
 

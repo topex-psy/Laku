@@ -29,5 +29,7 @@
   "prompt_more": "View all",
   "prompt_search_listing": "Search listing",
   "prompt_search_favorites": "Search favorites",
-  "prompt_sort": "Sort"
+  "prompt_sort": "Sort",
+  "new": "New",
+  "used": "Used"
 }

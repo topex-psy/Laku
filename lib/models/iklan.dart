@@ -91,6 +91,12 @@ class IklanModel {
     this.idShop,
     @required this.judul,
     @required this.deskripsi,
+    this.kondisi,
+    this.harga,
+    this.isNego,
+    this.layananAntar,
+    this.jadwalMulai,
+    this.jadwalAkhir,
     this.keyword,
     this.tipe,
     this.kategori,
@@ -112,6 +118,12 @@ class IklanModel {
   final int idShop;
   final String judul;
   final String deskripsi;
+  final String kondisi;
+  final double harga;
+  final bool isNego;
+  final String layananAntar;
+  final DateTime jadwalMulai;
+  final DateTime jadwalAkhir;
   final String keyword;
   final String tipe;
   final String kategori;
@@ -140,7 +152,13 @@ class IklanModel {
     idShop = int.parse(parsedJson['ID_USER_LOCATION']),
     judul = parsedJson['JUDUL'],
     deskripsi = parsedJson['DESKRIPSI'],
+    kondisi = parsedJson['KONDISI'],
     keyword = parsedJson['KEYWORD'],
+    harga = double.parse(parsedJson['HARGA'] ?? '0.0'),
+    isNego = int.parse(parsedJson['IS_NEGO'] ?? '0') == 1,
+    layananAntar = parsedJson['LAYANAN_ANTAR'],
+    jadwalMulai = parsedJson['JADWAL_MULAI'] == null ? null : DateTime.parse(parsedJson['JADWAL_MULAI']),
+    jadwalAkhir = parsedJson['JADWAL_AKHIR'] == null ? null : DateTime.parse(parsedJson['JADWAL_AKHIR']),
     tipe = parsedJson['TIPE'],
     kategori = parsedJson['JUDUL_KATEGORI'],
     waktu = DateTime.parse(parsedJson['TIMEE']),

@@ -5,12 +5,13 @@ import 'package:firebase_analytics/observer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:laku/models/basic.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
+import 'package:vibration/vibration.dart';
 import 'components/menu.dart';
+import 'models/basic.dart';
 import 'pages/beranda.dart';
 import 'pages/temukan.dart';
 import 'providers/person.dart';
@@ -63,6 +64,14 @@ class _HomeState extends State<Home> {
       final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action ?? 'WTS'}) as Map;
       print(" ... ROUTE PASANG result: $results");
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Vibration.vibrate();
+    });
   }
 
   @override

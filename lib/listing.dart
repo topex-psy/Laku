@@ -4,6 +4,8 @@ import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/material.dart';
 // import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:laku/utils/widgets.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'extensions/widget.dart';
@@ -22,10 +24,11 @@ class Listing extends StatefulWidget {
 }
 
 class _ListingState extends State<Listing> with TickerProviderStateMixin {
-  var _tabs = <String>['Detail', 'Lokasi', 'Pelapak'];
+  var _tabs = <String>['Detail', 'Ulasan', 'Pelapak'];
   ScrollController _scrollController;
   TabController _tabController;
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _listActions = <IconLabel>[
     IconLabel(MdiIcons.phone, "Telepon"),
     IconLabel(MdiIcons.handshake, "COD"),
@@ -51,6 +54,21 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
     // TODO chat, telepon
   }
 
+  _favorit() async {
+    final IklanModel _item = widget.args['item'];
+    if (await a.favListing(_item.id, _item.isFavorit ? 'del' : 'add')) {
+      if (_item.isFavorit) {
+        h.showFlashBar("Favorit Dihapus!", "Iklan ini berhasil dihapus dari daftar favorit!", actionLabel: "Undo", action: _favorit);
+      } else {
+        h.showFlashbarSuccess("Favorit Ditambahkan!", "Iklan ini berhasil ditambahkan ke daftar favorit!");
+      }
+      setState(() {
+        _item.toggleFav();
+      });
+      a.loadNotif();
+    }
+  }
+
   @override
   void initState() {
     _tabController = TabController(vsync: this, length: _tabs.length, initialIndex: 0);
@@ -74,6 +92,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final IklanModel _item = widget.args['item'];
     return Scaffold(
+      key: _scaffoldKey,
       body: SafeArea(
         child: DefaultTabController(
           length: _tabs.length,
@@ -107,6 +126,9 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                               fit: BoxFit.cover,
                             ),
                           ),).toList(),
+                          autoplay: true,
+                          autoplayDuration: Duration(milliseconds: 8000),
+                          animationDuration: Duration(milliseconds: 800),
                           dotSize: 8.0,
                           dotSpacing: 20.0,
                           dotBgColor: Colors.transparent,
@@ -140,7 +162,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                       controller: _tabController,
                       labelColor: Colors.black87,
                       unselectedLabelColor: Colors.grey,
-                      tabs: _tabs.map((label) => Tab(text: label)).toList(),
+                      tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
                     ),
                   ),
                   pinned: true,
@@ -152,18 +174,84 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                 controller: _tabController,
                 children: <Widget>[
                   // tab 1: detail iklan
-                  SingleChildScrollView(padding: EdgeInsets.all(THEME_PADDING), child: Column(children: <Widget>[
-                    Text(_item.judul, style: style.textHeadline),
-                    SizedBox(height: 8,),
-                    Row(children: <Widget>[
-                      Text("Kategori:"),
-                      SizedBox(width: 4,),
-                      Expanded(child: Text(_item.kategori, style: style.textLabel,),),
+                  SingleChildScrollView(padding: EdgeInsets.all(20), child: Column(children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Expanded(child: Text(_item.judul, style: style.textHeadline)),
+                        SizedBox(width: 8,),
+                        _item.layananAntar == null ? SizedBox() : Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(LineIcons.truck, color: Colors.teal),
+                            SizedBox(height: 2,),
+                            Text(_item.layananAntar, textAlign: TextAlign.center, style: style.textS,)
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 16.0),
+                          child: IconButton(icon: Icon(_item.isFavorit ? LineIcons.heart : LineIcons.heart_o), color: Colors.pink, onPressed: _favorit,),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 16,),
+                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Text("Kategori:"),
+                                SizedBox(width: 4,),
+                                Expanded(child: Text(_item.kategori, style: style.textLabel,)),
+                              ],
+                            ),
+                            _item.kondisi == null ? SizedBox() : Padding(
+                              padding: EdgeInsets.only(top: 2.0),
+                              child: Row(
+                                children: <Widget>[
+                                  Text("Kondisi:"),
+                                  SizedBox(width: 4,),
+                                  Expanded(child: Text(_item.kondisi.tr(), style: style.textLabel,)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _item.harga == 0 ? Container() : Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(f.formatPrice(_item.harga), style: style.textWhiteB),
+                            ),
+                            _item.isNego ? Padding(
+                              padding: EdgeInsets.only(top: 4),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Text("Bisa nego"),
+                                  SizedBox(width: 2,),
+                                  Icon(LineIcons.check_circle, size: 20, color: Colors.green,)
+                                ],
+                              ),
+                            ) : SizedBox()
+                          ],
+                        ),
+                      ),
                     ],),
                     SizedBox(height: 16,),
-                    Text(_item.deskripsi, style: style.textMuted),
+                    Text(_item.deskripsi),
                   ])),
-                  // tab 2: peta
+                  // tab 2: ulasan
                   SingleChildScrollView(padding: EdgeInsets.all(THEME_PADDING), child: Column(children: <Widget>[
 
                   ])),
@@ -186,20 +274,29 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
         ringWidth: 100,
         ringDiameter: 300,
         children: _listActions.asMap().map((i, action) {
-          return MapEntry(i, Material(
-            shape: CircleBorder(),
-            color: Colors.teal.withOpacity(.3),
-            clipBehavior: Clip.antiAlias,
-            child: IconButton(
-              padding: EdgeInsets.all(20),
-              icon: Icon(action.icon),
-              iconSize: 32.0 - 4 * i,
-              color: THEME_COLOR,
-              tooltip: action.label,
-              onPressed: () {
-                _action(action.value);
-              }
-            ),
+          return MapEntry(i, Stack(
+            alignment: Alignment.bottomCenter,
+            children: <Widget>[
+              Material(
+                shape: CircleBorder(),
+                color: Colors.teal.withOpacity(.3),
+                clipBehavior: Clip.antiAlias,
+                child: IconButton(
+                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 12),
+                  icon: Icon(action.icon),
+                  iconSize: 32.0 - 4 * i,
+                  color: THEME_COLOR,
+                  tooltip: action.label,
+                  onPressed: () {
+                    _action(action.value);
+                  }
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 12.0),
+                child: Text(action.label, textAlign: TextAlign.center, style: TextStyle(color: Colors.teal, fontSize: 12),),
+              )
+            ],
           ));
         }).values.toList(),
       ),

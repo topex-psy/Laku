@@ -21,6 +21,7 @@ final textMuted      = TextStyle(color: Colors.grey);
 final textMutedS     = TextStyle(fontSize: 12, color: Colors.grey);
 final textMutedM     = TextStyle(fontSize: 13, color: Colors.grey);
 final textWhite      = TextStyle(color: Colors.white);
+final textWhiteB     = TextStyle(color: Colors.white, fontWeight: FontWeight.bold);
 final textWhiteS     = TextStyle(fontSize: 12, color: Colors.white);
 final textWhite54S   = TextStyle(fontSize: 12, color: Colors.white54);
 final textWhite70S   = TextStyle(fontSize: 12, color: Colors.white70);
