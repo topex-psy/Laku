@@ -1241,7 +1241,7 @@ class UiCaption extends StatelessWidget {
       child: IconButton(
         iconSize: 32.0,
         color: Colors.white,
-        icon: Icon(LineIcons.arrow_left),
+        icon: Icon(MdiIcons.chevronLeft),
         onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
       ),
     ) : (steps[currentIndex].icon == null ? SizedBox() : Padding(
@@ -1260,11 +1260,7 @@ class UiCaption extends StatelessWidget {
           child: Text(
             title ?? steps[currentIndex].label,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 15.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white
-            ),
+            style: style.textCaptionWhite,
           ),
         ),
         // Spacer(),

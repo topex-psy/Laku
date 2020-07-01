@@ -3,6 +3,8 @@ import 'constants.dart';
 
 final textTitle      = TextStyle(fontWeight: FontWeight.bold, fontSize: 17);
 final textTitleWhite = TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white);
+final textCaption    = TextStyle(fontWeight: FontWeight.bold, fontSize: 15);
+final textCaptionWhite = TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white);
 final textHeadline   = TextStyle(fontWeight: FontWeight.bold, fontSize: 20);
 final textHeadlineWhite = TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
 final textHeadlineL  = TextStyle(fontWeight: FontWeight.bold, fontSize: 24);
