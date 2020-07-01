@@ -10,6 +10,7 @@ import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
+import 'package:laku/models/iklan.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
@@ -712,18 +713,20 @@ class _UiCountdownState extends State<UiCountdown> {
 class UiDropImages extends StatelessWidget {
   UiDropImages({
     Key key,
-    this.onTap,
+    this.onPickImage,
+    this.onTapImage,
     this.onDeleteImage,
     this.listImages = const [],
-    this.maxImages,
+    this.maxImages = IMAGE_UPLOAD_MAX,
     this.height = 100.0
   }) : super(key: key);
   
-  final VoidCallback onTap;
-  final void Function(Asset) onDeleteImage;
+  final VoidCallback onPickImage;
+  final void Function(dynamic) onTapImage;
+  final void Function(dynamic) onDeleteImage;
   final double height;
   final int maxImages;
-  final List<Asset> listImages;
+  final List<dynamic> listImages;
 
   Widget _getPlaceholder({double width = double.infinity}) {
     return Container(
@@ -745,11 +748,17 @@ class UiDropImages extends StatelessWidget {
             splashColor: style.colorSplash,
             highlightColor: style.colorSplash,
             child: Center(child: Icon(MdiIcons.cameraPlusOutline, color: Colors.blueGrey[100], size: 50,),),
-            onTap: onTap,
+            onTap: onPickImage,
           ),
         )
       ),
     );
+  }
+
+  Widget _getImage(asset) {
+    if (asset is Asset) return AssetThumb(asset: asset, width: 300, height: 300,);
+    if (asset is IklanPicModel) return Image.network(asset.foto, width: 300, height: 300, fit: BoxFit.cover,);
+    return Image.network(asset, width: 300, height: 300, fit: BoxFit.cover,);
   }
 
   @override
@@ -761,8 +770,14 @@ class UiDropImages extends StatelessWidget {
         child: Stack(
           alignment: Alignment.topRight,
           children: <Widget>[
-            ClipRRect(borderRadius: BorderRadius.circular(8.0), child: AssetThumb(asset: asset, width: 300, height: 300,)),
             GestureDetector(
+              onTap: onTapImage == null ? null : () => onTapImage(asset),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: _getImage(asset),
+              ),
+            ),
+            onDeleteImage == null ? Container() : GestureDetector(
               onTap: () => onDeleteImage(asset),
               child: Padding(
                 padding: EdgeInsets.all(4.0),
@@ -777,7 +792,7 @@ class UiDropImages extends StatelessWidget {
       );
     }).toList();
 
-    if (listImages.length < maxImages)
+    if (listImages.length < maxImages && onPickImage != null)
       for (var i = 0; i < maxImages - listImages.length; i++)
         _gridItems.add(_getPlaceholder(width: height));
 
@@ -1241,8 +1256,19 @@ class UiCaption extends StatelessWidget {
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
         icon,
-        Text(title ?? steps[currentIndex].label, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.white),),
-        Spacer(),
+        Expanded(
+          child: Text(
+            title ?? steps[currentIndex].label,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 15.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.white
+            ),
+          ),
+        ),
+        // Spacer(),
+        SizedBox(width: 12,),
         hideSteps ? SizedBox() : Padding(
           padding: EdgeInsets.only(right: 12),
           child: Row(

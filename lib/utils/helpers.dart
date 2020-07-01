@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash/flash.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:laku/models/iklan.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
@@ -83,6 +84,12 @@ class UserHelper {
     final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'});
     print(" ... ROUTE MY SHOP result: $results");
     if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
+    return results;
+  }
+
+  Future<dynamic> openListing(IklanModel item) async {
+    final results = await Navigator.of(context).pushNamed(ROUTE_LISTING, arguments: {'item': item});
+    print(" ... ROUTE LISTING result: $results");
     return results;
   }
 
@@ -411,8 +418,8 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan single image
-  viewImage(dynamic image) {
-    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': image});
+  viewImage(dynamic image, {int page = 0}) {
+    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': image, 'page': page});
   }
 
   /// fungsi yang mengembalikan teks versi html

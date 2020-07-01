@@ -14,6 +14,7 @@ import 'login.dart';
 import 'register.dart';
 import 'datalist.dart';
 import 'home.dart';
+import 'listing.dart';
 import 'pasang.dart';
 import 'peta.dart';
 import 'profil.dart';
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget {
             case ROUTE_DATA:     page = DataList(arguments); break;
             case ROUTE_IMAGE:    page = ImageViewer(arguments); break;
             case ROUTE_OTP:      page = Verifikasi(arguments); break;
+            case ROUTE_LISTING:  page = Listing(arguments); break;
           }
 
           // return MaterialPageRoute(settings: settings, builder: (_) => page);

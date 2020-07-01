@@ -504,8 +504,8 @@ class _PasangState extends State<Pasang> {
                             ),),
                             SizedBox(height: 8.0,),
                             UiDropImages(
-                              onTap: _pickImages,
-                              onDeleteImage: (Asset asset) => setState(() { _images.remove(asset); }),
+                              onPickImage: _pickImages,
+                              onDeleteImage: (asset) => setState(() { _images.remove(asset); }),
                               listImages: _images,
                               maxImages: _tier?.maxListingPic,
                               height: 200,
