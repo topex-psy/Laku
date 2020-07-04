@@ -16,6 +16,7 @@ import 'pages/broadcast.dart';
 import 'pages/profil.dart';
 import 'pages/temukan.dart';
 import 'providers/person.dart';
+import 'providers/settings.dart';
 import 'utils/constants.dart';
 import 'utils/curves.dart';
 import 'utils/helpers.dart';
@@ -48,6 +49,7 @@ class _HomeState extends State<Home> {
     IconLabel(MdiIcons.bullhorn, "Broadcast", value: 'WTB', color: Colors.yellow),
   ];
 
+  // UserSetupModel _userSetup;
 
   var _selectedIndex = 0;
   var _isWillExit = false;
@@ -104,7 +106,12 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // var setupApi = await api('user_setup', data: { 'uid': userSession.uid });
+      // setState(() {
+      //   _userSetup = UserSetupModel.fromJson(setupApi.result.first);
+      //   _isPopNotif = true;
+      // });
       Vibration.vibrate(duration: 200, amplitude: 1);
     });
   }
@@ -181,11 +188,17 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20,),
-                  Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
-                    UiFlatButton(LineIcons.bullhorn, "5 broadcast", () => _action('broadcast')),
-                    UiFlatButton(LineIcons.tags, "12 tiket", () => _action('WTB')),
-                  ],),
+                  Consumer<SettingsProvider>(
+                    builder: (context, settings, child) {
+                      return settings.notif == null ? SizedBox() : Padding(
+                        padding: EdgeInsets.only(top: 20.0),
+                        child: Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
+                          UiFlatButton(LineIcons.bullhorn, "${f.formatNumber(settings.notif.broadcastAktif)} broadcast", () => _action('broadcast')),
+                          UiFlatButton(LineIcons.tags, "${f.formatNumber(settings.notif.tiketToa)} tiket", () => _action('WTB')),
+                        ],),
+                      );
+                    }
+                  ),
                   Padding(
                     padding: EdgeInsets.all(10),
                     child: MenuNavContent(),

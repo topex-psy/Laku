@@ -153,7 +153,7 @@ class IklanModel {
   final String pengiklan;
   final int jumlahIklan;
   final int jumlahFavoritLapak;
-  final int jumlahFavorit;
+  int jumlahFavorit;
   final String telepon;
   final String whatsapp;
   final String tokopedia;
@@ -169,6 +169,11 @@ class IklanModel {
 
   toggleFav() {
     isFavorit = !isFavorit;
+    if (isFavorit) {
+      jumlahFavorit++;
+    } else if (jumlahFavorit > 0) {
+      jumlahFavorit--;
+    }
   }
   bool isInRadius(double meter) {
     return jarakMeter <= meter;

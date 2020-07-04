@@ -213,6 +213,7 @@ class _DataListState extends State<DataList> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+                SizedBox(width: 15,),
                 Expanded(
                   child: UiSelect(
                     placeholder: "Pilih lokasi",
@@ -259,6 +260,12 @@ class _DataListState extends State<DataList> {
       body: SafeArea(child: Column(children: <Widget>[
         UiAppBar(_title.label, icon: _title.icon, tool: _actionButton,),
         _searchBar,
+        // UiSearchBar(
+        //   searchController: _searchController,
+        //   searchFocusNode: _searchFocusNode,
+        //   backgroundColor: THEME_COLOR,
+        //   actionColor: Colors.white
+        // ),
         Expanded(
           child: SmartRefresher(
             enablePullDown: true,

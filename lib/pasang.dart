@@ -163,14 +163,16 @@ class _PasangState extends State<Pasang> {
 
   int get _selectedPicsTotal => _imagesEdit.length + _images.length;
 
+  int get _maxAllowedPic => _tier?.maxListingPic ?? IMAGE_UPLOAD_MAX;
+
   _pickImages() async {
-    if (_imagesEdit.length + _images.length == _tier.maxListingPic) {
-      h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak ${_tier.maxListingPic} foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
+    if (_imagesEdit.length + _images.length == _maxAllowedPic) {
+      h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak ${_maxAllowedPic} foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
       return;
     }
     var resultList = <Asset>[];
     try {
-      resultList = await MultiImagePicker.pickImages(maxImages: _tier.maxListingPic - _selectedPicsTotal, enableCamera: true);
+      resultList = await MultiImagePicker.pickImages(maxImages: _maxAllowedPic - _selectedPicsTotal, enableCamera: true);
     } on Exception catch (e) {
       print("PICK IMAGES ERROOOOOOOOOOOOOOOOOR: $e");
     }
@@ -354,10 +356,7 @@ class _PasangState extends State<Pasang> {
     if (await _onWillPop()) Navigator.of(context).pop();
   }
 
-  String get _title {
-    // return _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => null)?.label ?? _listTipe.first.label;
-    return _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => _listTipe.first).label;
-  }
+  String get _title => _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => _listTipe.first).label;
 
   bool get _isBuyAndSell => _kelompok?.id == 1 ?? false; // jual-beli
   bool get _isPriceable => _kelompok?.isPriceable ?? false; // jual-beli, jasa
@@ -483,16 +482,26 @@ class _PasangState extends State<Pasang> {
                             // SizedBox(height: 12.0,),
                             // Text("Tipe:", style: style.textLabel),
                             // SizedBox(height: 8.0,),
-                            UiToggleButton(
-                              height: 45.0,
-                              listItem: _listTipe,
-                              currentValue: _tipe,
-                              onSelect: (int index) {
-                                setState(() {
-                                  _tipe = _listTipe[index].value;
-                                  _resetKategori();
-                                });
-                              },
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: UiToggleButton(
+                                    height: 45.0,
+                                    listItem: _listTipe,
+                                    currentValue: _tipe,
+                                    onSelect: (int index) {
+                                      setState(() {
+                                        _tipe = _listTipe[index].value;
+                                        _resetKategori();
+                                      });
+                                    },
+                                  ),
+                                ),
+                                _tipe == 'WTS' ? SizedBox() : Padding(
+                                  padding: EdgeInsets.only(left: 8.0),
+                                  child: Icon(MdiIcons.tagMinusOutline, color: THEME_COLOR),
+                                ),
+                              ],
                             ),
                           ]),
 
@@ -504,22 +513,14 @@ class _PasangState extends State<Pasang> {
                                 color: Colors.teal[200].withOpacity(.2),
                                 borderRadius: BorderRadius.circular(8)
                               ),
-                              child: Text('$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textB)
+                              child: Text('$_selectedPicsTotal/${_maxAllowedPic}', style: style.textB)
                             ),
                             children: <Widget>[
-                              // RichText(text: TextSpan(
-                              //   style: Theme.of(context).textTheme.bodyText1,
-                              //   children: <TextSpan>[
-                              //     TextSpan(text: 'Foto: ', style: style.textLabel),
-                              //     TextSpan(text: _tier == null ? '' : '$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textLabelGrey),
-                              //   ],
-                              // ),),
-                              // SizedBox(height: 8.0,),
                               UiDropImages(
                                 onPickImage: _pickImages,
                                 onDeleteImage: (asset) => setState(() { _images.remove(asset); }),
                                 listImages: _images,
-                                maxImages: _tier?.maxListingPic,
+                                maxImages: _maxAllowedPic,
                                 height: 200,
                               ),
                             ]

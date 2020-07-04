@@ -347,7 +347,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
                       ),
                       actions: [
                         IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
-                          // TODO show popup notification
+                          // TODO show popup notification (broadcast berakhir, news, etc)
                         },),
                         IconButton(icon: Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
                           a.openProfile();
@@ -508,7 +508,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
                                   Center(child: Text('prompt_current_items'.tr(), textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
                                   SizedBox(height: 12,),
                                   CardList('iklanTerpasang'),
-                                  CardList('pencarianTerpasang'),
+                                  CardList('broadcastAktif'),
                                   CardList('iklanFavorit'),
                                   CardList('pesanMasuk'),
 
@@ -674,7 +674,7 @@ class _CardListState extends State<CardList> {
     Color buttonColor = Colors.teal[300];
     switch (widget.notif) {
       case 'iklanFavorit':
-        notif = settings.notif?.iklanTerpasang;
+        notif = settings.notif?.iklanFavorit;
         label = "Iklan favorit";
         buttonColor = Colors.pink[300];
         buttonLabel = "Cek";
@@ -695,9 +695,9 @@ class _CardListState extends State<CardList> {
           a.openMyShop();
         };
         break;
-      case 'pencarianTerpasang':
-        notif = settings.notif?.pencarianTerpasang;
-        label = "Pencarian terpasang";
+      case 'broadcastAktif':
+        notif = settings.notif?.broadcastAktif;
+        label = "Broadcast aktif";
         buttonLabel = "Lihat";
         buttonWidth = 100;
         buttonIcon = LineIcons.binoculars;

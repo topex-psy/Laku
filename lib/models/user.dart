@@ -81,9 +81,10 @@ class UserNotifModel {
     this.iklanUploadPic,
     this.iklanTerpasang,
     this.iklanFavorit,
-    this.pencarianTerpasang,
+    this.broadcastAktif,
     this.pesanMasuk,
     this.notifikasi,
+    this.tiketToa,
     this.iklan,
     this.pengguna,
     this.pencari,
@@ -92,9 +93,10 @@ class UserNotifModel {
   final List<int> iklanUploadPic;
   final int iklanTerpasang;
   final int iklanFavorit;
-  final int pencarianTerpasang;
+  final int broadcastAktif;
   final int pesanMasuk;
   final int notifikasi;
+  final int tiketToa;
   final int iklan;
   final int pengguna;
   final int pencari;
@@ -103,22 +105,25 @@ class UserNotifModel {
   : iklanUploadPic = List.from(parsedJson['IKLAN_UPLOAD_PIC']).map((l) => int.parse(l['HASHCODE'])).toList(),
     iklanTerpasang = int.parse(parsedJson['IKLAN_TERPASANG']),
     iklanFavorit = int.parse(parsedJson['IKLAN_FAVORIT']),
-    pencarianTerpasang = int.parse(parsedJson['PENCARIAN_TERPASANG']),
+    broadcastAktif = int.parse(parsedJson['BROADCAST_AKTIF']),
     pesanMasuk = int.parse(parsedJson['PESAN_MASUK']),
     notifikasi = int.parse(parsedJson['NOTIFIKASI']),
+    tiketToa = int.parse(parsedJson['TIKET_TOA']),
     iklan = int.parse(parsedJson['IKLAN']),
     pengguna = int.parse(parsedJson['PENGGUNA']),
     pencari = int.parse(parsedJson['PENCARI']);
 }
 
-class UserSetupModel {
-  UserSetupModel({this.radius});
+// class UserSetupModel {
+//   UserSetupModel({this.radius, this.tiketToa});
 
-  final int radius;
+//   final int radius;
+//   final int tiketToa;
 
-  UserSetupModel.fromJson(Map<String, dynamic> parsedJson)
-  : radius = int.parse(parsedJson['RADIUS']);
-}
+//   UserSetupModel.fromJson(Map<String, dynamic> parsedJson)
+//   : radius = int.parse(parsedJson['RADIUS']),
+//     tiketToa = int.parse(parsedJson['TIKET_TOA']);
+// }
 
 class UserTierModel {
   UserTierModel({this.tier, this.maxShop, this.maxListingPic});
