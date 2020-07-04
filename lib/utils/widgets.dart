@@ -202,6 +202,14 @@ class _UiInputState extends State<UiInput> {
     };
   }
 
+  TextInputType get _getKeyboardType {
+    switch (widget.type) {
+      case UiInputType.NOTE: return TextInputType.multiline;
+      case UiInputType.EMAIL: return TextInputType.emailAddress;
+      default: return TextInputType.text;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _textStyle = TextStyle(color: _fontColor, fontSize: _fontSize, fontWeight: _fontWeight);
@@ -219,15 +227,17 @@ class _UiInputState extends State<UiInput> {
             padding: EdgeInsets.only(right: widget.cancelAction == null ? 16.0 : 40.0),
             child: TextFormField(
               // initialValue: widget.initialValue,
-              keyboardType: widget.type == UiInputType.EMAIL ? TextInputType.emailAddress : TextInputType.text,
+              keyboardType: _getKeyboardType,
               textCapitalization: _textCapitalization,
               style: _textStyle,
               textAlign: widget.textAlign,
               readOnly: widget.readOnly,
+              maxLines: widget.type == UiInputType.NOTE ? null : 1,
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: _contentPadding,
                 hintStyle: _hintStyle,
+                hintMaxLines: widget.type == UiInputType.NOTE ? null : 1,
                 hintText: _hintText,
                 icon: _icon,
                 border: InputBorder.none
@@ -238,7 +248,6 @@ class _UiInputState extends State<UiInput> {
               inputFormatters: _maxLength != null ? <TextInputFormatter>[
                 LengthLimitingTextInputFormatter(_maxLength),
               ] : null,
-              maxLines: widget.type == UiInputType.NOTE ? null : 1,
               enableInteractiveSelection: _onTap == null,
               onTap: _onTap,
               onFieldSubmitted: widget.onSubmit,
@@ -680,7 +689,7 @@ class UiFabCircular extends StatelessWidget {
       fabOpenIcon: Icon(icon, color: Colors.white,),
       fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
       fabOpenColor: Colors.teal[300],
-      fabCloseColor: Colors.teal[400],
+      fabCloseColor: THEME_COLOR_LIGHT,
       ringColor: THEME_COLOR,
       ringWidth: 120,
       ringDiameter: 300,
@@ -914,6 +923,39 @@ class _UiSearchBarState extends State<UiSearchBar> {
             SizedBox(width: 8,),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class UiSection extends StatelessWidget {
+  UiSection({Key key, @required this.children, this.title, this.titleSpacing, this.tool}) : super(key: key);
+  final List<Widget> children;
+  final String title;
+  final double titleSpacing;
+  final Widget tool;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.0),
+      child: Container(
+        width: double.infinity,
+        color: Colors.white,
+        padding: EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          title == null && tool == null ? SizedBox() : Padding(
+            padding: EdgeInsets.only(bottom: titleSpacing ?? 12.0),
+            child: Row(children: <Widget>[
+              Expanded(child: title == null ? SizedBox() : Text(title, style: style.textTitle,),),
+              tool == null ? SizedBox() : Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: tool,
+              ),
+            ],),
+          ),
+          ...children
+        ],),
       ),
     );
   }

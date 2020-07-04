@@ -78,6 +78,33 @@ class _HomeState extends State<Home> {
   //   }
   // }
 
+  Widget get _fab {
+    if (_selectedIndex > 0) return SizedBox();
+    // if (_selectedIndex == 2) return SizedBox(
+    //   width: 64,
+    //   height: 64,
+    //   child: FloatingActionButton(
+    //     child: Icon(MdiIcons.accountEdit, color: Colors.white,),
+    //     backgroundColor: THEME_COLOR_LIGHT,
+    //     onPressed: a.openMap
+    //   ),
+    // );
+    return UiFabCircular(
+      LineIcons.plus,
+      _listActions,
+      _action,
+      getOffset: (i) {
+        double x = 0.0, y = 0.0;
+        if (i == 1) {
+          x = -25;
+          y = 8;
+        }
+        return Offset(x, y);
+      },
+      getSize: (i) => 48.0 - 6 * i,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -187,28 +214,7 @@ class _HomeState extends State<Home> {
               child: child,
             );
           },
-          // child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
-          //   child: Padding(
-          //     padding: EdgeInsets.all(8.0),
-          //     child: Icon(MdiIcons.telescope, size: 32,),
-          //   ),
-          //   backgroundColor: THEME_COLOR_LIGHT,
-          //   onPressed: a.openMap
-          // ),
-          child: _selectedIndex > 0 ? SizedBox() : UiFabCircular(
-            LineIcons.plus,
-            _listActions,
-            _action,
-            getOffset: (i) {
-              double x = 0.0, y = 0.0;
-              if (i == 1) {
-                x = -25;
-                y = 8;
-              }
-              return Offset(x, y);
-            },
-            getSize: (i) => 48.0 - 6 * i,
-          ),
+          child: _fab,
         ),
         bottomNavigationBar: Stack(
           alignment: Alignment.topCenter,

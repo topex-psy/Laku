@@ -448,8 +448,8 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan single image
-  viewImage(dynamic image, {int page = 0, String tag}) {
-    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': image, 'page': page, 'tag': tag});
+  viewImage(dynamic image, {int page = 0, String heroTag}) {
+    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': image, 'page': page, 'tag': heroTag});
   }
 
   /// fungsi yang mengembalikan teks versi html

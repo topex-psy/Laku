@@ -121,21 +121,22 @@ class _DataListState extends State<DataList> {
               child: Row(children: <Widget>[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: FadeInImage.assetNetwork(
-                    placeholder: IMAGE_DEFAULT_NONE,
-                    image: _data.foto.first.foto,
-                    fit: BoxFit.cover,
-                    width: 100,
-                    height: 100,
+                  child: Hero(
+                    tag: "listing_${_data.id}_0",
+                    child: FadeInImage.assetNetwork(
+                      placeholder: IMAGE_DEFAULT_NONE,
+                      image: _data.foto.first.foto,
+                      fit: BoxFit.cover,
+                      width: 80,
+                      height: 80,
+                    ),
                   ),
                 ),
                 SizedBox(width: 20,),
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(_data.judul, style: style.textTitle,),
-                    SizedBox(height: 2),
-                    h.html("Tipe: <strong>${_data.tipe == 'WTS' ? 'Iklan' : 'Pencarian'}</strong>"),
+                    Text(_data.judul, style: style.textCaption,),
                     SizedBox(height: 2),
                     h.html("Kategori: <strong>${_data.kategori}</strong>"),
                     // SizedBox(height: 2),

@@ -165,7 +165,7 @@ class _ProfilState extends State<Profil> {
 
   _viewImage() {
     var person = Provider.of<PersonProvider>(context, listen: false);
-    h.viewImage(_image ?? person.foto);
+    h.viewImage(_image ?? person.foto, heroTag: "profile_pic");
   }
 
   _pickImage([ImageSource source]) async {
@@ -317,6 +317,7 @@ class _ProfilState extends State<Profil> {
                         ),),
                         UiAvatar(
                           _image ?? person.foto,
+                          heroTag: "profile_pic",
                           size: 150,
                           onPressed: _viewImage,
                           onTapEdit: _isEdit ? () => _pickImage() : null,

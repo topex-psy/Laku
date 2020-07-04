@@ -156,7 +156,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                         var index = _item.foto.indexOf(pic);
                         var tag = "listing_${_item.id}";
                         return GestureDetector(
-                          onTap: () => h.viewImage(_item.foto, page: index, tag: tag),
+                          onTap: () => h.viewImage(_item.foto, page: index, heroTag: tag),
                           child: Hero(
                             tag: "${tag}_$index",
                             child: FadeInImage.assetNetwork(

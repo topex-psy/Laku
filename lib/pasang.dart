@@ -479,54 +479,35 @@ class _PasangState extends State<Pasang> {
                         },
                         child: Column(children: <Widget>[
 
-                          Container(
-                            width: double.infinity,
-                            color: Colors.white,
-                            padding: EdgeInsets.all(20),
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                              // Text("Tipe Iklan", style: style.textTitle,),
-                              // SizedBox(height: 12.0,),
-                              // Text("Tipe:", style: style.textLabel),
-                              // SizedBox(height: 8.0,),
-                              UiToggleButton(
-                                height: 45.0,
-                                listItem: _listTipe,
-                                currentValue: _tipe,
-                                onSelect: (int index) {
-                                  setState(() {
-                                    _tipe = _listTipe[index].value;
-                                    _resetKategori();
-                                  });
-                                },
-                              ),
-                            ],)
-                          ),
-                          SizedBox(height: 12,),
+                          UiSection(children: <Widget>[
+                            // Text("Tipe Iklan", style: style.textTitle,),
+                            // SizedBox(height: 12.0,),
+                            // Text("Tipe:", style: style.textLabel),
+                            // SizedBox(height: 8.0,),
+                            UiToggleButton(
+                              height: 45.0,
+                              listItem: _listTipe,
+                              currentValue: _tipe,
+                              onSelect: (int index) {
+                                setState(() {
+                                  _tipe = _listTipe[index].value;
+                                  _resetKategori();
+                                });
+                              },
+                            ),
+                          ]),
 
-                          Container(
-                            width: double.infinity,
-                            color: Colors.white,
-                            padding: EdgeInsets.all(20),
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  Expanded(child: Text("Unggah Foto", style: style.textTitle,),),
-                                  _tier == null
-                                    ? SizedBox()
-                                    : Padding(
-                                      padding: EdgeInsets.only(left: 8.0),
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-                                        decoration: BoxDecoration(
-                                          color: Colors.teal[200].withOpacity(.2),
-                                          borderRadius: BorderRadius.circular(8)
-                                        ),
-                                        child: Text('$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textB)
-                                      ),
-                                    ),
-                                ],
+                          UiSection(
+                            title: "Unggah Foto",
+                            tool: _tier == null ? SizedBox() : Container(
+                              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.teal[200].withOpacity(.2),
+                                borderRadius: BorderRadius.circular(8)
                               ),
-                              SizedBox(height: 12.0,),
+                              child: Text('$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textB)
+                            ),
+                            children: <Widget>[
                               // RichText(text: TextSpan(
                               //   style: Theme.of(context).textTheme.bodyText1,
                               //   children: <TextSpan>[
@@ -542,41 +523,28 @@ class _PasangState extends State<Pasang> {
                                 maxImages: _tier?.maxListingPic,
                                 height: 200,
                               ),
-                            ],),
+                            ]
                           ),
-                          SizedBox(height: 12.0,),
 
-                          Container(
-                            width: double.infinity,
-                            color: Colors.white,
-                            padding: EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text("Detail Iklan", style: style.textTitle,),
-                                SizedBox(height: 20.0,),
-                                UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
-                                UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
+                          UiSection(title: "Detail Iklan", titleSpacing: 20, children: <Widget>[
+                            UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
+                            UiInput("Deskripsi", isRequired: true, placeholder: "Tulis deskripsi iklan dengan jelas dan lengkap ...", height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
+                            _inputPrice,
+                            _inputCondition,
+                            _inputDelivery,
 
-                                _inputPrice,
+                            // TODO _isScheduleable
 
-                                _inputCondition,
+                            Text("Kategori:", style: style.textLabel),
+                            SizedBox(height: 12,),
+                            // TODO fetch api recent kategori
+                            _selectKategori(),
+                          ]),
 
-                                _inputDelivery,
-
-                                // TODO _isScheduleable
-
-                                Text("Kategori:", style: style.textLabel),
-                                SizedBox(height: 12,),
-                                // TODO fetch api recent kategori
-                                _selectKategori(),
-                              ],
-                            ),
+                          Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: UiButton(_stepIndex == 0 ? "Selanjutnya" : "Pasang Iklan", height: style.heightButtonL, color: Colors.green, icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
                           ),
-                          
-                          SizedBox(height: 30,),
-                          UiButton(_stepIndex == 0 ? "Selanjutnya" : "Pasang Iklan", height: style.heightButtonL, color: Colors.green, icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
-
                           SizedBox(height: 20,),
                         ],)
                       ),
