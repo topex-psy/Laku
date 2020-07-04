@@ -17,7 +17,7 @@ import 'home.dart';
 import 'listing.dart';
 import 'pasang.dart';
 import 'peta.dart';
-import 'profil.dart';
+// import 'profil.dart';
 import 'splash.dart';
 import 'verifikasi.dart';
 
@@ -80,7 +80,7 @@ class MyApp extends StatelessWidget {
             case ROUTE_DAFTAR:   page = Register(); break;
             case ROUTE_PASANG:   page = Pasang(arguments); break;
             case ROUTE_PETA:     page = Peta(); break;
-            case ROUTE_PROFIL:   page = Profil(); break;
+            // case ROUTE_PROFIL:   page = Profil(); break;
             case ROUTE_DATA:     page = DataList(arguments); break;
             case ROUTE_IMAGE:    page = ImageViewer(arguments); break;
             case ROUTE_OTP:      page = Verifikasi(arguments); break;

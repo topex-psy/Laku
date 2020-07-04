@@ -30,6 +30,9 @@ class _DataListState extends State<DataList> {
   UserTierModel _tier;
   bool _isMyShopList;
 
+  var _listLokasi = <TokoModel>[];
+  TokoModel _lokasi;
+
   @override
   void initState() {
     _isMyShopList = widget.args['tipe'] == 'shop' && widget.args['mode'] == 'mine';
@@ -200,12 +203,53 @@ class _DataListState extends State<DataList> {
   }
 
   Widget get _searchBar {
-    return _tier != null && _tier.tier > 0 ? UiSearchBar(
-      searchController: _searchController,
-      searchFocusNode: _searchFocusNode,
-      backgroundColor: THEME_COLOR,
-      actionColor: Colors.white
-    ) : SizedBox();
+    switch (widget.args['tipe']) {
+      case 'listing': // TODO harusnya kalo mode 'mine' aja
+        return SizedBox(
+          height: THEME_INPUT_HEIGHT + 32,
+          child: Material(
+            color: THEME_COLOR,
+            elevation: 0,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  child: UiSelect(
+                    placeholder: "Pilih lokasi",
+                    simple: true,
+                    isDense: true,
+                    listMenu: _listLokasi,
+                    initialValue: _lokasi,
+                    onSelect: (val) {
+                      setState(() { _lokasi = val; });
+                    },
+                  ),
+                ),
+                SizedBox(width: 8,),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(Icons.sort),
+                  color: Colors.white,
+                  // tooltip: 'prompt_sort'.tr(),
+                  onPressed: () {
+                    // TODO show dialog
+                  },
+                ),
+                // widget.tool ?? SizedBox(),
+                SizedBox(width: 8,),
+              ],
+            ),
+          ),
+        );
+      case 'shop':
+      default:
+        return _tier != null && _tier.tier > 0 ? UiSearchBar(
+          searchController: _searchController,
+          searchFocusNode: _searchFocusNode,
+          backgroundColor: THEME_COLOR,
+          actionColor: Colors.white
+        ) : SizedBox();
+    }
   }
 
   @override
@@ -265,30 +309,6 @@ class _DataListState extends State<DataList> {
           ) : SizedBox(),
         ) : SizedBox(),
       ],),),
-    );
-  }
-}
-
-class UiFlatButton extends StatelessWidget {
-  UiFlatButton(this.icon, this.label, this.action, {Key key}) : super(key: key);
-  final IconData icon;
-  final String label;
-  final VoidCallback action;
-
-  @override
-  Widget build(BuildContext context) {
-    return FlatButton(
-      splashColor: Colors.teal[200].withOpacity(.2),
-      highlightColor: Colors.teal[200].withOpacity(.2),
-      padding: EdgeInsets.all(8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      color: Colors.teal[200].withOpacity(.2),
-      onPressed: action,
-      child: Column(children: <Widget>[
-        Icon(icon, color: THEME_COLOR,),
-        SizedBox(height: 8,),
-        Text(label, style: TextStyle(color: THEME_COLOR),)
-      ],),
     );
   }
 }

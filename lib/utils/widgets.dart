@@ -1216,6 +1216,30 @@ class UiMenuList extends StatelessWidget {
   }
 }
 
+class UiFlatButton extends StatelessWidget {
+  UiFlatButton(this.icon, this.label, this.action, {Key key}) : super(key: key);
+  final IconData icon;
+  final String label;
+  final VoidCallback action;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      splashColor: Colors.teal[200].withOpacity(.2),
+      highlightColor: Colors.teal[200].withOpacity(.2),
+      padding: EdgeInsets.all(8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: Colors.teal[200].withOpacity(.2),
+      onPressed: action,
+      child: Column(children: <Widget>[
+        Icon(icon, color: THEME_COLOR,),
+        SizedBox(height: 8,),
+        Text(label, style: TextStyle(color: THEME_COLOR),)
+      ],),
+    );
+  }
+}
+
 class UiAvatar extends StatelessWidget {
   UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.placeholder = IMAGE_DEFAULT_USER, this.onPressed, this.onTapEdit}) : super(key: key);
   final dynamic pic;

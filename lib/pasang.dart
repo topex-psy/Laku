@@ -360,10 +360,10 @@ class _PasangState extends State<Pasang> {
   }
 
   bool get _isBuyAndSell => _kelompok?.id == 1 ?? false; // jual-beli
+  bool get _isPriceable => _kelompok?.isPriceable ?? false; // jual-beli, jasa
   bool get _isScheduleable => _kelompok?.isScheduleable ?? false; // acara, loker
 
   Widget get _inputPrice {
-    var _isPriceable = _kelompok?.isPriceable ?? false; // jual-beli, jasa
     return _isPriceable ? Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -422,8 +422,7 @@ class _PasangState extends State<Pasang> {
   }
 
   Widget get _inputDelivery {
-    var _isPriceable = _kelompok?.isPriceable ?? false; // jual-beli, jasa
-    var _what = _isBuyAndSell ? "Antar" : "Datang";
+    final _what = _isBuyAndSell ? "Antar" : "Datang";
     return _isPriceable ? Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -529,17 +528,18 @@ class _PasangState extends State<Pasang> {
                           UiSection(title: "Detail Iklan", titleSpacing: 20, children: <Widget>[
                             UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
                             UiInput("Deskripsi", isRequired: true, placeholder: "Tulis deskripsi iklan dengan jelas dan lengkap ...", height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
-                            _inputPrice,
-                            _inputCondition,
-                            _inputDelivery,
-
-                            // TODO _isScheduleable
-
                             Text("Kategori:", style: style.textLabel),
                             SizedBox(height: 12,),
                             // TODO fetch api recent kategori
                             _selectKategori(),
                           ]),
+
+                          _isBuyAndSell || _isPriceable || _isScheduleable ? UiSection(title: "Info Lainnya", titleSpacing: 20, children: <Widget>[
+                            _inputPrice,
+                            _inputCondition,
+                            _inputDelivery,
+                            // TODO _isScheduleable
+                          ]) : SizedBox(),
 
                           Padding(
                             padding: EdgeInsets.all(20.0),

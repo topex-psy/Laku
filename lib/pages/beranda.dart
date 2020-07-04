@@ -350,8 +350,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
                           // TODO show popup notification
                         },),
                         IconButton(icon: Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
-                          final results = await a.openProfile() as Map;
-                          print(results);
+                          a.openProfile();
                         },),
                         // IconButton(icon: Icon(LineIcons.bell_o, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
                         //   final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'user_notif'}) as Map;

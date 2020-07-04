@@ -4,16 +4,17 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:laku/models/basic.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import 'components/menu.dart';
+import 'models/basic.dart';
 import 'pages/beranda.dart';
-import 'pages/temukan.dart';
+import 'pages/broadcast.dart';
 import 'pages/profil.dart';
+import 'pages/temukan.dart';
 import 'providers/person.dart';
 import 'utils/constants.dart';
 import 'utils/curves.dart';
@@ -54,8 +55,14 @@ class _HomeState extends State<Home> {
 
   _action(String action) async {
     print("TAP ACTION: $action");
-    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action}) as Map;
-    print(" ... ROUTE PASANG result: $results");
+    switch (action) {
+      case 'broadcast':
+        a.openMyBroadcast();
+        break;
+      default:
+        a.openListingForm(action: action);
+        break;
+    }
   }
 
   _openPage(int index) {
@@ -66,17 +73,6 @@ class _HomeState extends State<Home> {
       screenPageController.animateToPage(index, duration: Duration(milliseconds: 500), curve: Curves.ease);
     }
   }
-
-  // _action(String action) async {
-  //   switch (action) {
-  //   case "shop":
-  //     a.openMyShop();
-  //     break;
-  //   default:
-  //     final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action ?? 'WTS'}) as Map;
-  //     print(" ... ROUTE PASANG result: $results");
-  //   }
-  // }
 
   Widget get _fab {
     if (_selectedIndex > 0) return SizedBox();
@@ -117,16 +113,15 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
 
     final _listPages = <Page>[
-      Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
-      Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
-      Page(title: 'menu_user'.tr(), icon: LineIcons.user, content: Profil(isOpen: _selectedIndex == 2,),),
+      // Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
+      // Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
+      // Page(title: 'menu_broadcast'.tr(), icon: LineIcons.comments_o, content: Broadcast(isOpen: _selectedIndex == 2,),),
+      // Page(title: 'menu_user'.tr(), icon: LineIcons.user, content: Profil(isOpen: _selectedIndex == 3,),),
+      Page(title: 'menu_home'.tr(), icon: MdiIcons.homeOutline, content: Beranda(isOpen: _selectedIndex == 0,),),
+      Page(title: 'menu_browse'.tr(), icon: MdiIcons.magnify, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
+      Page(title: 'menu_broadcast'.tr(), icon: MdiIcons.commentMultipleOutline, content: Broadcast(isOpen: _selectedIndex == 2,),),
+      Page(title: 'menu_user'.tr(), icon: MdiIcons.accountOutline, content: Profil(isOpen: _selectedIndex == 3,),),
     ];
-
-    // final _listActions = <IconLabel>[
-    //   IconLabel(MdiIcons.bullhornOutline, "Pasang", value: "WTS"),
-    //   IconLabel(MdiIcons.magnify, "Cari", value: "WTB"),
-    //   IconLabel(MdiIcons.storefrontOutline, "Kelola", value: "shop"),
-    // ];
 
     return WillPopScope(
       onWillPop: () async {
@@ -168,7 +163,7 @@ class _HomeState extends State<Home> {
                         child: Row(children: <Widget>[
                           Selector<PersonProvider, String>(
                             selector: (buildContext, person) => person.foto,
-                            builder: (context, foto, child) => UiAvatar(foto, size: 70,),
+                            builder: (context, foto, child) => UiAvatar(foto, size: 70, heroTag: "profile_pic",),
                           ),
                           SizedBox(width: 12,),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
@@ -186,6 +181,11 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   ),
+                  SizedBox(height: 20,),
+                  Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
+                    UiFlatButton(LineIcons.bullhorn, "5 broadcast", () => _action('broadcast')),
+                    UiFlatButton(LineIcons.tags, "12 tiket", () => _action('WTB')),
+                  ],),
                   Padding(
                     padding: EdgeInsets.all(10),
                     child: MenuNavContent(),
@@ -229,6 +229,7 @@ class _HomeState extends State<Home> {
                 gap: 8,
                 iconSize: 24,
                 activeColor: Colors.white,
+                color: Colors.blueGrey,
                 padding: EdgeInsets.symmetric(horizontal: 18, vertical: 5),
                 duration: Duration(milliseconds: 500),
                 tabBackgroundColor: Theme.of(context).accentColor,

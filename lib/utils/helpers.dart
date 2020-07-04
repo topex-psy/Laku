@@ -90,10 +90,12 @@ class UserHelper {
   }
 
   Future<dynamic> openProfile() async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
-    print(" ... ROUTE PROFIL result: $results");
+    // final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
+    // print(" ... ROUTE PROFIL result: $results");
+    // if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
+    // return results;
     if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
-    return results;
+    screenPageController.animateToPage(3, duration: Duration(milliseconds: 500), curve: Curves.ease);
   }
 
   Future<dynamic> openMyShop() async {
@@ -102,6 +104,20 @@ class UserHelper {
     if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
     return results;
   }
+
+  Future<dynamic> openMyBroadcast() async {
+    final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'type': 'WTB', 'mode': 'mine'});
+    print(" ... ROUTE MY BROADCAST result: $results");
+    return results;
+  }
+
+  Future<dynamic> openListingForm({String action = 'WTS', int id}) async {
+    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action, 'id': id}) as Map;
+    print(" ... ROUTE PASANG result: $results");
+    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();    
+    return results;
+  }
+
   Future<dynamic> openMap() async {
     final results = await Navigator.of(context).pushNamed(ROUTE_PETA);
     print(" ... ROUTE MAP result: $results");

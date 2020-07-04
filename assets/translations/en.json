@@ -18,6 +18,7 @@
     "one": "User",
     "many": "Users"
   },
+  "menu_broadcast": "Broadcast",
   "menu_seeker": {
     "one": "Seeker",
     "many": "Seekers"

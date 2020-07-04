@@ -331,7 +331,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                     Center(child: Offstage(
                       offstage: _isLoading,
                       child: Hero(
-                        tag: "SplashLogo",
+                        tag: "splash_logo",
                         child: Semantics(
                           label: "Logo $APP_NAME",
                           image: true,

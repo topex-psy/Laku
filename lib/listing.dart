@@ -330,16 +330,12 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                   ),
                 ),
                 SizedBox(height: 12,),
-                Container(
-                  width: double.infinity,
-                  color: Colors.white,
-                  padding: EdgeInsets.all(20),
-                  child: ExpandableNotifier(
+
+                UiSection(title: "Detail Produk", titleSpacing: 16, children: <Widget>[
+                  ExpandableNotifier(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text("Detail Produk", style: style.textTitle,),
-                        SizedBox(height: 16,),
                         Expandable(
                           collapsed: Text(_item.deskripsi, softWrap: true, maxLines: 5, overflow: TextOverflow.ellipsis,),
                           expanded: Text(_item.deskripsi, softWrap: true,),
@@ -362,17 +358,58 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                                   Icon(_expandController.expanded ? MdiIcons.chevronUp : MdiIcons.chevronDown, color: THEME_COLOR)
                                 ],
                               ),
-                              onPressed: () {
-                                _expandController.toggle();
-                              },
+                              onPressed: _expandController.toggle,
                             );
                           },
                         ),
                       ],
                     ),
                   ),
-                ),
-                SizedBox(height: 12,),
+                ],),
+
+                // Container(
+                //   width: double.infinity,
+                //   color: Colors.white,
+                //   padding: EdgeInsets.all(20),
+                //   child: ExpandableNotifier(
+                //     child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: <Widget>[
+                //         Text("Detail Produk", style: style.textTitle,),
+                //         SizedBox(height: 16,),
+                //         Expandable(
+                //           collapsed: Text(_item.deskripsi, softWrap: true, maxLines: 5, overflow: TextOverflow.ellipsis,),
+                //           expanded: Text(_item.deskripsi, softWrap: true,),
+                //         ),
+                //         Builder(
+                //           builder: (context) {
+                //             var _expandController = ExpandableController.of(context);
+                //             return FlatButton(
+                //               padding: EdgeInsets.zero,
+                //               highlightColor: Colors.transparent,
+                //               splashColor: Colors.transparent,
+                //               child: Row(
+                //                 mainAxisSize: MainAxisSize.min,
+                //                 children: <Widget>[
+                //                   Text(
+                //                     _expandController.expanded ? "Lebih Ringkas" : "Selengkapnya",
+                //                     style: TextStyle(color: THEME_COLOR),
+                //                   ),
+                //                   SizedBox(width: 4,),
+                //                   Icon(_expandController.expanded ? MdiIcons.chevronUp : MdiIcons.chevronDown, color: THEME_COLOR)
+                //                 ],
+                //               ),
+                //               onPressed: () {
+                //                 _expandController.toggle();
+                //               },
+                //             );
+                //           },
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+                // SizedBox(height: 12,),
                 Container(
                   width: double.infinity,
                   color: Colors.white,
@@ -407,6 +444,14 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                                 ],),
                               ],
                             ),
+                            SizedBox(height: 4),
+                            Row(
+                              children: <Widget>[
+                                Icon(MdiIcons.circleMedium, size: 20, color: Colors.grey,),
+                                SizedBox(width: 6,),
+                                Expanded(child: Text("aktif 2 menit lalu")),
+                              ],
+                            )
                           ],),),
                           SizedBox(width: 8),
                           _item.isMine
@@ -435,12 +480,14 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                       _item.isMine ? Container(
                         padding: EdgeInsets.only(left: 60),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                            Text("Peminat dapat menghubungi di:"),
-                            SizedBox(height: 8),
+                            // Text("Peminat dapat menghubungi di:"),
+                            // SizedBox(height: 8),
                             Row(
                               children: <Widget>[
-                                Icon(LineIcons.mobile_phone, color: Colors.grey,),
-                                SizedBox(width: 2,),
+                                Icon(LineIcons.mobile_phone, size: 20, color: Colors.grey,),
+                                SizedBox(width: 6,),
+                                Text("Telepon:"),
+                                SizedBox(width: 6,),
                                 Expanded(child: Text("$APP_COUNTRY_CODE${_item.telepon}", style: style.textCaption,),),
                               ],
                             )

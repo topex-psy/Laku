@@ -286,16 +286,9 @@ class _ProfilState extends State<Profil> {
               // UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton(), onBackPressed: _backPressed),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.only(left: 20, right: 20, top: 15, bottom: 30,),
-                  child: Form(
-                    key: _formKey,
-                    autovalidate: false,
-                    onChanged: () {
-                      if (!_isChanged) setState(() {
-                        _isChanged = true;
-                      });
-                    },
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                  padding: EdgeInsets.only(left: 30, right: 15, top: 15, bottom: 30,),
+                  child: Column(
+                    children: <Widget>[
                       Row(children: <Widget>[
                         Expanded(child: _isEdit ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,65 +311,79 @@ class _ProfilState extends State<Profil> {
                         UiAvatar(
                           _image ?? person.foto,
                           heroTag: "profile_pic",
-                          size: 150,
+                          size: 140,
                           onPressed: _viewImage,
                           onTapEdit: _isEdit ? () => _pickImage() : null,
                         ),
                       ],),
-                      _isEdit
-                        ? UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],)
-                        : SizedBox(),
-                      UiInput("Nomor Ponsel", isRequired: true, readOnly: !_isEdit, icon: LineIcons.mobile_phone, type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _errorText["phone"],),
-                      _isEdit
-                        ? UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],)
-                        : SizedBox(),
-                      UiInput("Tanggal lahir", isRequired: true, readOnly: !_isEdit, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, initialValue: _tanggalLahir ?? person.tanggalLahir, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
-                        try {
-                          setState(() { _tanggalLahir = val as DateTime; });
-                        } catch (e) {
-                          print("DATETIME PICKER ERROR = $e");
-                        }
-                      },),
-                      Text("Jenis kelamin:", style: style.textLabel),
-                      SizedBox(height: 8.0,),
-                      _isEdit ? SizedBox(
-                        height: 45.0,
-                        child: ToggleButtons(
-                          borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
-                          children: <Widget>[
-                            Row(children: <Widget>[
-                              SizedBox(width: 20.0),
-                              Icon(LineIcons.male, size: 17,),
-                              SizedBox(width: 8.0),
-                              Text(jenisKelaminLbl[0], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                              SizedBox(width: 15.0),
-                            ],),
-                            Row(children: <Widget>[
-                              SizedBox(width: 15.0),
-                              Icon(LineIcons.female, size: 17,),
-                              SizedBox(width: 8.0),
-                              Text(jenisKelaminLbl[1], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                              SizedBox(width: 20.0),
-                            ],),
-                          ],
-                          onPressed: (int index) {
-                            setState(() {
-                              _jenisKelamin = jenisKelaminVal[index];
+                      Padding(
+                        padding: EdgeInsets.only(right: 15.0),
+                        child: Form(
+                          key: _formKey,
+                          autovalidate: false,
+                          onChanged: () {
+                            if (!_isChanged) setState(() {
+                              _isChanged = true;
                             });
                           },
-                          isSelected: <bool>[
-                            _jenisKelamin == jenisKelaminVal[0],
-                            _jenisKelamin == jenisKelaminVal[1],
-                          ],
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                            _isEdit
+                              ? UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],)
+                              : SizedBox(),
+                            UiInput("Nomor Ponsel", isRequired: true, readOnly: !_isEdit, icon: LineIcons.mobile_phone, type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _errorText["phone"],),
+                            _isEdit
+                              ? UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],)
+                              : SizedBox(),
+                            UiInput("Tanggal lahir", isRequired: true, readOnly: !_isEdit, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, initialValue: _tanggalLahir ?? person.tanggalLahir, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
+                              try {
+                                setState(() { _tanggalLahir = val as DateTime; });
+                              } catch (e) {
+                                print("DATETIME PICKER ERROR = $e");
+                              }
+                            },),
+                            Text("Jenis kelamin:", style: style.textLabel),
+                            SizedBox(height: 8.0,),
+                            _isEdit ? SizedBox(
+                              height: 45.0,
+                              child: ToggleButtons(
+                                borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
+                                children: <Widget>[
+                                  Row(children: <Widget>[
+                                    SizedBox(width: 20.0),
+                                    Icon(LineIcons.male, size: 17,),
+                                    SizedBox(width: 8.0),
+                                    Text(jenisKelaminLbl[0], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+                                    SizedBox(width: 15.0),
+                                  ],),
+                                  Row(children: <Widget>[
+                                    SizedBox(width: 15.0),
+                                    Icon(LineIcons.female, size: 17,),
+                                    SizedBox(width: 8.0),
+                                    Text(jenisKelaminLbl[1], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+                                    SizedBox(width: 20.0),
+                                  ],),
+                                ],
+                                onPressed: (int index) {
+                                  setState(() {
+                                    _jenisKelamin = jenisKelaminVal[index];
+                                  });
+                                },
+                                isSelected: <bool>[
+                                  _jenisKelamin == jenisKelaminVal[0],
+                                  _jenisKelamin == jenisKelaminVal[1],
+                                ],
+                              ),
+                            ) : UiInput("", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _jenisKelaminController,),
+                            SizedBox(height: 30,),
+                            // TODO edit profil (kontak)
+                            _isEdit ? SizedBox() : UiButton("Ganti Nomor PIN", width: 250, height: style.heightButton, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _resetPIN,),
+                            SizedBox(height: 12,),
+                            _isEdit ? SizedBox() : UiButton("Keluar", width: 250, height: style.heightButton, color: Colors.red, icon: LineIcons.sign_out, textStyle: style.textButton, iconRight: true, onPressed: a.logout,),
+                            SizedBox(height: 12,),
+                          ],)
                         ),
-                      ) : UiInput("", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _jenisKelaminController,),
-                      SizedBox(height: 30,),
-                      // TODO edit profil (kontak)
-                      _isEdit ? SizedBox() : UiButton("Ganti Nomor PIN", width: 250, height: style.heightButton, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _resetPIN,),
-                      SizedBox(height: 12,),
-                      _isEdit ? SizedBox() : UiButton("Keluar", width: 250, height: style.heightButton, color: Colors.red, icon: LineIcons.sign_out, textStyle: style.textButton, iconRight: true, onPressed: a.logout,),
-                      SizedBox(height: 12,),
-                    ],)
+                      ),
+                    ],
                   ),
                 ),
               ),
