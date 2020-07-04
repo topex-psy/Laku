@@ -111,9 +111,12 @@ class IklanModel {
     @required this.fotoLapak,
     @required this.pengiklan,
     this.jumlahIklan,
+    this.jumlahFavoritLapak,
+    this.jumlahFavorit,
+    this.telepon,
+    this.whatsapp,
     this.tokopedia,
     this.shopee,
-    this.whatsapp,
     this.instagram,
     this.facebook,
     this.bukalapak,
@@ -149,9 +152,12 @@ class IklanModel {
   final String fotoLapak;
   final String pengiklan;
   final int jumlahIklan;
+  final int jumlahFavoritLapak;
+  final int jumlahFavorit;
+  final String telepon;
+  final String whatsapp;
   final String tokopedia;
   final String shopee;
-  final String whatsapp;
   final String instagram;
   final String facebook;
   final String bukalapak;
@@ -194,9 +200,12 @@ class IklanModel {
     fotoLapak = parsedJson['FOTO_LAPAK'],
     pengiklan = parsedJson['PENGIKLAN'],
     jumlahIklan = int.parse(parsedJson['JUMLAH_IKLAN']),
+    jumlahFavoritLapak = int.parse(parsedJson['JUMLAH_FAVORIT_LAPAK']),
+    jumlahFavorit = int.parse(parsedJson['JUMLAH_FAVORIT']),
+    telepon = parsedJson['TELEPON'],
+    whatsapp = parsedJson['WHATSAPP'],
     tokopedia = parsedJson['TOKOPEDIA'],
     shopee = parsedJson['SHOPEE'],
-    whatsapp = parsedJson['WHATSAPP'],
     instagram = parsedJson['INSTAGRAM'],
     facebook = parsedJson['FACEBOOK'],
     bukalapak = parsedJson['BUKALAPAK'],

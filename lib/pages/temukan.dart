@@ -159,12 +159,15 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
             label: "Listing item",
             value: item.judul,
             image: true,
-            child: FadeInImage.assetNetwork(
-              placeholder: IMAGE_DEFAULT_NONE,
-              image: item.foto.first.foto,
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
+            child: Hero(
+              tag: "listing_${item.id}_0",
+              child: FadeInImage.assetNetwork(
+                placeholder: IMAGE_DEFAULT_NONE,
+                image: item.foto.first.foto,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           item.isDalamRadius ? Container() : Container(color: Colors.grey.withOpacity(.5),),

@@ -53,6 +53,8 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
     switch (action) {
       case 'edit':
         break;
+      case 'edit_shop':
+        break;
       case 'hapus':
         if (await h.showConfirm("Hapus Iklan", "Apakah Anda yakin ingin menghapus iklan ini?") ?? false) {
 
@@ -66,6 +68,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
       case 'chat':
         break;
       case 'telepon':
+        // _item.telepon
         break;
       case 'report':
         break;
@@ -132,14 +135,20 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                       height: 150.0,
                       width: MediaQuery.of(context).size.width,
                       child: Carousel(
-                        images: _item.foto.map((pic) => GestureDetector(
-                          onTap: () => h.viewImage(_item.foto, page: _item.foto.indexOf(pic)),
-                          child: FadeInImage.assetNetwork(
-                            placeholder: IMAGE_DEFAULT_NONE,
-                            image: pic.foto,
-                            fit: BoxFit.cover,
-                          ),
-                        ),).toList(),
+                        images: _item.foto.map((pic) {
+                          var i = _item.foto.indexOf(pic);
+                          return GestureDetector(
+                            onTap: () => h.viewImage(_item.foto, page: i),
+                            child: Hero(
+                              tag: "listing_${_item.id}_$i",
+                              child: FadeInImage.assetNetwork(
+                                placeholder: IMAGE_DEFAULT_NONE,
+                                image: pic.foto,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                         autoplay: true,
                         autoplayDuration: Duration(milliseconds: 8000),
                         animationDuration: Duration(milliseconds: 800),
@@ -208,7 +217,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                               ),
                               Transform.translate(
                                 offset: Offset(0, 29.5),
-                                child: Text("1", textAlign: TextAlign.center, style: style.textS,),
+                                child: Text(f.formatNumber(_item.jumlahFavorit), textAlign: TextAlign.center, style: style.textS,),
                               )
                             ],
                           ),
@@ -365,37 +374,84 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text("Info Seller", style: style.textTitle,),
+                    Row(
+                      children: <Widget>[
+                        Expanded(child: Text("Info Seller", style: style.textTitle,),),
+                        _item.isMine ? Container(
+                          height: 20,
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: IconButton(
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            padding: EdgeInsets.zero,
+                            icon: Icon(MdiIcons.pencil),
+                            color: Colors.grey,
+                            tooltip: "Edit",
+                            onPressed: () => _action('edit_shop'),
+                          ),
+                        ) : SizedBox()
+                      ],
+                    ),
                     SizedBox(height: 16,),
-                    Row(children: <Widget>[
-                      UiAvatar(_item.fotoLapak, size: 40, strokeWidth: 0),
-                      SizedBox(width: 8),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                        Text(_item.judulLapak, style: style.textB,),
-                        SizedBox(height: 4,),
-                        // _item.alamatLapak == null ? SizedBox() : Text(_item.alamatLapak, style: TextStyle(color: Colors.blueGrey),),
-                        Row(children: <Widget>[
-                          Icon(LineIcons.files_o, size: 20, color: Colors.grey,),
-                          SizedBox(width: 6,),
-                          Expanded(child: Text("${f.formatNumber(_item.jumlahIklan)} iklan", style: style.textMutedS,)),
-                        ],),
-                      ],),),
-                      SizedBox(width: 8),
-                      Container(
-                        width: 40,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(LineIcons.map_marker, color: Colors.grey),
-                            SizedBox(height: 2,),
-                            Text(f.distanceLabel(_item.jarakMeter), textAlign: TextAlign.center, style: style.textS,)
-                          ],
+                    FlatButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        // TODO ke laman toko
+                      },
+                      child: Row(children: <Widget>[
+                        UiAvatar(_item.fotoLapak, size: 40, strokeWidth: 0),
+                        SizedBox(width: 8),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text(_item.judulLapak, style: style.textB,),
+                          SizedBox(height: 4,),
+                          // _item.alamatLapak == null ? SizedBox() : Text(_item.alamatLapak, style: TextStyle(color: Colors.blueGrey),),
+                          _item.isMine
+                          ? Container(
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                              Text("Peminat dapat menghubungi Anda di:", style: style.textS),
+                              SizedBox(height: 2),
+                              Row(
+                                children: <Widget>[
+                                  Icon(LineIcons.mobile_phone, color: Colors.grey,),
+                                  Expanded(child: Text(_item.telepon, style: style.textLabel,),),
+                                ],
+                              )
+                            ],),
+                          )
+                          : Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: <Widget>[
+                              Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                                Icon(LineIcons.heart_o, size: 20, color: Colors.pink,),
+                                SizedBox(width: 6,),
+                                Text("${f.formatNumber(_item.jumlahFavoritLapak)} favorit"),
+                              ],),
+                              Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                                Icon(LineIcons.files_o, size: 20, color: Colors.grey,),
+                                SizedBox(width: 6,),
+                                Text("${f.formatNumber(_item.jumlahIklan)} iklan"),
+                              ],),
+                            ],
+                          ),
+                        ],),),
+                        SizedBox(width: 8),
+                        _item.isMine ? SizedBox() : Container(
+                          width: 40,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(LineIcons.map_marker, color: Colors.grey),
+                              SizedBox(height: 2,),
+                              Text(f.distanceLabel(_item.jarakMeter), textAlign: TextAlign.center, style: style.textS,)
+                            ],
+                          ),
                         ),
-                      ),
-                    ],),
+                      ],),
+                    ),
                     SizedBox(height: 12,),
-                    Row(children: <Widget>[
+                    _item.isMine ? SizedBox() : Row(children: <Widget>[
                       SizedBox(width: 48,),
                       Expanded(child: UiButton("Telepon", height: style.heightButtonL, color: Colors.green, icon: LineIcons.phone, textStyle: style.textButtonL, onPressed: () => _action('telepon'),)),
                       SizedBox(width: 8,),
@@ -409,13 +465,19 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                 SizedBox(width: 20,),
                 Expanded(child: Text("Laku hanya menampilkan informasi apa adanya sesuai data dari pengiklan. Harap selalu berhati-hati ketika bertransaksi.", style: style.textMutedS)),
-                Container(width: 80, child: _item.isMine ? SizedBox() : FlatButton(padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0), child: Column(
-                  children: <Widget>[
+                Container(width: 80, child: _item.isMine ? SizedBox() : FlatButton(
+                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8),
+                  )),
+                  onPressed: () => _action('report'),
+                  child: Column(children: <Widget>[
                     Icon(MdiIcons.commentAlertOutline, color: Colors.grey, size: 20,),
                     SizedBox(height: 4,),
                     Text("Laporkan", maxLines: 1, style: TextStyle(fontSize: 11, color: Colors.blueGrey),),
-                  ],
-                ), onPressed: () => _action('report'),))
+                  ],),
+                ))
               ],),
               SizedBox(height: 40,),
             ])),

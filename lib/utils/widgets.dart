@@ -863,12 +863,14 @@ class UiDropImages extends StatelessWidget {
 }
 
 class UiSearchBar extends StatefulWidget {
-  UiSearchBar({Key key, this.tool, this.height, this.searchController, this.searchFocusNode, this.searchPlaceholder = "Cari data ..."}) : super(key: key);
+  UiSearchBar({Key key, this.tool, this.height, this.backgroundColor, this.actionColor, this.searchController, this.searchFocusNode, this.searchPlaceholder = "Cari data ..."}) : super(key: key);
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
   final String searchPlaceholder;
   final Widget tool;
   final double height;
+  final Color backgroundColor;
+  final Color actionColor;
 
   @override
   _UiSearchBarState createState() => _UiSearchBarState();
@@ -877,10 +879,10 @@ class UiSearchBar extends StatefulWidget {
 class _UiSearchBarState extends State<UiSearchBar> {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: widget.height ?? (THEME_INPUT_HEIGHT + 32),
       child: Material(
-        color: THEME_BACKGROUND,
+        color: widget.backgroundColor ?? THEME_BACKGROUND,
         elevation: 0,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -902,7 +904,7 @@ class _UiSearchBarState extends State<UiSearchBar> {
             IconButton(
               padding: EdgeInsets.zero,
               icon: Icon(Icons.sort),
-              color: Colors.grey[850],
+              color: widget.actionColor ?? Colors.grey[850],
               tooltip: 'prompt_sort'.tr(),
               onPressed: () {
                 // TODO show dialog

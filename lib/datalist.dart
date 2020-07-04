@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:laku/models/user.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
@@ -25,6 +27,7 @@ class _DataListState extends State<DataList> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
   var _listData = [];
+  UserTierModel _tier;
 
   @override
   void initState() {
@@ -36,7 +39,12 @@ class _DataListState extends State<DataList> {
       _getAllData();
     });
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      var tierApi = await api('user_tier', data: {'uid': userSession.uid});
+      var tier = UserTierModel.fromJson(tierApi.result.first);
+      setState(() {
+        _tier = tier;
+      });
     });
   }
 
@@ -128,31 +136,29 @@ class _DataListState extends State<DataList> {
       case 'shop':
       default:
         TokoModel _data = _listData[index];
-        return Material(
+        return Container(
           color: Colors.white,
-          child: InkWell(
-            onTap: () async {
-              final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'shop': _data.id}) as Map;
-              print(results);
-            },
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Row(children: <Widget>[
-                Icon(LineIcons.map_marker, size: 50, color: THEME_COLOR,),
-                SizedBox(width: 20,),
-                Expanded(child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(_data.judul, style: style.textLabel,),
-                    SizedBox(height: 2),
-                    Text(_data.alamat),
-                    SizedBox(height: 10),
-                    
-                  ],
-                ))
-              ],),
-            ),
-          ),
+          padding: EdgeInsets.all(20),
+          child: Row(children: <Widget>[
+            Icon(MdiIcons.storefrontOutline, size: 50, color: THEME_COLOR,),
+            SizedBox(width: 20,),
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(_data.judul, style: style.textLabel,),
+                SizedBox(height: 2),
+                Text(_data.alamat),
+                SizedBox(height: 10),
+                Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
+                  UiFlatButton(LineIcons.files_o, "${f.formatNumber(_data.jumlahIklan)} iklan", () async {
+                    final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'shop': _data.id}) as Map;
+                    print(results);
+                  }),
+                  UiFlatButton(LineIcons.cog, "Pengaturan", () {}),
+                ],),
+              ],
+            ))
+          ],),
         );
     }
   }
@@ -162,7 +168,7 @@ class _DataListState extends State<DataList> {
   }
 
   Widget _actionButton() {
-    return Container(
+    return _tier != null && _tier.tier > 0 ? Container(
       height: double.infinity,
       width: 60,
       child: RaisedButton(
@@ -173,7 +179,7 @@ class _DataListState extends State<DataList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         onPressed: () => _action('create'),
       ),
-    );
+    ) : SizedBox();
   }
 
   @override
@@ -182,15 +188,17 @@ class _DataListState extends State<DataList> {
     return Scaffold(
       body: SafeArea(child: Column(children: <Widget>[
         UiAppBar(_title.label, icon: _title.icon, tool: _actionButton(),),
-        UiSearchBar(
+        _tier != null && _tier.tier > 0 ? UiSearchBar(
           searchController: _searchController,
           searchFocusNode: _searchFocusNode,
-        ),
+          backgroundColor: THEME_COLOR,
+          actionColor: Colors.white
+        ) : SizedBox(),
         Expanded(
           child: SmartRefresher(
             enablePullDown: true,
             enablePullUp: false,
-            header: WaterDropMaterialHeader(color: THEME_COLOR, backgroundColor: THEME_BACKGROUND),
+            header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR),
             controller: _refreshController,
             onRefresh: _getAllData,
             child: ListView.separated(
@@ -200,29 +208,66 @@ class _DataListState extends State<DataList> {
             ),
           ),
         ),
-        widget.args['tipe'] == 'shop' && widget.args['mode'] == 'mine' ? Container(
-          width: double.infinity,
-          height: 180,
-          padding: EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)]
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text('Anda pelaku bisnis?', style: style.textTitle,),
-              SizedBox(height: 6),
-              Text('Anda dapat memberikan nama usaha dan menambahkan lebih dari satu lokasi.', style: style.textMutedM,),
-              SizedBox(height: 16),
-              UiButton("Upgrade ke Akun Bisnis", width: 250, height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.certificate, textStyle: style.textButton, iconRight: true, onPressed: () {
-                // TODO upgrade akun bisnis
-              },),
-            ],
-          ),
-        ) : Container(),
+        widget.args['tipe'] == 'shop' && widget.args['mode'] == 'mine' ? AnimatedSwitcher(
+          duration: Duration(milliseconds: 500),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.linear,
+          // transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            final  offsetAnimation = Tween<Offset>(begin: Offset(0, 1), end: Offset(0, 0)).animate(animation);
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
+          child: _tier != null && _tier.tier == 0 ? Container(
+            width: double.infinity,
+            height: 180,
+            padding: EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)]
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text('Anda pelaku bisnis?', style: style.textTitle,),
+                SizedBox(height: 6),
+                Text('Anda dapat memberikan nama usaha dan menambahkan lebih dari satu lokasi.', style: style.textMutedM,),
+                SizedBox(height: 16),
+                UiButton("Upgrade ke Akun Bisnis", width: 250, height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.certificate, textStyle: style.textButton, iconRight: true, onPressed: () {
+                  // TODO upgrade akun bisnis
+                },),
+              ],
+            ),
+          ) : SizedBox(),
+        ) : SizedBox(),
       ],),),
+    );
+  }
+}
+
+class UiFlatButton extends StatelessWidget {
+  UiFlatButton(this.icon, this.label, this.action, {Key key}) : super(key: key);
+  final IconData icon;
+  final String label;
+  final VoidCallback action;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      splashColor: Colors.teal[200].withOpacity(.2),
+      highlightColor: Colors.teal[200].withOpacity(.2),
+      padding: EdgeInsets.all(8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: Colors.teal[200].withOpacity(.2),
+      onPressed: action,
+      child: Column(children: <Widget>[
+        Icon(icon, color: THEME_COLOR,),
+        SizedBox(height: 8,),
+        Text(label, style: TextStyle(color: THEME_COLOR),)
+      ],),
     );
   }
 }

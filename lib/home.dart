@@ -54,16 +54,16 @@ class _HomeState extends State<Home> {
     }
   }
 
-  _action(String action) async {
-    switch (action) {
-    case "shop":
-      a.openMyShop();
-      break;
-    default:
-      final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action ?? 'WTS'}) as Map;
-      print(" ... ROUTE PASANG result: $results");
-    }
-  }
+  // _action(String action) async {
+  //   switch (action) {
+  //   case "shop":
+  //     a.openMyShop();
+  //     break;
+  //   default:
+  //     final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action ?? 'WTS'}) as Map;
+  //     print(" ... ROUTE PASANG result: $results");
+  //   }
+  // }
 
   @override
   void initState() {
@@ -82,11 +82,11 @@ class _HomeState extends State<Home> {
       Page(title: 'menu_user'.tr(), icon: LineIcons.map_o, content: Container(),),
     ];
 
-    final _listActions = <IconLabel>[
-      IconLabel(MdiIcons.bullhornOutline, "Pasang", value: "WTS"),
-      IconLabel(MdiIcons.magnify, "Cari", value: "WTB"),
-      IconLabel(MdiIcons.storefrontOutline, "Kelola", value: "shop"),
-    ];
+    // final _listActions = <IconLabel>[
+    //   IconLabel(MdiIcons.bullhornOutline, "Pasang", value: "WTS"),
+    //   IconLabel(MdiIcons.magnify, "Cari", value: "WTB"),
+    //   IconLabel(MdiIcons.storefrontOutline, "Kelola", value: "shop"),
+    // ];
 
     return WillPopScope(
       onWillPop: () async {
@@ -174,25 +174,13 @@ class _HomeState extends State<Home> {
               child: child,
             );
           },
-          child: _selectedIndex > 0 ? SizedBox() : UiFabCircular(
-            LineIcons.plus,
-            _listActions,
-            _action,
-            // getOffset: (i) {
-            //   double x = 0.0, y = 0.0;
-            //   if (i == 0) {
-            //     x = 12;
-            //     y = 42;
-            //   } else if (i == 1) {
-            //     x = -9;
-            //     y = 17;
-            //   } else if (i == 2) {
-            //     x = 0;
-            //     y = 6;
-            //   }
-            //   return Offset(x, y);
-            // },
-            getSize: (i) => 44.0 - 8 * i,
+          child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Icon(MdiIcons.telescope, size: 32,),
+            ),
+            backgroundColor: THEME_COLOR_LIGHT,
+            onPressed: a.openMap
           ),
         ),
         bottomNavigationBar: Stack(

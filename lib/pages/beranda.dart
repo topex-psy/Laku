@@ -387,11 +387,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
                                               height: 46.0,
                                               child: SpinKitThreeBounce(color: Colors.white, size: 30.0,),
                                             ) : GestureDetector(
-                                              onTap: () async {
-                                                final results = await Navigator.of(context).pushNamed(ROUTE_PETA) as Map;
-                                                print(results);
-                                                // TODO set latest selected radius
-                                              },
+                                              onTap: a.openMap,
                                               child: Container(
                                                 height: 46.0,
                                                 child: RichText(text: TextSpan(
@@ -572,43 +568,43 @@ class _CardBoxState extends State<CardBox> {
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
     var size = (MediaQuery.of(context).size.width - 38) / 2;
-    int angka;
-    VoidCallback buka;
+    int notif;
+    VoidCallback action;
     Color color;
     IconData icon;
     String label;
 
     switch (widget.notif) {
       case 'iklan':
-        angka = settings.notif?.iklan;
+        notif = settings.notif?.iklan;
         color = Colors.blue;
         icon = LineIcons.map_marker;
-        label = 'menu_listing'.plural(angka ?? 1);
-        buka = () {
+        label = 'menu_listing'.plural(notif ?? 1);
+        action = () {
           settings.setSettings(isViewFavorites: false);
           screenPageController.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
         };
         break;
       case 'pengguna':
-        angka = settings.notif?.pengguna;
+        notif = settings.notif?.pengguna;
         color = Colors.green;
         icon = LineIcons.users;
-        label = 'menu_user'.plural(angka ?? 1);
-        buka = () {
+        label = 'menu_user'.plural(notif ?? 1);
+        action = () {
           // TODO list shop near
         };
         break;
       case 'pencari':
-        angka = settings.notif?.pencari;
+        notif = settings.notif?.pencari;
         color = Colors.orange;
         icon = LineIcons.binoculars;
-        label = 'menu_seeker'.plural(angka ?? 1);
-        buka = () {
+        label = 'menu_seeker'.plural(notif ?? 1);
+        action = () {
           // TODO list iklan WTB near
         };
         break;
     }
-    if ((angka ?? 0) == 0 && widget.notif != 'iklan') return SizedBox();
+    if ((notif ?? 0) == 0 && widget.notif != 'iklan') return SizedBox();
     return SizedBox(
       width: size,
       height: size,
@@ -618,7 +614,7 @@ class _CardBoxState extends State<CardBox> {
         color: color,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: buka,
+          onTap: action,
           child: Stack(
             alignment: Alignment.topRight,
             children: [
@@ -641,7 +637,7 @@ class _CardBoxState extends State<CardBox> {
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
                   // TODO check spinkit size
-                  angka == null ? SpinKitRipple(color: Colors.white70, size: 50,) : Text(f.formatNumber(angka), style: style.textHeadlineXLWhite,),
+                  notif == null ? SpinKitRipple(color: Colors.white70, size: 50,) : Text(f.formatNumber(notif), style: style.textHeadlineXLWhite,),
                   Text(label, style: style.textTitleWhite,),
                   SizedBox(height: 14,),
                   Row(children: <Widget>[
@@ -671,66 +667,66 @@ class _CardListState extends State<CardList> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
-    int angka;
-    VoidCallback buka;
+    int notif;
+    VoidCallback action;
     String buttonLabel, label;
     IconData buttonIcon;
     double buttonWidth;
     Color buttonColor = Colors.teal[300];
     switch (widget.notif) {
       case 'iklanFavorit':
-        angka = settings.notif?.iklanTerpasang;
+        notif = settings.notif?.iklanTerpasang;
         label = "Iklan favorit";
         buttonColor = Colors.pink[300];
         buttonLabel = "Cek";
         buttonWidth = 90;
         buttonIcon = LineIcons.shopping_cart;
-        buka = () {
+        action = () {
           settings.setSettings(isViewFavorites: true);
           screenPageController.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
         };
         break;
       case 'iklanTerpasang':
-        angka = settings.notif?.iklanTerpasang;
+        notif = settings.notif?.iklanTerpasang;
         label = "Iklan terpasang";
-        buttonLabel = angka == 0 ? "Buat" : "Kelola";
-        buttonWidth = angka == 0 ? 98 : 110;
-        buttonIcon = angka == 0 ? LineIcons.plus_circle : LineIcons.dropbox;
-        buka = () {
-          // TODO buka kelola iklan
+        buttonLabel = notif == 0 ? "Buat" : "Kelola";
+        buttonWidth = notif == 0 ? 98 : 110;
+        buttonIcon = notif == 0 ? LineIcons.plus_circle : LineIcons.dropbox;
+        action = () {
+          a.openMyShop();
         };
         break;
       case 'pencarianTerpasang':
-        angka = settings.notif?.pencarianTerpasang;
+        notif = settings.notif?.pencarianTerpasang;
         label = "Pencarian terpasang";
         buttonLabel = "Lihat";
         buttonWidth = 100;
         buttonIcon = LineIcons.binoculars;
-        buka = () {
+        action = () {
           // TODO buka kelola pencarian
         };
         break;
       case 'pesanMasuk':
-        angka = settings.notif?.pesanMasuk;
+        notif = settings.notif?.pesanMasuk;
         label = "Pesan masuk";
         buttonColor = Colors.orange[300];
         buttonLabel = "Cek";
         buttonWidth = 90;
         buttonIcon = LineIcons.inbox;
-        buka = () {
+        action = () {
           // TODO buka kelola pesan
         };
         break;
     }
-    angka ??= 0;
-    return angka == 0 && widget.notif != 'iklanTerpasang' ? SizedBox() : Card(
+    notif ??= 0;
+    return notif == 0 && widget.notif != 'iklanTerpasang' ? SizedBox() : Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
       elevation: THEME_CARD_ELEVATION,
       child: Padding(
         padding: EdgeInsets.all(12),
         child: Row(children: <Widget>[
           SizedBox(width: 8,),
-          Text(f.formatNumber(angka) ?? '0', style: style.textHeadline,),
+          Text(f.formatNumber(notif) ?? '0', style: style.textHeadline,),
           SizedBox(width: 8,),
           Expanded(child: Text(label)),
           UiButton(
@@ -740,7 +736,7 @@ class _CardListState extends State<CardList> {
             textStyle: style.textButton,
             icon: buttonIcon,
             iconRight: true,
-            onPressed: buka
+            onPressed: action
           ),
         ],),
       ),

@@ -102,6 +102,11 @@ class UserHelper {
     if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
     return results;
   }
+  Future<dynamic> openMap() async {
+    final results = await Navigator.of(context).pushNamed(ROUTE_PETA);
+    print(" ... ROUTE MAP result: $results");
+    return results;
+  }
 
   Future<dynamic> openListing(IklanModel item) async {
     final results = await Navigator.of(context).pushNamed(ROUTE_LISTING, arguments: {'item': item});

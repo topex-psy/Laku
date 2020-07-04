@@ -8,6 +8,7 @@ class TokoModel {
     @required this.alamat,
     @required this.lat,
     @required this.lng,
+    this.jumlahIklan,
     this.isFavorit,
     this.isDalamRadius,
   });
@@ -18,6 +19,7 @@ class TokoModel {
   final String alamat;
   final double lat;
   final double lng;
+  final int jumlahIklan;
   bool isFavorit;
   bool isDalamRadius;
 
@@ -28,6 +30,7 @@ class TokoModel {
     alamat = parsedJson['ALAMAT'],
     lat = double.parse(parsedJson['LATITUDE']),
     lng = double.parse(parsedJson['LONGITUDE']),
+    jumlahIklan = int.parse(parsedJson['JUMLAH_IKLAN']),
     isFavorit = int.parse(parsedJson['IS_FAVORIT']) == 1,
     isDalamRadius = int.parse(parsedJson['IS_DALAM_RADIUS']) == 1;
 }
