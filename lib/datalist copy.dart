@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'extensions/widget.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
 import 'models/toko.dart';
@@ -147,7 +148,25 @@ class _DataListState extends State<DataList> {
                     SizedBox(height: 2),
                     Text(_data.alamat),
                     SizedBox(height: 10),
-                    
+                    Wrap(children: <Widget>[
+                      Container(
+                        height: 30,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: THEME_COLOR,
+                          borderRadius: BorderRadius.circular(20)
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  3  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white30, fontWeight: FontWeight.bold),),),
+                            SizedBox(width: 8,),
+                            Text("Iklan", style: style.textWhite,),
+                          ],
+                        ),
+                      ).shimmerIt(minOpacity: 0.8, maxOpacity: 1.0),
+                    ],)
                   ],
                 ))
               ],),

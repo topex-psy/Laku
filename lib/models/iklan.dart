@@ -92,6 +92,7 @@ class IklanModel {
     @required this.judul,
     @required this.deskripsi,
     this.kondisi,
+    this.stok,
     this.harga,
     this.isNego,
     this.layananAntar,
@@ -106,10 +107,20 @@ class IklanModel {
     @required this.lng,
     @required this.jarakMeter,
     @required this.judulLapak,
+    @required this.alamatLapak,
+    @required this.fotoLapak,
     @required this.pengiklan,
+    this.jumlahIklan,
+    this.tokopedia,
+    this.shopee,
+    this.whatsapp,
+    this.instagram,
+    this.facebook,
+    this.bukalapak,
     this.foto,
     this.tier,
     this.isFavorit,
+    this.isMine,
     this.isDalamRadius,
   });
 
@@ -119,6 +130,7 @@ class IklanModel {
   final String judul;
   final String deskripsi;
   final String kondisi;
+  final String stok;
   final double harga;
   final bool isNego;
   final String layananAntar;
@@ -133,10 +145,20 @@ class IklanModel {
   final double lng;
   final double jarakMeter;
   final String judulLapak;
+  final String alamatLapak;
+  final String fotoLapak;
   final String pengiklan;
+  final int jumlahIklan;
+  final String tokopedia;
+  final String shopee;
+  final String whatsapp;
+  final String instagram;
+  final String facebook;
+  final String bukalapak;
   final List<IklanPicModel> foto;
   final int tier;
   bool isFavorit;
+  bool isMine;
   bool isDalamRadius;
 
   toggleFav() {
@@ -153,6 +175,7 @@ class IklanModel {
     judul = parsedJson['JUDUL'],
     deskripsi = parsedJson['DESKRIPSI'],
     kondisi = parsedJson['KONDISI'],
+    stok = parsedJson['STOK'],
     keyword = parsedJson['KEYWORD'],
     harga = double.parse(parsedJson['HARGA'] ?? '0.0'),
     isNego = int.parse(parsedJson['IS_NEGO'] ?? '0') == 1,
@@ -167,9 +190,19 @@ class IklanModel {
     lng = double.parse(parsedJson['LONGITUDE']),
     jarakMeter = double.parse(parsedJson['JARAK_METER']),
     judulLapak = parsedJson['JUDUL_LAPAK'],
+    alamatLapak = parsedJson['ALAMAT_LAPAK'],
+    fotoLapak = parsedJson['FOTO_LAPAK'],
     pengiklan = parsedJson['PENGIKLAN'],
+    jumlahIklan = int.parse(parsedJson['JUMLAH_IKLAN']),
+    tokopedia = parsedJson['TOKOPEDIA'],
+    shopee = parsedJson['SHOPEE'],
+    whatsapp = parsedJson['WHATSAPP'],
+    instagram = parsedJson['INSTAGRAM'],
+    facebook = parsedJson['FACEBOOK'],
+    bukalapak = parsedJson['BUKALAPAK'],
     foto = List.from(parsedJson['FOTO']).map((f) => IklanPicModel.fromJson(f)).toList(),
     tier = int.parse(parsedJson['TIER']),
     isFavorit = int.parse(parsedJson['IS_FAVORIT']) == 1,
+    isMine = int.parse(parsedJson['IS_MINE']) == 1,
     isDalamRadius = int.parse(parsedJson['IS_DALAM_RADIUS']) == 1;
 }

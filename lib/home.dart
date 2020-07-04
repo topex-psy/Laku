@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -70,7 +69,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Vibration.vibrate();
+      Vibration.vibrate(duration: 200, amplitude: 1);
     });
   }
 
@@ -84,9 +83,9 @@ class _HomeState extends State<Home> {
     ];
 
     final _listActions = <IconLabel>[
-      IconLabel(MdiIcons.bullhornOutline, "Pasang iklan", value: "WTS"),
-      IconLabel(MdiIcons.magnify, "Cari sesuatu", value: "WTB"),
-      IconLabel(MdiIcons.storefrontOutline, "Kelola toko", value: "shop"),
+      IconLabel(MdiIcons.bullhornOutline, "Pasang", value: "WTS"),
+      IconLabel(MdiIcons.magnify, "Cari", value: "WTB"),
+      IconLabel(MdiIcons.storefrontOutline, "Kelola", value: "shop"),
     ];
 
     return WillPopScope(
@@ -175,31 +174,25 @@ class _HomeState extends State<Home> {
               child: child,
             );
           },
-          child: _selectedIndex > 0 ? SizedBox() : FabCircularMenu(
-            fabOpenIcon: Icon(LineIcons.plus, color: Colors.white,),
-            fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
-            fabOpenColor: Colors.red[400],
-            fabCloseColor: Colors.teal[400],
-            ringColor: Colors.white.withOpacity(.9),
-            ringWidth: 100,
-            ringDiameter: 300,
-            children: _listActions.asMap().map((i, action) {
-              return MapEntry(i, Material(
-                shape: CircleBorder(),
-                color: Colors.teal.withOpacity(.3),
-                clipBehavior: Clip.antiAlias,
-                child: IconButton(
-                  padding: EdgeInsets.all(20),
-                  icon: Icon(action.icon),
-                  iconSize: 32.0 - 4 * i,
-                  color: THEME_COLOR,
-                  tooltip: action.label,
-                  onPressed: () {
-                    _action(action.value);
-                  }
-                ),
-              ));
-            }).values.toList(),
+          child: _selectedIndex > 0 ? SizedBox() : UiFabCircular(
+            LineIcons.plus,
+            _listActions,
+            _action,
+            // getOffset: (i) {
+            //   double x = 0.0, y = 0.0;
+            //   if (i == 0) {
+            //     x = 12;
+            //     y = 42;
+            //   } else if (i == 1) {
+            //     x = -9;
+            //     y = 17;
+            //   } else if (i == 2) {
+            //     x = 0;
+            //     y = 6;
+            //   }
+            //   return Offset(x, y);
+            // },
+            getSize: (i) => 44.0 - 8 * i,
           ),
         ),
         bottomNavigationBar: Stack(

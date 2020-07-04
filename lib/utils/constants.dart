@@ -41,6 +41,7 @@ const IMAGE_UPLOAD_MAX     = 3;
 const THEME_BACKGROUND     = Color(0XFFDEFFF3);
 const THEME_BORDER_RADIUS  = 12.0;
 const THEME_COLOR          = Colors.teal;
+const THEME_COLOR_LIGHT    = Color(0xFF26A69A);
 const THEME_ELEVATION_INPUT  = 1.0;
 const THEME_ELEVATION_BUTTON = 2.0;
 const THEME_INPUT_HEIGHT   = 50.0;

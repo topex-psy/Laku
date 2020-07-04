@@ -51,6 +51,22 @@ class FormatHelper {
   String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
   String formatDate(DateTime date, {String format = 'dd/MM/yyyy'}) => date == null ? null : DateFormat(format).format(date);
   String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => nominal == null ? null : NumberFormat.currency(locale: APP_LOCALE, symbol: symbol).format(nominal);
+  String formatPrice2(dynamic nominal, {String symbol = 'Rp ', bool singkat = false}) {
+    if (nominal == null) return null;
+    var nom = nominal;
+    var suf = '';
+    if (singkat) {
+      if (nom > 999999999999) {
+        nom /= 1000000;
+        suf = 'JT';
+      } else if (nom > 999999999) {
+        nom /= 1000;
+        suf = 'K';
+      }
+    }
+    var res = NumberFormat.currency(locale: APP_LOCALE, symbol: symbol, decimalDigits: 0).format(nom);
+    return "$res$suf";
+  }
   bool isValidURL(String url) => Uri.parse(url).isAbsolute;
   bool isValidEmail(String email) => !email.isEmptyOrNull && RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
   num roundNumber(num nominal, {int maxDecimal = 1}) => num.parse((nominal / 1000).toStringAsFixed(maxDecimal));

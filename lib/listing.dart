@@ -1,11 +1,9 @@
 import 'dart:math';
 
-import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/material.dart';
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:laku/utils/widgets.dart';
+import 'package:expandable/expandable.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'extensions/widget.dart';
@@ -14,6 +12,9 @@ import 'models/iklan.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
+import 'utils/widgets.dart';
+
+const MAX_DESCRIPTION_LENGTH = 150;
 
 class Listing extends StatefulWidget {
   Listing(this.args, {Key key}) : super(key: key);
@@ -24,20 +25,18 @@ class Listing extends StatefulWidget {
 }
 
 class _ListingState extends State<Listing> with TickerProviderStateMixin {
-  var _tabs = <String>['Detail', 'Ulasan', 'Pelapak'];
   ScrollController _scrollController;
-  TabController _tabController;
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _listActions = <IconLabel>[
-    IconLabel(MdiIcons.phone, "Telepon"),
-    IconLabel(MdiIcons.handshake, "COD"),
-    IconLabel(MdiIcons.message, "Chat"),
+    IconLabel(MdiIcons.fileEdit, "Edit", value: 'edit', color: Colors.blue),
+    IconLabel(MdiIcons.close, "Set Kosong", value: 'kosong', color: Colors.yellow),
+    IconLabel(MdiIcons.delete, "Hapus", value: 'hapus', color: Colors.red),
   ];
 
   bool get isShrink => _scrollController.hasClients && _scrollController.offset > (200 - kToolbarHeight);
   // Color _titleColor = HSLColor.fromAHSL(1, 1, 1, 0).toColor();
-  double _titleOpacity = 0.0;
+  var _titleOpacity = 0.0;
 
   _scrollListener() {
     if ((_scrollController.offset % 10).floor() > 0) return;
@@ -50,8 +49,27 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
     }
   }
 
-  _action(String action) {
-    // TODO chat, telepon
+  _action(String action) async {
+    switch (action) {
+      case 'edit':
+        break;
+      case 'hapus':
+        if (await h.showConfirm("Hapus Iklan", "Apakah Anda yakin ingin menghapus iklan ini?") ?? false) {
+
+        }
+        break;
+      case 'kosong':
+        if (await h.showConfirm("Set Kosong", "Apakah Anda yakin stok produk ini telah habis?") ?? false) {
+
+        }
+        break;
+      case 'chat':
+        break;
+      case 'telepon':
+        break;
+      case 'report':
+        break;
+    }
   }
 
   _favorit() async {
@@ -71,7 +89,6 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    _tabController = TabController(vsync: this, length: _tabs.length, initialIndex: 0);
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
     super.initState();
@@ -82,7 +99,6 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _tabController.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
@@ -94,104 +110,110 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       body: SafeArea(
-        child: DefaultTabController(
-          length: _tabs.length,
-          child: NestedScrollView(
-            controller: _scrollController,
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                SliverAppBar(
-                  iconTheme: IconThemeData(color: Colors.white),
-                  leading: IconButton(
-                    icon: Icon(MdiIcons.chevronLeft, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  backgroundColor: THEME_COLOR,
-                  expandedHeight: 200.0,
-                  floating: true,
-                  pinned: false,
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: false,
-                    title: Text(_item.judul, overflow: TextOverflow.ellipsis, style: style.textTitleWhite).withOpacity(_titleOpacity),
-                    background: Stack(children: <Widget>[
-                      Positioned.fill(child: SizedBox(
-                        height: 150.0,
-                        width: MediaQuery.of(context).size.width,
-                        child: Carousel(
-                          images: _item.foto.map((pic) => GestureDetector(
-                            onTap: () => h.viewImage(_item.foto, page: _item.foto.indexOf(pic)),
-                            child: FadeInImage.assetNetwork(
-                              placeholder: IMAGE_DEFAULT_NONE,
-                              image: pic.foto,
-                              fit: BoxFit.cover,
-                            ),
-                          ),).toList(),
-                          autoplay: true,
-                          autoplayDuration: Duration(milliseconds: 8000),
-                          animationDuration: Duration(milliseconds: 800),
-                          dotSize: 8.0,
-                          dotSpacing: 20.0,
-                          dotBgColor: Colors.transparent,
-                        )
-                      ),),
-                      Positioned.fill(child: IgnorePointer(child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          gradient: LinearGradient(
-                            begin: FractionalOffset.bottomCenter,
-                            end: FractionalOffset.topCenter,
-                            colors: [
-                              Colors.white.withOpacity(1.0),
-                              Colors.white.withOpacity(0.0),
-                            ],
-                            stops: [
-                              0.0,
-                              0.65,
-                            ]
+        child: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                iconTheme: IconThemeData(color: Colors.white),
+                leading: IconButton(
+                  icon: Icon(MdiIcons.chevronLeft, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                backgroundColor: THEME_COLOR,
+                expandedHeight: 200.0,
+                floating: true,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  centerTitle: false,
+                  title: Text(_item.judul, overflow: TextOverflow.ellipsis, style: style.textTitleWhite).withOpacity(_titleOpacity),
+                  background: Stack(children: <Widget>[
+                    Positioned.fill(child: SizedBox(
+                      height: 150.0,
+                      width: MediaQuery.of(context).size.width,
+                      child: Carousel(
+                        images: _item.foto.map((pic) => GestureDetector(
+                          onTap: () => h.viewImage(_item.foto, page: _item.foto.indexOf(pic)),
+                          child: FadeInImage.assetNetwork(
+                            placeholder: IMAGE_DEFAULT_NONE,
+                            image: pic.foto,
+                            fit: BoxFit.cover,
                           ),
-                        ),
-                      ),),),
-                    ],),
-                  ),
+                        ),).toList(),
+                        autoplay: true,
+                        autoplayDuration: Duration(milliseconds: 8000),
+                        animationDuration: Duration(milliseconds: 800),
+                        showIndicator: _item.foto.length > 1,
+                        dotSize: 5.0,
+                        dotSpacing: 16.0,
+                        dotBgColor: Colors.transparent,
+                        dotColor: THEME_COLOR,
+                        dotIncreasedColor: THEME_COLOR_LIGHT
+                      )
+                    ),),
+                  ],),
                 ),
-                SliverPersistentHeader(
-                  delegate: _SliverAppBarDelegate(
-                    TabBar(
-                      indicatorWeight: 2,
-                      indicatorColor: THEME_COLOR,
-                      controller: _tabController,
-                      labelColor: Colors.black87,
-                      unselectedLabelColor: Colors.grey,
-                      tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
-                    ),
-                  ),
-                  pinned: true,
-                ),
-              ];
-            },
-            body: Container(
-              child: TabBarView(
-                controller: _tabController,
-                children: <Widget>[
-                  // tab 1: detail iklan
-                  SingleChildScrollView(padding: EdgeInsets.all(20), child: Column(children: <Widget>[
+              ),
+            ];
+          },
+          body: Container(
+            child: SingleChildScrollView(child: Column(children: <Widget>[
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(left: 20, top: 20, bottom: 20),
+                color: Colors.white,
+                child: Column(
+                  children: <Widget>[
                     Row(
                       children: <Widget>[
                         Expanded(child: Text(_item.judul, style: style.textHeadline)),
                         SizedBox(width: 8,),
-                        _item.layananAntar == null ? SizedBox() : Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(LineIcons.truck, color: Colors.teal),
-                            SizedBox(height: 2,),
-                            Text(_item.layananAntar, textAlign: TextAlign.center, style: style.textS,)
-                          ],
+                        _item.layananAntar == null ? SizedBox() : Container(
+                          width: 40,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(LineIcons.truck, color: Colors.teal),
+                              SizedBox(height: 2,),
+                              Text(_item.layananAntar, textAlign: TextAlign.center, style: style.textS,)
+                            ],
+                          ),
                         ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 16.0),
-                          child: IconButton(icon: Icon(_item.isFavorit ? LineIcons.heart : LineIcons.heart_o), color: Colors.pink, onPressed: _favorit,),
-                        )
+                        // Container(
+                        //   width: 40,
+                        //   child: Column(
+                        //     crossAxisAlignment: CrossAxisAlignment.center,
+                        //     mainAxisSize: MainAxisSize.min,
+                        //     children: <Widget>[
+                        //       Icon(LineIcons.map_marker, color: Colors.grey),
+                        //       SizedBox(height: 2,),
+                        //       Text(f.distanceLabel(_item.jarakMeter), textAlign: TextAlign.center, style: style.textS,)
+                        //     ],
+                        //   ),
+                        // ),
+                        Container(
+                          width: 40,
+                          child: Stack(
+                            alignment: Alignment.topCenter,
+                            children: <Widget>[
+                              Transform.translate(
+                                offset: Offset(0, -8.5),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  shape: CircleBorder(),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: IconButton(icon: Icon(_item.isFavorit ? LineIcons.heart : LineIcons.heart_o), color: Colors.pink, onPressed: _favorit,)
+                                ),
+                              ),
+                              Transform.translate(
+                                offset: Offset(0, 29.5),
+                                child: Text("1", textAlign: TextAlign.center, style: style.textS,),
+                              )
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 12,)
                       ],
                     ),
                     SizedBox(height: 16,),
@@ -212,29 +234,53 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                                 children: <Widget>[
                                   Text("Kondisi:"),
                                   SizedBox(width: 4,),
-                                  Expanded(child: Text(_item.kondisi.tr(), style: style.textLabel,)),
+                                  Text(_item.kondisi.tr(), style: style.textLabel,),
+                                  SizedBox(width: 4,),
+                                  _item.kondisi == 'used' ? Icon(MdiIcons.alertCircle, color: Colors.grey, size: 18,) : SizedBox()
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(top: 2.0),
+                              child: Row(
+                                children: <Widget>[
+                                  Text("Stok:"),
+                                  SizedBox(width: 4,),
+                                  Expanded(child: Text("Tersedia", style: style.textLabel,)),
                                 ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                      _item.harga == 0 ? Container() : Padding(
+                      SizedBox(width: 20,),
+                      Expanded(flex: 0, child: _item.harga == 0 ? SizedBox() : Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             Container(
-                              padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                              padding: EdgeInsets.only(right: 20),
                               decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.redAccent[400],
                               ),
-                              child: Text(f.formatPrice(_item.harga), style: style.textWhiteB),
+                              child: Row(
+                                children: <Widget>[
+                                  Transform.translate(
+                                    offset: Offset(-3, 0),
+                                    child: Transform.rotate(
+                                      angle: 90 * pi / 180,
+                                      child: Icon(MdiIcons.triangle, color: Colors.white, size: 28,),
+                                    ),
+                                  ),
+                                  SizedBox(width: 6,),
+                                  Text(f.formatPrice2(_item.harga, singkat: true), style: style.textTitleWhite),
+                                ],
+                              ),
                             ),
                             _item.isNego ? Padding(
-                              padding: EdgeInsets.only(top: 4),
+                              padding: EdgeInsets.only(top: 8, right: 20),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
@@ -246,84 +292,156 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                             ) : SizedBox()
                           ],
                         ),
+                      ),)
+                    ],),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12,),
+              Container(
+                width: double.infinity,
+                color: Colors.white,
+                padding: EdgeInsets.all(20),
+                child: ExpandableNotifier(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(child: Text("Detail Produk", style: style.textTitle,),),
+                          _item.isMine ? Container(
+                            height: 20,
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: IconButton(
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              padding: EdgeInsets.zero,
+                              icon: Icon(MdiIcons.pencil),
+                              color: Colors.grey,
+                              tooltip: "Edit",
+                              onPressed: () => _action('edit'),
+                            ),
+                          ) : SizedBox()
+                        ],
+                      ),
+                      SizedBox(height: 16,),
+                      Expandable(
+                        collapsed: Text(_item.deskripsi, softWrap: true, maxLines: 5, overflow: TextOverflow.ellipsis,),
+                        expanded: Text(_item.deskripsi, softWrap: true,),
+                      ),
+                      Builder(
+                        builder: (context) {
+                          var _expandController = ExpandableController.of(context);
+                          return FlatButton(
+                            padding: EdgeInsets.zero,
+                            highlightColor: Colors.transparent,
+                            splashColor: Colors.transparent,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text(
+                                  _expandController.expanded ? "Lebih Ringkas" : "Selengkapnya",
+                                  style: TextStyle(color: THEME_COLOR),
+                                ),
+                                SizedBox(width: 4,),
+                                Icon(_expandController.expanded ? MdiIcons.chevronUp : MdiIcons.chevronDown, color: THEME_COLOR)
+                              ],
+                            ),
+                            onPressed: () {
+                              _expandController.toggle();
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 12,),
+              Container(
+                width: double.infinity,
+                color: Colors.white,
+                padding: EdgeInsets.only(left: 20, top: 20, bottom: 20, right: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text("Info Seller", style: style.textTitle,),
+                    SizedBox(height: 16,),
+                    Row(children: <Widget>[
+                      UiAvatar(_item.fotoLapak, size: 40, strokeWidth: 0),
+                      SizedBox(width: 8),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Text(_item.judulLapak, style: style.textB,),
+                        SizedBox(height: 4,),
+                        // _item.alamatLapak == null ? SizedBox() : Text(_item.alamatLapak, style: TextStyle(color: Colors.blueGrey),),
+                        Row(children: <Widget>[
+                          Icon(LineIcons.files_o, size: 20, color: Colors.grey,),
+                          SizedBox(width: 6,),
+                          Expanded(child: Text("${f.formatNumber(_item.jumlahIklan)} iklan", style: style.textMutedS,)),
+                        ],),
+                      ],),),
+                      SizedBox(width: 8),
+                      Container(
+                        width: 40,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(LineIcons.map_marker, color: Colors.grey),
+                            SizedBox(height: 2,),
+                            Text(f.distanceLabel(_item.jarakMeter), textAlign: TextAlign.center, style: style.textS,)
+                          ],
+                        ),
                       ),
                     ],),
-                    SizedBox(height: 16,),
-                    Text(_item.deskripsi),
-                  ])),
-                  // tab 2: ulasan
-                  SingleChildScrollView(padding: EdgeInsets.all(THEME_PADDING), child: Column(children: <Widget>[
-
-                  ])),
-                  // tab 3: profil lapak
-                  SingleChildScrollView(padding: EdgeInsets.all(THEME_PADDING), child: Column(children: <Widget>[
-
-                  ])),
-                ]
+                    SizedBox(height: 12,),
+                    Row(children: <Widget>[
+                      SizedBox(width: 48,),
+                      Expanded(child: UiButton("Telepon", height: style.heightButtonL, color: Colors.green, icon: LineIcons.phone, textStyle: style.textButtonL, onPressed: () => _action('telepon'),)),
+                      SizedBox(width: 8,),
+                      Expanded(child: UiButton("Chat", height: style.heightButtonL, color: Colors.blue, icon: LineIcons.comment, textStyle: style.textButtonL, onPressed: () => _action('chat'),)),
+                      SizedBox(width: 8,),
+                    ],)
+                  ],
+                ),
               ),
-            ),
+              SizedBox(height: 20,),
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                SizedBox(width: 20,),
+                Expanded(child: Text("Laku hanya menampilkan informasi apa adanya sesuai data dari pengiklan. Harap selalu berhati-hati ketika bertransaksi.", style: style.textMutedS)),
+                Container(width: 80, child: _item.isMine ? SizedBox() : FlatButton(padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0), child: Column(
+                  children: <Widget>[
+                    Icon(MdiIcons.commentAlertOutline, color: Colors.grey, size: 20,),
+                    SizedBox(height: 4,),
+                    Text("Laporkan", maxLines: 1, style: TextStyle(fontSize: 11, color: Colors.blueGrey),),
+                  ],
+                ), onPressed: () => _action('report'),))
+              ],),
+              SizedBox(height: 40,),
+            ])),
           ),
         ),
       ),
-      floatingActionButton: FabCircularMenu(
-        fabOpenIcon: Icon(MdiIcons.message, color: Colors.white,),
-        fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
-        fabOpenColor: Colors.red[400],
-        fabCloseColor: Colors.teal[400],
-        ringColor: Colors.white.withOpacity(.9),
-        ringWidth: 100,
-        ringDiameter: 300,
-        children: _listActions.asMap().map((i, action) {
-          return MapEntry(i, Stack(
-            alignment: Alignment.bottomCenter,
-            children: <Widget>[
-              Material(
-                shape: CircleBorder(),
-                color: Colors.teal.withOpacity(.3),
-                clipBehavior: Clip.antiAlias,
-                child: IconButton(
-                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 12),
-                  icon: Icon(action.icon),
-                  iconSize: 32.0 - 4 * i,
-                  color: THEME_COLOR,
-                  tooltip: action.label,
-                  onPressed: () {
-                    _action(action.value);
-                  }
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 12.0),
-                child: Text(action.label, textAlign: TextAlign.center, style: TextStyle(color: Colors.teal, fontSize: 12),),
-              )
-            ],
-          ));
-        }).values.toList(),
-      ),
+      floatingActionButton: _item.isMine ? UiFabCircular(
+        MdiIcons.pencil,
+        _listActions,
+        _action,
+        getOffset: (i) {
+          double x = 0.0, y = 0.0;
+          if (i == 0) {
+            x = -5;
+            y = 0;
+          } else if (i == 1) {
+            x = 1;
+            y = -5;
+          } else if (i == 2) {
+            x = 5;
+            y = 0;
+          }
+          return Offset(x, y);
+        },
+        getSize: (i) => 32.0 - 6 * i,
+      ) : null
     );
-  }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-  final TabBar _tabBar;
-
-  @override
-  double get minExtent => _tabBar.preferredSize.height;
-  @override
-  double get maxExtent => _tabBar.preferredSize.height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Material(
-      elevation: 5,
-      color: Colors.white,
-      child: _tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
   }
 }

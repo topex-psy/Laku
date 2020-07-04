@@ -57,6 +57,7 @@ dependencies:
   carousel_pro: ^1.0.0
   code_input: ^1.0.3
   dotted_border: ^1.0.5
+  expandable: ^4.1.4
   fab_circular_menu: ^1.0.0
   fl_chart: ^0.10.0
   flash: ^1.2.0
@@ -93,6 +94,7 @@ flutter:
     - assets/
     - assets/translations/
     - images/
+    - images/marketplace/
     - images/onboarding/
     - images/pin/
 

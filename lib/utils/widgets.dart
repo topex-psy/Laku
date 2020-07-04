@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -665,6 +666,60 @@ class _UiToggleButtonState extends State<UiToggleButton> {
   }
 }
 
+class UiFabCircular extends StatelessWidget {
+  UiFabCircular(this.icon, this.listActions, this.onAction, {Key key, this.getOffset, this.getSize}) : super(key: key);
+  final IconData icon;
+  final List<IconLabel> listActions;
+  final void Function(String) onAction;
+  final Offset Function(int) getOffset;
+  final double Function(int) getSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return FabCircularMenu(
+      fabOpenIcon: Icon(icon, color: Colors.white,),
+      fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
+      fabOpenColor: Colors.teal[300],
+      fabCloseColor: Colors.teal[400],
+      ringColor: THEME_COLOR,
+      ringWidth: 120,
+      ringDiameter: 300,
+      children: listActions.asMap().map((i, action) {
+        return MapEntry(i, Transform.translate(
+          offset: getOffset == null ? Offset(0, 0) : getOffset(i),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: <Widget>[
+              Material(
+                shape: CircleBorder(),
+                color: Colors.white30,
+                clipBehavior: Clip.antiAlias,
+                child: IconButton(
+                  splashColor: action.color,
+                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 12),
+                  icon: Icon(action.icon),
+                  iconSize: getSize == null ? 24.0 : getSize(i),
+                  color: Colors.white,
+                  tooltip: action.label,
+                  onPressed: () {
+                    onAction(action.value);
+                  }
+                ),
+              ),
+              IgnorePointer(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 12.0),
+                  child: Text(action.label, textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 12),),
+                ),
+              )
+            ],
+          ),
+        ));
+      }).values.toList(),
+    );
+  }
+}
+
 class UiCountdown extends StatefulWidget {
   UiCountdown(this.label, {Key key, @required this.duration, this.onFinish}) : super(key: key);
   final String label;
@@ -1135,14 +1190,13 @@ class UiAvatar extends StatelessWidget {
       if (pic is File) {
         _imageWidget = Image.file(pic, width: size, height: size, fit: BoxFit.cover);
       } else if (pic.isNotEmpty) {
-        if (f.isValidURL(pic)) _imageWidget = CachedNetworkImage(
+        _imageWidget = f.isValidURL(pic) ? CachedNetworkImage(
           imageUrl: Uri.encodeFull(pic),
           placeholder: (context, url) => SizedBox(width: size, height: size, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
           errorWidget: (context, url, error) => _imageDefault,
           width: size, height: size,
           fit: BoxFit.cover,
-        );
-        else _imageWidget = Image.asset(pic, width: size, height: size, fit: BoxFit.cover);
+        ) : Image.asset(pic, width: size, height: size, fit: BoxFit.cover);
       }
     }
     final _image = ClipOval(child: InkWell(onTap: onPressed, child: _imageWidget));
@@ -1156,10 +1210,7 @@ class UiAvatar extends StatelessWidget {
           shape: CircleBorder(),
           child: Padding(
             padding: EdgeInsets.all(strokeWidth),
-            child: heroTag == null ? _image : Hero(
-              tag: heroTag,
-              child: _image,
-            ),
+            child: heroTag == null ? _image : Hero(tag: heroTag, child: _image,),
           ),
         ),
         onTapEdit == null ? Container() : UiButtonIcon(Icons.add_a_photo, onPressed: onTapEdit,)

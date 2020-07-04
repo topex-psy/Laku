@@ -25,6 +25,7 @@ final textWhiteB     = TextStyle(color: Colors.white, fontWeight: FontWeight.bol
 final textWhiteS     = TextStyle(fontSize: 12, color: Colors.white);
 final textWhite54S   = TextStyle(fontSize: 12, color: Colors.white54);
 final textWhite70S   = TextStyle(fontSize: 12, color: Colors.white70);
+final textB          = TextStyle(fontWeight: FontWeight.bold);
 final textS          = TextStyle(fontSize: 12);
 final textL          = TextStyle(fontSize: 16);
 final textLink       = TextStyle(color: THEME_COLOR);
