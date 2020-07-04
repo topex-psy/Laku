@@ -1210,6 +1210,7 @@ class UiAvatar extends StatelessWidget {
           color: Colors.white,
           clipBehavior: Clip.antiAlias,
           shape: CircleBorder(),
+          margin: EdgeInsets.zero,
           child: Padding(
             padding: EdgeInsets.all(strokeWidth),
             child: heroTag == null ? _image : Hero(tag: heroTag, child: _image,),

@@ -50,10 +50,13 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
   }
 
   _action(String action) async {
+    print("TAP ACTION: $action");
     switch (action) {
       case 'edit':
         break;
       case 'edit_shop':
+        break;
+      case 'open_shop':
         break;
       case 'hapus':
         if (await h.showConfirm("Hapus Iklan", "Apakah Anda yakin ingin menghapus iklan ini?") ?? false) {
@@ -136,11 +139,12 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                       width: MediaQuery.of(context).size.width,
                       child: Carousel(
                         images: _item.foto.map((pic) {
-                          var i = _item.foto.indexOf(pic);
+                          var index = _item.foto.indexOf(pic);
+                          var tag = "listing_${_item.id}_$index";
                           return GestureDetector(
-                            onTap: () => h.viewImage(_item.foto, page: i),
+                            onTap: () => h.viewImage(_item.foto, page: index, tag: tag),
                             child: Hero(
-                              tag: "listing_${_item.id}_$i",
+                              tag: tag,
                               child: FadeInImage.assetNetwork(
                                 placeholder: IMAGE_DEFAULT_NONE,
                                 image: pic.foto,
@@ -315,24 +319,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Expanded(child: Text("Detail Produk", style: style.textTitle,),),
-                          _item.isMine ? Container(
-                            height: 20,
-                            padding: EdgeInsets.only(left: 8.0),
-                            child: IconButton(
-                              splashColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              padding: EdgeInsets.zero,
-                              icon: Icon(MdiIcons.pencil),
-                              color: Colors.grey,
-                              tooltip: "Edit",
-                              onPressed: () => _action('edit'),
-                            ),
-                          ) : SizedBox()
-                        ],
-                      ),
+                      Text("Detail Produk", style: style.textTitle,),
                       SizedBox(height: 16,),
                       Expandable(
                         collapsed: Text(_item.deskripsi, softWrap: true, maxLines: 5, overflow: TextOverflow.ellipsis,),
@@ -374,51 +361,18 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(child: Text("Info Seller", style: style.textTitle,),),
-                        _item.isMine ? Container(
-                          height: 20,
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: IconButton(
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            padding: EdgeInsets.zero,
-                            icon: Icon(MdiIcons.pencil),
-                            color: Colors.grey,
-                            tooltip: "Edit",
-                            onPressed: () => _action('edit_shop'),
-                          ),
-                        ) : SizedBox()
-                      ],
-                    ),
-                    SizedBox(height: 16,),
                     FlatButton(
                       padding: EdgeInsets.zero,
-                      onPressed: () {
-                        // TODO ke laman toko
-                      },
-                      child: Row(children: <Widget>[
-                        UiAvatar(_item.fotoLapak, size: 40, strokeWidth: 0),
-                        SizedBox(width: 8),
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      onPressed: () => _action('open_shop'),
+                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        UiAvatar(_item.fotoLapak, size: 48, strokeWidth: 0),
+                        SizedBox(width: 12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                           Text(_item.judulLapak, style: style.textB,),
                           SizedBox(height: 4,),
-                          // _item.alamatLapak == null ? SizedBox() : Text(_item.alamatLapak, style: TextStyle(color: Colors.blueGrey),),
-                          _item.isMine
-                          ? Container(
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                              Text("Peminat dapat menghubungi Anda di:", style: style.textS),
-                              SizedBox(height: 2),
-                              Row(
-                                children: <Widget>[
-                                  Icon(LineIcons.mobile_phone, color: Colors.grey,),
-                                  Expanded(child: Text(_item.telepon, style: style.textLabel,),),
-                                ],
-                              )
-                            ],),
-                          )
-                          : Wrap(
+                          Wrap(
                             spacing: 8,
                             runSpacing: 8,
                             children: <Widget>[
@@ -436,7 +390,15 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                           ),
                         ],),),
                         SizedBox(width: 8),
-                        _item.isMine ? SizedBox() : Container(
+                        _item.isMine
+                        ? IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(MdiIcons.pencil),
+                          color: Colors.grey,
+                          tooltip: "Edit",
+                          onPressed: () => _action('edit_shop'),
+                        )
+                        : Container(
                           width: 40,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -451,11 +413,24 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                       ],),
                     ),
                     SizedBox(height: 12,),
-                    _item.isMine ? SizedBox() : Row(children: <Widget>[
-                      SizedBox(width: 48,),
-                      Expanded(child: UiButton("Telepon", height: style.heightButtonL, color: Colors.green, icon: LineIcons.phone, textStyle: style.textButtonL, onPressed: () => _action('telepon'),)),
+                    _item.isMine ? Container(
+                      padding: EdgeInsets.only(left: 60),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                          Text("Peminat dapat menghubungi di:"),
+                          SizedBox(height: 8),
+                          Row(
+                            children: <Widget>[
+                              Icon(LineIcons.mobile_phone, color: Colors.grey,),
+                              SizedBox(width: 2,),
+                              Expanded(child: Text("$APP_COUNTRY_CODE${_item.telepon}", style: style.textCaption,),),
+                            ],
+                          )
+                        ],),
+                      ) : Row(children: <Widget>[
+                      SizedBox(width: 60,),
+                      Expanded(child: UiButton("Telepon", height: style.heightButtonL, color: Colors.green, icon: LineIcons.phone, textStyle: style.textButton, onPressed: () => _action('telepon'),)),
                       SizedBox(width: 8,),
-                      Expanded(child: UiButton("Chat", height: style.heightButtonL, color: Colors.blue, icon: LineIcons.comment, textStyle: style.textButtonL, onPressed: () => _action('chat'),)),
+                      Expanded(child: UiButton("Chat", height: style.heightButtonL, color: Colors.blue, icon: LineIcons.comment, textStyle: style.textButton, onPressed: () => _action('chat'),)),
                       SizedBox(width: 8,),
                     ],)
                   ],
@@ -464,7 +439,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
               SizedBox(height: 20,),
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                 SizedBox(width: 20,),
-                Expanded(child: Text("Laku hanya menampilkan informasi apa adanya sesuai data dari pengiklan. Harap selalu berhati-hati ketika bertransaksi.", style: style.textMutedS)),
+                Expanded(child: Text("$APP_NAME hanya menampilkan informasi apa adanya sesuai data dari pengiklan. Harap selalu berhati-hati ketika bertransaksi.", style: style.textMutedS)),
                 Container(width: 80, child: _item.isMine ? SizedBox() : FlatButton(
                   padding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(

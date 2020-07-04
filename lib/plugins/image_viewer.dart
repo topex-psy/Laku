@@ -68,7 +68,7 @@ class _ImageViewerState extends State<ImageViewer> {
                 var image = _listImages[index];
                 return PhotoViewGalleryPageOptions(
                   imageProvider: _imageProvider(image),
-                  heroAttributes: PhotoViewHeroAttributes(tag: image),
+                  heroAttributes: PhotoViewHeroAttributes(tag: widget.args['tag'] ?? image),
                   initialScale: _initialScale,
                   minScale: _minScale,
                   maxScale: _maxScale,
@@ -90,7 +90,7 @@ class _ImageViewerState extends State<ImageViewer> {
               pageController: pageController,
               // onPageChanged: onPageChanged,
             ) : PhotoView(
-              heroAttributes: PhotoViewHeroAttributes(tag: "UserImage"),
+              heroAttributes: PhotoViewHeroAttributes(tag: widget.args['tag'] ?? "UserImage"),
               imageProvider: _imageProvider(_listImages),
               initialScale: _initialScale,
               minScale: _minScale,

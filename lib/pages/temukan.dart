@@ -202,10 +202,7 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
           InkWell(
             splashColor: Colors.grey.withOpacity(0.2),
             highlightColor: Colors.grey.withOpacity(0.2),
-            onTap: () {
-              print("tap iklan: ${item.id}");
-              a.openListing(item);
-            },
+            onTap: () => a.openListing(item),
             child: Container()
           ),
           Align(

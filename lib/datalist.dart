@@ -81,6 +81,18 @@ class _DataListState extends State<DataList> {
     });
   }
 
+  _action(String action, [int id]) async {
+    print("TAP ACTION: $action $id");
+    switch (action) {
+      case 'listing':
+        final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'shop': id}) as Map;
+        print(results);
+        break;
+      case 'favorit':
+        break;
+    }
+  }
+
   Widget _buildItem(context, index) {
     switch (widget.args['tipe']) {
       case 'listing':
@@ -90,45 +102,43 @@ class _DataListState extends State<DataList> {
           child: InkWell(
             highlightColor: Colors.transparent,
             splashColor: Colors.transparent,
-            onTap: () {
-              print(" -> TAP iklan");
-            },
+            onTap: () => a.openListing(_data),
             child: Padding(
               padding: EdgeInsets.only(left: 20, top: 20, bottom: 20, right: 8),
               child: Row(children: <Widget>[
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(8),
                   child: FadeInImage.assetNetwork(
                     placeholder: IMAGE_DEFAULT_NONE,
                     image: _data.foto.first.foto,
                     fit: BoxFit.cover,
-                    width: 50,
-                    height: 50,
+                    width: 100,
+                    height: 100,
                   ),
                 ),
                 SizedBox(width: 20,),
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(_data.judul, style: style.textLabel,),
+                    Text(_data.judul, style: style.textTitle,),
                     SizedBox(height: 2),
                     h.html("Tipe: <strong>${_data.tipe == 'WTS' ? 'Iklan' : 'Pencarian'}</strong>"),
                     SizedBox(height: 2),
                     h.html("Kategori: <strong>${_data.kategori}</strong>"),
-                    SizedBox(height: 2),
-                    Text(_data.deskripsi),
+                    // SizedBox(height: 2),
+                    // Text(_data.deskripsi),
                   ],
                 )),
-                SizedBox(width: 8,),
-                IconButton(
-                  highlightColor: Colors.red[200].withOpacity(.5),
-                  splashColor: Colors.red[200].withOpacity(.5),
-                  icon: Icon(LineIcons.trash),
-                  color: Colors.grey,
-                  onPressed: () {
-                    print(" -> TAP delete");
-                  }
-                ),
+                // SizedBox(width: 8,),
+                // IconButton(
+                //   highlightColor: Colors.red[200].withOpacity(.5),
+                //   splashColor: Colors.red[200].withOpacity(.5),
+                //   icon: Icon(LineIcons.trash),
+                //   color: Colors.grey,
+                //   onPressed: () {
+                //     print(" -> TAP delete");
+                //   }
+                // ),
               ],),
             ),
           ),
@@ -150,11 +160,8 @@ class _DataListState extends State<DataList> {
                 Text(_data.alamat),
                 SizedBox(height: 10),
                 Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
-                  UiFlatButton(LineIcons.files_o, "${f.formatNumber(_data.jumlahIklan)} iklan", () async {
-                    final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'shop': _data.id}) as Map;
-                    print(results);
-                  }),
-                  UiFlatButton(LineIcons.cog, "Pengaturan", () {}),
+                  UiFlatButton(LineIcons.files_o, "${f.formatNumber(_data.jumlahIklan)} iklan", () => _action('listing', _data.id)),
+                  UiFlatButton(LineIcons.heart_o, "${f.formatNumber(_data.jumlahFavorit)} favorit", () => _action('favorit', _data.id)),
                 ],),
               ],
             ))
@@ -163,11 +170,7 @@ class _DataListState extends State<DataList> {
     }
   }
 
-  _action(String action) {
-
-  }
-
-  Widget _actionButton() {
+  Widget get _actionButton {
     return _tier != null && _tier.tier > 0 ? Container(
       height: double.infinity,
       width: 60,
@@ -187,7 +190,7 @@ class _DataListState extends State<DataList> {
     final _title = _getTitle();
     return Scaffold(
       body: SafeArea(child: Column(children: <Widget>[
-        UiAppBar(_title.label, icon: _title.icon, tool: _actionButton(),),
+        UiAppBar(_title.label, icon: _title.icon, tool: _actionButton,),
         _tier != null && _tier.tier > 0 ? UiSearchBar(
           searchController: _searchController,
           searchFocusNode: _searchFocusNode,
@@ -220,7 +223,7 @@ class _DataListState extends State<DataList> {
               child: child,
             );
           },
-          child: _tier != null && _tier.tier == 0 ? Container(
+          child: _tier != null && _tier.tier == 0 && _listData.isNotEmpty ? Container(
             width: double.infinity,
             height: 180,
             padding: EdgeInsets.all(20.0),
