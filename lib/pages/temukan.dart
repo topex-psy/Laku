@@ -60,9 +60,7 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
       });
       _searchDebouncer.value = keyword;
     });
-    _searchDebouncer.values.listen((keyword) {
-      _getAllData();
-    });
+    _searchDebouncer.values.listen((keyword) => _getAllData());
     _scrollController.addListener(() {
       var maxScroll = _scrollController.position.maxScrollExtent;
       var currentScroll = _scrollController.position.pixels;

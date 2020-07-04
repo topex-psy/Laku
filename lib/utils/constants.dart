@@ -32,6 +32,7 @@ const ROUTE_LISTING        = '/Listing';
 const SETUP_MAX_PERSON_AGE = 100;
 const SETUP_MIN_PERSON_AGE = 10;
 
+const IMAGE_DEFAULT_TAG    = "UserImage";
 const IMAGE_DEFAULT_NONE   = "images/none.png";
 const IMAGE_DEFAULT_USER   = "images/anon.png";
 const IMAGE_UPLOAD_QUALITY = 80;

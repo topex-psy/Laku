@@ -101,7 +101,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                         offset: Offset(0, 17 * _animation1.value),
                         child: Opacity(
                           opacity: _animation1.value,
-                          child: Hero(tag: 'SplashLogo', child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,)),
+                          child: Hero(tag: "SplashLogo", child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,)),
                         )
                       );
                     }

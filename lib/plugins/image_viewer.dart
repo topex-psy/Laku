@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import '../models/iklan.dart';
+import '../utils/constants.dart';
 
 class ImageViewer extends StatefulWidget {
   ImageViewer(this.args, {Key key}) : super(key: key);
@@ -66,9 +67,10 @@ class _ImageViewerState extends State<ImageViewer> {
               scrollPhysics: BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
                 var image = _listImages[index];
+                var tag = widget.args['tag'] ?? IMAGE_DEFAULT_TAG;
                 return PhotoViewGalleryPageOptions(
                   imageProvider: _imageProvider(image),
-                  heroAttributes: PhotoViewHeroAttributes(tag: widget.args['tag'] ?? image),
+                  heroAttributes: PhotoViewHeroAttributes(tag: "${tag}_$index"),
                   initialScale: _initialScale,
                   minScale: _minScale,
                   maxScale: _maxScale,
@@ -90,7 +92,7 @@ class _ImageViewerState extends State<ImageViewer> {
               pageController: pageController,
               // onPageChanged: onPageChanged,
             ) : PhotoView(
-              heroAttributes: PhotoViewHeroAttributes(tag: widget.args['tag'] ?? "UserImage"),
+              heroAttributes: PhotoViewHeroAttributes(tag: widget.args['tag'] ?? IMAGE_DEFAULT_TAG),
               imageProvider: _imageProvider(_listImages),
               initialScale: _initialScale,
               minScale: _minScale,

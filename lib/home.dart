@@ -4,15 +4,16 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:laku/models/basic.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import 'components/menu.dart';
-import 'models/basic.dart';
 import 'pages/beranda.dart';
 import 'pages/temukan.dart';
+import 'pages/profil.dart';
 import 'providers/person.dart';
 import 'utils/constants.dart';
 import 'utils/curves.dart';
@@ -41,9 +42,21 @@ class _HomeState extends State<Home> {
   final FirebaseAnalytics analytics;
   final FirebaseAnalyticsObserver observer;
 
+  final _listActions = <IconLabel>[
+    IconLabel(MdiIcons.filePlus, "Buat Iklan", value: 'WTS', color: Colors.blue),
+    IconLabel(MdiIcons.bullhorn, "Broadcast", value: 'WTB', color: Colors.yellow),
+  ];
+
+
   var _selectedIndex = 0;
   var _isWillExit = false;
   var _isPopNotif = false;
+
+  _action(String action) async {
+    print("TAP ACTION: $action");
+    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action}) as Map;
+    print(" ... ROUTE PASANG result: $results");
+  }
 
   _openPage(int index) {
     FocusScope.of(context).unfocus();
@@ -79,7 +92,7 @@ class _HomeState extends State<Home> {
     final _listPages = <Page>[
       Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
       Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
-      Page(title: 'menu_user'.tr(), icon: LineIcons.map_o, content: Container(),),
+      Page(title: 'menu_user'.tr(), icon: LineIcons.user, content: Profil(isOpen: _selectedIndex == 2,),),
     ];
 
     // final _listActions = <IconLabel>[
@@ -174,13 +187,27 @@ class _HomeState extends State<Home> {
               child: child,
             );
           },
-          child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Icon(MdiIcons.telescope, size: 32,),
-            ),
-            backgroundColor: THEME_COLOR_LIGHT,
-            onPressed: a.openMap
+          // child: _selectedIndex > 0 ? SizedBox() : FloatingActionButton(
+          //   child: Padding(
+          //     padding: EdgeInsets.all(8.0),
+          //     child: Icon(MdiIcons.telescope, size: 32,),
+          //   ),
+          //   backgroundColor: THEME_COLOR_LIGHT,
+          //   onPressed: a.openMap
+          // ),
+          child: _selectedIndex > 0 ? SizedBox() : UiFabCircular(
+            LineIcons.plus,
+            _listActions,
+            _action,
+            getOffset: (i) {
+              double x = 0.0, y = 0.0;
+              if (i == 1) {
+                x = -25;
+                y = 8;
+              }
+              return Offset(x, y);
+            },
+            getSize: (i) => 48.0 - 6 * i,
           ),
         ),
         bottomNavigationBar: Stack(

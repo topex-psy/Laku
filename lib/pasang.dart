@@ -40,8 +40,8 @@ class _PasangState extends State<Pasang> {
 
   final _formKey = GlobalKey<FormState>();
   final _listTipe = <IconLabel>[
-    IconLabel(LineIcons.bullhorn, "Pasang Iklan", value: 'WTS'),
-    IconLabel(LineIcons.search, "Cari Sesuatu", value: 'WTB'),
+    IconLabel(LineIcons.edit, "Pasang Iklan", value: 'WTS'),
+    IconLabel(LineIcons.bullhorn, "Broadcast", value: 'WTB'),
   ];
   final _listKondisi = <IconLabel>[
     IconLabel(LineIcons.check_circle_o, "Baru", value: 'new'),
@@ -49,7 +49,7 @@ class _PasangState extends State<Pasang> {
   ];
   final _listSteps = <IconLabel>[
     IconLabel(LineIcons.edit, "Detail Iklan"),
-    IconLabel(LineIcons.users, "Sasaran"),
+    IconLabel(LineIcons.users, "Pratinjau"),
   ];
 
   TextEditingController _judulController;
@@ -81,7 +81,7 @@ class _PasangState extends State<Pasang> {
       });
       return;
     }
-    if (_images.isEmpty) {
+    if (_images.isEmpty && _tipe == "WTS") {
       h.failAlert("Tambahkan Foto", "Unggah minimal 1 foto untuk iklan Anda.");
       return;
     }
@@ -470,7 +470,7 @@ class _PasangState extends State<Pasang> {
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.all(THEME_PADDING),
+                      // padding: EdgeInsets.all(THEME_PADDING),
                       child: Form(
                         key: _formKey,
                         autovalidate: false,
@@ -479,57 +479,100 @@ class _PasangState extends State<Pasang> {
                         },
                         child: Column(children: <Widget>[
 
-                          Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: _stepIndex == 0 ? <Widget>[
-                            Text("Tipe:", style: style.textLabel),
-                            SizedBox(height: 8.0,),
-                            UiToggleButton(
-                              height: 45.0,
-                              listItem: _listTipe,
-                              currentValue: _tipe,
-                              onSelect: (int index) {
-                                setState(() {
-                                  _tipe = _listTipe[index].value;
-                                  _resetKategori();
-                                });
-                              },
-                            ),
-                            SizedBox(height: 12,),
+                          Container(
+                            width: double.infinity,
+                            color: Colors.white,
+                            padding: EdgeInsets.all(20),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                              // Text("Tipe Iklan", style: style.textTitle,),
+                              // SizedBox(height: 12.0,),
+                              // Text("Tipe:", style: style.textLabel),
+                              // SizedBox(height: 8.0,),
+                              UiToggleButton(
+                                height: 45.0,
+                                listItem: _listTipe,
+                                currentValue: _tipe,
+                                onSelect: (int index) {
+                                  setState(() {
+                                    _tipe = _listTipe[index].value;
+                                    _resetKategori();
+                                  });
+                                },
+                              ),
+                            ],)
+                          ),
+                          SizedBox(height: 12,),
 
-                            RichText(text: TextSpan(
-                              style: Theme.of(context).textTheme.bodyText1,
-                              children: <TextSpan>[
-                                TextSpan(text: 'Foto: ', style: style.textLabel),
-                                TextSpan(text: _tier == null ? '' : '$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textLabelGrey),
+                          Container(
+                            width: double.infinity,
+                            color: Colors.white,
+                            padding: EdgeInsets.all(20),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Expanded(child: Text("Unggah Foto", style: style.textTitle,),),
+                                  _tier == null
+                                    ? SizedBox()
+                                    : Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.teal[200].withOpacity(.2),
+                                          borderRadius: BorderRadius.circular(8)
+                                        ),
+                                        child: Text('$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textB)
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: 12.0,),
+                              // RichText(text: TextSpan(
+                              //   style: Theme.of(context).textTheme.bodyText1,
+                              //   children: <TextSpan>[
+                              //     TextSpan(text: 'Foto: ', style: style.textLabel),
+                              //     TextSpan(text: _tier == null ? '' : '$_selectedPicsTotal/${_tier.maxListingPic}', style: style.textLabelGrey),
+                              //   ],
+                              // ),),
+                              // SizedBox(height: 8.0,),
+                              UiDropImages(
+                                onPickImage: _pickImages,
+                                onDeleteImage: (asset) => setState(() { _images.remove(asset); }),
+                                listImages: _images,
+                                maxImages: _tier?.maxListingPic,
+                                height: 200,
+                              ),
+                            ],),
+                          ),
+                          SizedBox(height: 12.0,),
+
+                          Container(
+                            width: double.infinity,
+                            color: Colors.white,
+                            padding: EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text("Detail Iklan", style: style.textTitle,),
+                                SizedBox(height: 20.0,),
+                                UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
+                                UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
+
+                                _inputPrice,
+
+                                _inputCondition,
+
+                                _inputDelivery,
+
+                                // TODO _isScheduleable
+
+                                Text("Kategori:", style: style.textLabel),
+                                SizedBox(height: 12,),
+                                // TODO fetch api recent kategori
+                                _selectKategori(),
                               ],
-                            ),),
-                            SizedBox(height: 8.0,),
-                            UiDropImages(
-                              onPickImage: _pickImages,
-                              onDeleteImage: (asset) => setState(() { _images.remove(asset); }),
-                              listImages: _images,
-                              maxImages: _tier?.maxListingPic,
-                              height: 200,
                             ),
-                            SizedBox(height: 12.0,),
-
-                            UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
-
-                            UiInput("Deskripsi", isRequired: true, height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
-
-                            _inputPrice,
-
-                            _inputCondition,
-
-                            _inputDelivery,
-
-                            // TODO _isScheduleable
-
-                            Text("Kategori:", style: style.textLabel),
-                            SizedBox(height: 12,),
-                            // TODO fetch api recent kategori
-                            _selectKategori(),
-                          ] : <Widget>[
-                          ],),
+                          ),
                           
                           SizedBox(height: 30,),
                           UiButton(_stepIndex == 0 ? "Selanjutnya" : "Pasang Iklan", height: style.heightButtonL, color: Colors.green, icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),

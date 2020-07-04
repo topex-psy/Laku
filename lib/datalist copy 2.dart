@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
 import 'models/toko.dart';
-import 'models/user.dart';
+import 'providers/person.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -27,7 +28,6 @@ class _DataListState extends State<DataList> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
   var _listData = [];
-  UserTierModel _tier;
   bool _isMyShopList;
 
   @override
@@ -36,13 +36,6 @@ class _DataListState extends State<DataList> {
     _searchController.addListener(() => _searchDebouncer.value = _searchController.text ?? '');
     _searchDebouncer.values.listen((keyword) => _getAllData());
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      var tierApi = await api('user_tier', data: {'uid': userSession.uid});
-      var tier = UserTierModel.fromJson(tierApi.result.first);
-      setState(() {
-        _tier = tier;
-      });
-    });
   }
 
   @override
@@ -81,22 +74,6 @@ class _DataListState extends State<DataList> {
   _action(String action, [int id]) async {
     print("TAP ACTION: $action $id");
     switch (action) {
-      case 'create':
-        if (_isMyShopList && _listData.length == _tier.maxShop) {
-          h.showAlert(body: Column(
-            children: <Widget>[
-              Text('Batas Lokasi Tercapai', style: style.textTitle,),
-              SizedBox(height: 6),
-              Text("Upgrade akun Anda untuk dapat menambahkan lebih banyak lagi lokasi usaha!", style: style.textMutedM,),
-              SizedBox(height: 16),
-              UiButton("Upgrade Akun", width: 200, height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.certificate, textStyle: style.textButton, iconRight: true, onPressed: () {
-                // TODO upgrade akun
-              },),
-            ],
-          ));
-          break;
-        }
-        break;
       case 'listing':
         final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'shop': id}) as Map;
         print(results);
@@ -184,7 +161,9 @@ class _DataListState extends State<DataList> {
   }
 
   Widget get _actionButton {
-    return _tier == null || (_isMyShopList && _tier.tier == 0) ? SizedBox() : Container(
+    final person = Provider.of<PersonProvider>(context, listen: false);
+    if (_isMyShopList && person.tier == 0) return SizedBox();
+    return Container(
       height: double.infinity,
       width: 60,
       child: RaisedButton(
@@ -199,11 +178,51 @@ class _DataListState extends State<DataList> {
   }
 
   Widget get _searchBar {
-    return _tier != null && _tier.tier > 0 ? UiSearchBar(
+    final person = Provider.of<PersonProvider>(context, listen: false);
+    return _isMyShopList && person.tier == 0 ? SizedBox() : UiSearchBar(
       searchController: _searchController,
       searchFocusNode: _searchFocusNode,
       backgroundColor: THEME_COLOR,
       actionColor: Colors.white
+    );
+  }
+
+  Widget get _footer {
+    final person = Provider.of<PersonProvider>(context, listen: false);
+    return _isMyShopList ? AnimatedSwitcher(
+      duration: Duration(milliseconds: 500),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.linear,
+      // transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        final  offsetAnimation = Tween<Offset>(begin: Offset(0, 1), end: Offset(0, 0)).animate(animation);
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+      child: person.tier == 0 && _listData.isNotEmpty ? Container(
+        width: double.infinity,
+        height: 180,
+        padding: EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)]
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Anda pelaku bisnis?', style: style.textTitle,),
+            SizedBox(height: 6),
+            Text('Anda dapat memberikan nama usaha dan menambahkan lebih dari satu lokasi.', style: style.textMutedM,),
+            SizedBox(height: 16),
+            UiButton("Upgrade ke Akun Bisnis", width: 250, height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.certificate, textStyle: style.textButton, iconRight: true, onPressed: () {
+              // TODO upgrade akun bisnis
+            },),
+          ],
+        ),
+      ) : SizedBox(),
     ) : SizedBox();
   }
 
@@ -228,41 +247,7 @@ class _DataListState extends State<DataList> {
             ),
           ),
         ),
-        _isMyShopList ? AnimatedSwitcher(
-          duration: Duration(milliseconds: 500),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.linear,
-          // transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            final  offsetAnimation = Tween<Offset>(begin: Offset(0, 1), end: Offset(0, 0)).animate(animation);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-          child: _tier != null && _tier.tier == 0 && _listData.isNotEmpty ? Container(
-            width: double.infinity,
-            height: 180,
-            padding: EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)]
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('Anda pelaku bisnis?', style: style.textTitle,),
-                SizedBox(height: 6),
-                Text('Anda dapat memberikan nama usaha dan menambahkan lebih dari satu lokasi.', style: style.textMutedM,),
-                SizedBox(height: 16),
-                UiButton("Upgrade ke Akun Bisnis", width: 250, height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.certificate, textStyle: style.textButton, iconRight: true, onPressed: () {
-                  // TODO upgrade akun bisnis
-                },),
-              ],
-            ),
-          ) : SizedBox(),
-        ) : SizedBox(),
+        _footer
       ],),),
     );
   }

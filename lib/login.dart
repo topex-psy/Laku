@@ -175,7 +175,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             _isLoading = false;
           });
         } else {
-          var person = Provider.of<PersonProvider>(context, listen: false);
+          final person = Provider.of<PersonProvider>(context, listen: false);
           person.setPerson(
             namaDepan: user.namaDepan,
             namaBelakang: user.namaBelakang,
@@ -183,6 +183,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             tanggalLahir: user.tanggalLahir,
             email: user.email,
             foto: user.foto,
+            tier: user.tier,
           );
           print(" -> push ROUTE TO HOME");
           await Navigator.of(context).pushNamed(ROUTE_HOME, arguments: {'duration': 1000});
