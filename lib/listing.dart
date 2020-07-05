@@ -7,6 +7,7 @@ import 'package:expandable/expandable.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'extensions/widget.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
@@ -449,7 +450,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                               children: <Widget>[
                                 Icon(MdiIcons.circleMedium, size: 20, color: Colors.grey,),
                                 SizedBox(width: 6,),
-                                Expanded(child: Text("aktif 2 menit lalu")),
+                                Expanded(child: Text(timeago.format(_item.pengiklanLastActive, locale: context.locale.toString().split('_').first))),
                               ],
                             )
                           ],),),

@@ -110,6 +110,7 @@ class IklanModel {
     @required this.alamatLapak,
     @required this.fotoLapak,
     @required this.pengiklan,
+    this.pengiklanLastActive,
     this.jumlahIklan,
     this.jumlahFavoritLapak,
     this.jumlahFavorit,
@@ -150,10 +151,6 @@ class IklanModel {
   final String judulLapak;
   final String alamatLapak;
   final String fotoLapak;
-  final String pengiklan;
-  final int jumlahIklan;
-  final int jumlahFavoritLapak;
-  int jumlahFavorit;
   final String telepon;
   final String whatsapp;
   final String tokopedia;
@@ -162,7 +159,12 @@ class IklanModel {
   final String facebook;
   final String bukalapak;
   final List<IklanPicModel> foto;
+  final String pengiklan;
+  final DateTime pengiklanLastActive;
   final int tier;
+  final int jumlahIklan;
+  final int jumlahFavoritLapak;
+  int jumlahFavorit;
   bool isFavorit;
   bool isMine;
   bool isDalamRadius;
@@ -204,6 +206,7 @@ class IklanModel {
     alamatLapak = parsedJson['ALAMAT_LAPAK'],
     fotoLapak = parsedJson['FOTO_LAPAK'],
     pengiklan = parsedJson['PENGIKLAN'],
+    pengiklanLastActive = DateTime.parse(parsedJson['PENGIKLAN_LAST_ACTIVE']),
     jumlahIklan = int.parse(parsedJson['JUMLAH_IKLAN']),
     jumlahFavoritLapak = int.parse(parsedJson['JUMLAH_FAVORIT_LAPAK']),
     jumlahFavorit = int.parse(parsedJson['JUMLAH_FAVORIT']),

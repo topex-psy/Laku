@@ -503,6 +503,8 @@ class _PasangState extends State<Pasang> {
                                 ),
                               ],
                             ),
+                            SizedBox(height: 12),
+                            Text(_tipe == 'WTS' ? "Pasang iklan yang dapat ditemukan oleh pengguna $APP_NAME di radius 10km dari Anda kapanpun." : "Broadcast adalah siaran yang berlangsung selama 24 jam kepada semua pengguna $APP_NAME di radius 10km dari Anda. Broadcast membutuhkan 1 tiket toa yang Anda miliki.", style: style.textS)
                           ]),
 
                           UiSection(
@@ -541,6 +543,18 @@ class _PasangState extends State<Pasang> {
                             _inputDelivery,
                             // TODO _isScheduleable
                           ]) : SizedBox(),
+
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Copyright(
+                              prefix: "Anda wajib memperhatikan",
+                              suffix: "sebelum memasang iklan ini",
+                              showCopyright: false,
+                              colorText: Colors.grey,
+                              colorLink: THEME_COLOR,
+                              textAlign: TextAlign.center
+                            ),
+                          ),
 
                           Padding(
                             padding: EdgeInsets.all(20.0),

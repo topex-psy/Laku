@@ -170,7 +170,7 @@ class _HomeState extends State<Home> {
                         child: Row(children: <Widget>[
                           Selector<PersonProvider, String>(
                             selector: (buildContext, person) => person.foto,
-                            builder: (context, foto, child) => UiAvatar(foto, size: 70, heroTag: "profile_pic",),
+                            builder: (context, foto, child) => UiAvatar(foto, size: 70,),
                           ),
                           SizedBox(width: 12,),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[

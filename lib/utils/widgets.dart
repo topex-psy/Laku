@@ -1267,7 +1267,10 @@ class UiAvatar extends StatelessWidget {
         ) : Image.asset(pic, width: size, height: size, fit: BoxFit.cover);
       }
     }
-    final _image = ClipOval(child: InkWell(onTap: onPressed, child: _imageWidget));
+    final _image = Material(shape: CircleBorder(), clipBehavior: Clip.antiAlias, child: InkWell(
+      onTap: onPressed,
+      child: _imageWidget
+    ));
     return Stack(
       alignment: Alignment.bottomRight,
       children: <Widget>[
@@ -1279,7 +1282,7 @@ class UiAvatar extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: Padding(
             padding: EdgeInsets.all(strokeWidth),
-            child: heroTag == null ? _image : Hero(tag: heroTag, child: _image,),
+            child: heroTag == null ? _image : Hero(child: _image, tag: heroTag),
           ),
         ),
         onTapEdit == null ? Container() : UiButtonIcon(Icons.add_a_photo, onPressed: onTapEdit,)
@@ -1289,23 +1292,33 @@ class UiAvatar extends StatelessWidget {
 }
 
 class Copyright extends StatelessWidget {
+  Copyright({Key key, this.prefix, this.suffix, this.showCopyright = true, this.colorText, this.colorLink, this.textAlign}) : super(key: key);
+  final String prefix;
+  final String suffix;
+  final bool showCopyright;
+  final Color colorText;
+  final Color colorLink;
+  final TextAlign textAlign;
+
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-      Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS),
-      SizedBox(height: 12,),
+      showCopyright ? Padding(
+        padding: EdgeInsets.only(bottom: 12.0),
+        child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS),
+      ) : SizedBox(),
       Html(
-        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="${APP_TERMS_URL}">Syarat Penggunaan</a> & <a href="${APP_PRIVACY_URL}">Kebijakan Privasi</a>.',
+        data: '${prefix != null ? '$prefix ' : 'Menggunakan aplikasi ini berarti menyetujui '}<a href="${APP_TERMS_URL}">Syarat Penggunaan</a> & <a href="${APP_PRIVACY_URL}">Kebijakan Privasi</a>${suffix != null ? ' $suffix' : ''}.',
         style: {
           "body": Style(
             margin: EdgeInsets.zero,
             fontSize: FontSize(13.0),
-            textAlign: TextAlign.start,
-            color: Colors.white70,
+            textAlign: textAlign ?? TextAlign.start,
+            color: colorText ?? Colors.white70,
           ),
           "a": Style(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: colorLink ?? Colors.white,
           ),
         },
         onLinkTap: (url) async {

@@ -376,9 +376,9 @@ class _ProfilState extends State<Profil> {
                             ) : UiInput("", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _jenisKelaminController,),
                             SizedBox(height: 30,),
                             // TODO edit profil (kontak)
-                            _isEdit ? SizedBox() : UiButton("Ganti Nomor PIN", width: 250, height: style.heightButton, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _resetPIN,),
+                            _isEdit ? SizedBox() : UiButton("Ganti Nomor PIN", height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _resetPIN,),
                             SizedBox(height: 12,),
-                            _isEdit ? SizedBox() : UiButton("Keluar", width: 250, height: style.heightButton, color: Colors.red, icon: LineIcons.sign_out, textStyle: style.textButton, iconRight: true, onPressed: a.logout,),
+                            _isEdit ? SizedBox() : UiButton("Keluar", height: style.heightButtonL, color: Colors.red, icon: LineIcons.sign_out, textStyle: style.textButton, iconRight: true, onPressed: a.logout,),
                             SizedBox(height: 12,),
                           ],)
                         ),
