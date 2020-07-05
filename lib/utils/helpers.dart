@@ -8,14 +8,16 @@ import 'package:flutter_rounded_date_picker/src/material_rounded_date_picker_sty
 import 'package:flutter_rounded_date_picker/src/material_rounded_year_picker_style.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash/flash.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:laku/models/iklan.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import '../components/forms/input_pin.dart';
 import '../extensions/string.dart';
+import '../models/iklan.dart';
 import '../models/user.dart';
 import '../plugins/toast.dart';
 import '../providers/person.dart';
@@ -44,12 +46,14 @@ class FormatHelper {
   // inisiasi intl date format untuk locale indonesia
   FormatHelper.initialize() {
     var format = initializeDateFormatting(APP_LOCALE);
+    timeago.setLocaleMessages('id', timeago.IdMessages());
     Future.wait([format]);
   }
 
   int randomNumber(int min, int max) => min + Random().nextInt(max - min);
   String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
   String formatDate(DateTime date, {String format = 'dd/MM/yyyy'}) => date == null ? null : DateFormat(format).format(date);
+  String formatTimeago(DateTime date) => timeago.format(date, locale: h.context.locale.toString().split('_').first);
   String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => nominal == null ? null : NumberFormat.currency(locale: APP_LOCALE, symbol: symbol).format(nominal);
   String formatPrice2(dynamic nominal, {String symbol = 'Rp ', bool singkat = false}) {
     if (nominal == null) return null;
@@ -89,32 +93,35 @@ class UserHelper {
     return notifApi.isSuccess;
   }
 
-  Future<dynamic> openProfile() async {
-    // final results = await Navigator.of(context).pushNamed(ROUTE_PROFIL) as Map;
-    // print(" ... ROUTE PROFIL result: $results");
-    // if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
-    // return results;
-    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
-    screenPageController.animateToPage(3, duration: Duration(milliseconds: 500), curve: Curves.ease);
+  navigatePage(int page) {
+    closeDrawer();
+    screenPageController.animateToPage(page, duration: Duration(milliseconds: 500), curve: Curves.ease);
   }
+
+  closeDrawer() {
+    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
+  }
+
+  openProfile() => navigatePage(3);
 
   Future<dynamic> openMyShop() async {
     final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'});
     print(" ... ROUTE MY SHOP result: $results");
-    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
+    closeDrawer();
     return results;
   }
 
   Future<dynamic> openMyBroadcast() async {
     final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'type': 'WTB', 'mode': 'mine'});
     print(" ... ROUTE MY BROADCAST result: $results");
+    closeDrawer();
     return results;
   }
 
   Future<dynamic> openListingForm({String action = 'WTS', int id}) async {
     final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action, 'id': id}) as Map;
     print(" ... ROUTE PASANG result: $results");
-    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();    
+    closeDrawer();    
     return results;
   }
 

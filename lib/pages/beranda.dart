@@ -581,7 +581,7 @@ class _CardBoxState extends State<CardBox> {
         label = 'menu_listing'.plural(notif ?? 1);
         action = () {
           settings.setSettings(isViewFavorites: false);
-          screenPageController.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
+          a.navigatePage(1);
         };
         break;
       case 'pengguna':
@@ -682,7 +682,7 @@ class _CardListState extends State<CardList> {
         buttonIcon = LineIcons.shopping_cart;
         action = () {
           settings.setSettings(isViewFavorites: true);
-          screenPageController.animateToPage(1, duration: Duration(milliseconds: 500), curve: Curves.ease);
+          a.navigatePage(1);
         };
         break;
       case 'iklanTerpasang':

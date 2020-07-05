@@ -77,6 +77,7 @@ class UiInput extends StatefulWidget {
     this.error,
     // this.onValidate,
   }) : super(key: key);
+
   final IconData icon;
   final String label;
   final int maxLength;
@@ -690,7 +691,7 @@ class UiFabCircular extends StatelessWidget {
       fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
       fabOpenColor: Colors.teal[300],
       fabCloseColor: THEME_COLOR_LIGHT,
-      ringColor: THEME_COLOR,
+      ringColor: THEME_COLOR.withOpacity(.8),
       ringWidth: 120,
       ringDiameter: 300,
       children: listActions.asMap().map((i, action) {
@@ -701,7 +702,7 @@ class UiFabCircular extends StatelessWidget {
             children: <Widget>[
               Material(
                 shape: CircleBorder(),
-                color: Colors.white30,
+                color: Colors.transparent,
                 clipBehavior: Clip.antiAlias,
                 child: IconButton(
                   splashColor: action.color,
@@ -872,7 +873,20 @@ class UiDropImages extends StatelessWidget {
 }
 
 class UiSearchBar extends StatefulWidget {
-  UiSearchBar({Key key, this.tool, this.height, this.backgroundColor, this.actionColor, this.searchController, this.searchFocusNode, this.searchPlaceholder = "Cari data ..."}) : super(key: key);
+  UiSearchBar({
+    Key key,
+    this.tool,
+    this.height,
+    this.backgroundColor,
+    this.actionColor,
+    this.searchController,
+    this.searchFocusNode,
+    this.searchPlaceholder = "Cari data ...",
+    this.dataType,
+    this.filterValues = const {},
+    this.onFilter,
+  }) : super(key: key);
+  
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
   final String searchPlaceholder;
@@ -880,6 +894,9 @@ class UiSearchBar extends StatefulWidget {
   final double height;
   final Color backgroundColor;
   final Color actionColor;
+  final String dataType;
+  final Map<String, dynamic> filterValues;
+  final void Function(Map<String, dynamic>) onFilter;
 
   @override
   _UiSearchBarState createState() => _UiSearchBarState();
@@ -915,8 +932,13 @@ class _UiSearchBarState extends State<UiSearchBar> {
               icon: Icon(Icons.sort),
               color: widget.actionColor ?? Colors.grey[850],
               tooltip: 'prompt_sort'.tr(),
-              onPressed: () {
-                // TODO show dialog
+              onPressed: () async {
+                final filter = await h.showAlert(showButton: false, body: UiDataFilter(
+                  dataType: widget. dataType,
+                  initialValues: widget.filterValues,
+                ));
+                print("filter result: $filter");
+                if (filter != null) widget.onFilter(filter);
               },
             ),
             widget.tool ?? SizedBox(),
@@ -924,6 +946,60 @@ class _UiSearchBarState extends State<UiSearchBar> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class UiDataFilter extends StatefulWidget {
+  UiDataFilter({Key key, this.dataType, this.initialValues = const {}}) : super(key: key);
+  final String dataType;
+  final Map<String, dynamic> initialValues;
+
+  @override
+  _UiDataFilterState createState() => _UiDataFilterState();
+}
+
+class _UiDataFilterState extends State<UiDataFilter> {
+  bool _isCanDeliver;
+
+  @override
+  void initState() {
+    _isCanDeliver = widget.initialValues['isCanDeliver'] ?? false;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        widget.dataType == 'listing' ? Row(
+          children: <Widget>[
+            Expanded(child: Text("Melayani antar")),
+            Switch(
+              activeTrackColor: THEME_COLOR,
+              activeColor: THEME_COLOR_LIGHT,
+              value: _isCanDeliver,
+              onChanged: (value) {
+                setState(() {
+                  _isCanDeliver = value;
+                });
+              },
+            ),
+          ],
+        ) : SizedBox(),
+        Divider(),
+        UiButton(
+          "Terapkan",
+          height: style.heightButtonL,
+          color: Colors.green,
+          icon: LineIcons.check_circle_o,
+          textStyle: style.textButtonL,
+          iconRight: true,
+          onPressed: () => Navigator.of(context).pop({
+            'isCanDeliver': _isCanDeliver,
+          }),
+        ),
+      ],
     );
   }
 }

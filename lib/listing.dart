@@ -7,7 +7,6 @@ import 'package:expandable/expandable.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'extensions/widget.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
@@ -33,9 +32,9 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _listActions = <IconLabel>[
-    IconLabel(MdiIcons.fileEdit, "Edit", value: 'edit', color: Colors.blue),
+    IconLabel(MdiIcons.fileEditOutline, "Edit", value: 'edit', color: Colors.blue),
     IconLabel(MdiIcons.close, "Set Kosong", value: 'kosong', color: Colors.yellow),
-    IconLabel(MdiIcons.delete, "Hapus", value: 'hapus', color: Colors.red),
+    IconLabel(MdiIcons.deleteOutline, "Hapus", value: 'hapus', color: Colors.red),
   ];
   final _refreshController = RefreshController(initialRefresh: false);
 
@@ -450,7 +449,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                               children: <Widget>[
                                 Icon(MdiIcons.circleMedium, size: 20, color: Colors.grey,),
                                 SizedBox(width: 6,),
-                                Expanded(child: Text(timeago.format(_item.pengiklanLastActive, locale: context.locale.toString().split('_').first))),
+                                Expanded(child: Text(f.formatTimeago(_item.pengiklanLastActive))),
                               ],
                             )
                           ],),),

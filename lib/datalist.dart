@@ -26,11 +26,13 @@ class _DataListState extends State<DataList> {
   final _searchDebouncer = Debouncer<String>(Duration(milliseconds: 1000));
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
+
   var _listData = [];
+  var _listLokasi = <TokoModel>[];
+  var _filterValues = <String, dynamic>{};
+  var _isLoaded = false;
   UserTierModel _tier;
   bool _isMyShopList;
-
-  var _listLokasi = <TokoModel>[];
   TokoModel _lokasi;
 
   @override
@@ -78,6 +80,7 @@ class _DataListState extends State<DataList> {
             return TokoModel.fromJson(res);
         }
       }).toList();
+      _isLoaded = true;
     });
   }
 
@@ -122,10 +125,10 @@ class _DataListState extends State<DataList> {
             child: Padding(
               padding: EdgeInsets.only(left: 20, top: 20, bottom: 20, right: 8),
               child: Row(children: <Widget>[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Hero(
-                    tag: "listing_${_data.id}_0",
+                Hero(
+                  tag: "listing_${_data.id}_0",
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
                     child: FadeInImage.assetNetwork(
                       placeholder: IMAGE_DEFAULT_NONE,
                       image: _data.foto.first.foto,
@@ -232,9 +235,7 @@ class _DataListState extends State<DataList> {
                   icon: Icon(Icons.sort),
                   color: Colors.white,
                   // tooltip: 'prompt_sort'.tr(),
-                  onPressed: () {
-                    // TODO show dialog
-                  },
+                  onPressed: () {},
                 ),
                 // widget.tool ?? SizedBox(),
                 SizedBox(width: 8,),
@@ -248,7 +249,14 @@ class _DataListState extends State<DataList> {
           searchController: _searchController,
           searchFocusNode: _searchFocusNode,
           backgroundColor: THEME_COLOR,
-          actionColor: Colors.white
+          actionColor: Colors.white,
+          dataType: widget.args['tipe'],
+          filterValues: _filterValues,
+          onFilter: (values) {
+            setState(() {
+              _filterValues = values;
+            });
+          },
         ) : SizedBox();
     }
   }
@@ -273,7 +281,7 @@ class _DataListState extends State<DataList> {
             header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR),
             controller: _refreshController,
             onRefresh: _getAllData,
-            child: ListView.separated(
+            child: _isLoaded && _listData.length == 0 ? UiPlaceholder(label: "Tidak ada data yang sesuai.") : ListView.separated(
               separatorBuilder: (context, index) => Container(color: Colors.grey, height: 1,),
               itemCount: _listData.length,
               itemBuilder: _buildItem,

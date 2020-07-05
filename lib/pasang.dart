@@ -266,20 +266,10 @@ class _PasangState extends State<Pasang> {
                 ),
               ),
             ),
-          )
-          // Container(
-          //   width: MediaQuery.of(context).size.width - 60,
-          //   child: Row(children: <Widget>[
-          //     IconButton(icon: Icon(MdiIcons.chevronLeft), onPressed: _clearKategori,),
-          //     Expanded(child: GestureDetector(
-          //       child: Text(_kelompok.judul, style: TextStyle(fontWeight: FontWeight.bold)),
-          //       onTap: _clearKategori,
-          //     )),
-          //   ],),
-          // ),
+          ),
+          ...(_listKategori.where((kat) => kat.idKelompok == _kelompok.id).map((kat) => _chipKategori(kat))?.toList() ?? []),
+          // _chipKategori()
         ]
-        ..addAll(_listKategori.where((kat) => kat.idKelompok == _kelompok.id).map((kat) => _chipKategori(kat))?.toList() ?? [])
-        // ..add(_chipKategori())
       ),
     );
   }
@@ -558,7 +548,15 @@ class _PasangState extends State<Pasang> {
 
                           Padding(
                             padding: EdgeInsets.all(20.0),
-                            child: UiButton(_stepIndex == 0 ? "Selanjutnya" : "Pasang Iklan", height: style.heightButtonL, color: Colors.green, icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
+                            child: UiButton(
+                              _stepIndex == 0 ? "Selanjutnya" : (_tipe == 'WTS' ? "Pasang Iklan" : "Siarkan"),
+                              height: style.heightButtonL,
+                              textStyle: style.textButtonL,
+                              color: Colors.green,
+                              icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o,
+                              iconRight: true,
+                              onPressed: _submit,
+                            ),
                           ),
                           SizedBox(height: 20,),
                         ],)

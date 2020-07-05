@@ -40,6 +40,7 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
   var _isToolbarVisible = true;
   var _lastParam = <String, dynamic>{};
   var _lastScrollPixel = 0.0;
+  var _filterValues = <String, dynamic>{};
 
   AnimationController _animationController;
   Animation _animation;
@@ -280,6 +281,13 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
                       searchFocusNode: _searchFocusNode,
                       searchPlaceholder: (settings.isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing').tr(),
                       height: toolbarHeight,
+                      dataType: 'listing',
+                      filterValues: _filterValues,
+                      onFilter: (values) {
+                        setState(() {
+                          _filterValues = values;
+                        });
+                      },
                       tool: Container(
                         decoration: BoxDecoration(
                           color: settings.isViewFavorites ? Colors.pink.withOpacity(.3) : Colors.transparent,

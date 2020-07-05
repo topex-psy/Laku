@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/person.dart';
 import '../../utils/api.dart';
 import '../../utils/helpers.dart';
+import '../../utils/styles.dart' as style;
 import '../../utils/widgets.dart';
 
 class ResetPIN extends StatefulWidget {
@@ -89,7 +90,7 @@ class _ResetPINState extends State<ResetPIN> {
       UiInput("PIN Baru", isRequired: true, icon: LineIcons.unlock, info: "6-digit", type: UiInputType.PIN, controller: _sandiController, focusNode: _sandiFocusNode),
       UiInput("Konfirmasi PIN Baru", isRequired: true, icon: LineIcons.unlock_alt, type: UiInputType.PIN, controller: _konfirmSandiController, focusNode: _konfirmSandiFocusNode),
       SizedBox(height: 12,),
-      UiButton("Simpan", height: 46, color: Colors.green, icon: LineIcons.check, iconSize: 30, iconRight: true, onPressed: _submit,),
+      UiButton("Simpan", height: style.heightButtonL, color: Colors.green, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: _submit,),
     ],);
   }
 }

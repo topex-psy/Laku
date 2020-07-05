@@ -45,8 +45,8 @@ class _HomeState extends State<Home> {
   final FirebaseAnalyticsObserver observer;
 
   final _listActions = <IconLabel>[
-    IconLabel(MdiIcons.filePlus, "Buat Iklan", value: 'WTS', color: Colors.blue),
-    IconLabel(MdiIcons.bullhorn, "Broadcast", value: 'WTB', color: Colors.yellow),
+    IconLabel(MdiIcons.filePlusOutline, "Buat Iklan", value: 'WTS', color: Colors.blue),
+    IconLabel(MdiIcons.bullhornOutline, "Broadcast", value: 'WTB', color: Colors.yellow),
   ];
 
   // UserSetupModel _userSetup;
@@ -72,7 +72,7 @@ class _HomeState extends State<Home> {
     setState(() { _selectedIndex = index; });
     if (screenPageController.page.round() != index) {
       print("page move: ${screenPageController.page.round()} -> $index");
-      screenPageController.animateToPage(index, duration: Duration(milliseconds: 500), curve: Curves.ease);
+      a.navigatePage(index);
     }
   }
 
@@ -120,13 +120,9 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
 
     final _listPages = <Page>[
-      // Page(title: 'menu_home'.tr(), icon: LineIcons.home, content: Beranda(isOpen: _selectedIndex == 0,),),
-      // Page(title: 'menu_browse'.tr(), icon: LineIcons.search, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
-      // Page(title: 'menu_broadcast'.tr(), icon: LineIcons.comments_o, content: Broadcast(isOpen: _selectedIndex == 2,),),
-      // Page(title: 'menu_user'.tr(), icon: LineIcons.user, content: Profil(isOpen: _selectedIndex == 3,),),
       Page(title: 'menu_home'.tr(), icon: MdiIcons.homeOutline, content: Beranda(isOpen: _selectedIndex == 0,),),
       Page(title: 'menu_browse'.tr(), icon: MdiIcons.magnify, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
-      Page(title: 'menu_broadcast'.tr(), icon: MdiIcons.commentMultipleOutline, content: Broadcast(isOpen: _selectedIndex == 2,),),
+      Page(title: 'menu_broadcast'.tr(), icon: MdiIcons.bullhornOutline, content: Broadcast(isOpen: _selectedIndex == 2,),),
       Page(title: 'menu_user'.tr(), icon: MdiIcons.accountOutline, content: Profil(isOpen: _selectedIndex == 3,),),
     ];
 
