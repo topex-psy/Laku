@@ -781,6 +781,7 @@ class UiDropImages extends StatelessWidget {
     this.onPickImage,
     this.onTapImage,
     this.onDeleteImage,
+    this.listImagesEdit = const [],
     this.listImages = const [],
     this.maxImages = IMAGE_UPLOAD_MAX,
     this.height = 100.0
@@ -791,6 +792,7 @@ class UiDropImages extends StatelessWidget {
   final void Function(dynamic) onDeleteImage;
   final double height;
   final int maxImages;
+  final List<String> listImagesEdit;
   final List<dynamic> listImages;
 
   Widget _getPlaceholder({double width = double.infinity}) {
@@ -826,39 +828,46 @@ class UiDropImages extends StatelessWidget {
     return Image.network(asset, width: 300, height: 300, fit: BoxFit.cover,);
   }
 
+  int get _totalImages => listImages.length + listImagesEdit.length;
+
+  Widget _imageItem(asset) {
+    return Container(
+      padding: EdgeInsets.all(4.0),
+      child: Stack(
+        alignment: Alignment.topRight,
+        children: <Widget>[
+          GestureDetector(
+            onTap: onTapImage == null ? null : () => onTapImage(asset),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: _getImage(asset),
+            ),
+          ),
+          onDeleteImage == null ? Container() : GestureDetector(
+            onTap: () => onDeleteImage(asset),
+            child: Padding(
+              padding: EdgeInsets.all(4.0),
+              child: Container(
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                child: Icon(MdiIcons.closeCircle, color: Colors.grey[850], size: 22,)
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // if (listImages.isEmpty) return _getPlaceholder();
-    List<Widget> _gridItems = listImages.map((asset) {
-      return Container(
-        padding: EdgeInsets.all(4.0),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: <Widget>[
-            GestureDetector(
-              onTap: onTapImage == null ? null : () => onTapImage(asset),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: _getImage(asset),
-              ),
-            ),
-            onDeleteImage == null ? Container() : GestureDetector(
-              onTap: () => onDeleteImage(asset),
-              child: Padding(
-                padding: EdgeInsets.all(4.0),
-                child: Container(
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-                  child: Icon(MdiIcons.closeCircle, color: Colors.grey[850], size: 22,)
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
+    List<Widget> _gridItems = [
+      ...listImagesEdit.map((url) => _imageItem(url)).toList(),
+      ...listImages.map((asset) => _imageItem(asset)).toList()
+    ];
 
-    if (listImages.length < maxImages && onPickImage != null)
-      for (var i = 0; i < maxImages - listImages.length; i++)
+    if (_totalImages < maxImages && onPickImage != null)
+      for (var i = 0; i < maxImages - _totalImages; i++)
         _gridItems.add(_getPlaceholder(width: height));
 
     return Container(

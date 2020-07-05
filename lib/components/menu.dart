@@ -13,8 +13,8 @@ enum MenuNavVal {
   logout,
 }
 
-class MenuNavItem {
-  MenuNavItem({@required this.value, this.icon, this.teks = '', this.isFirst = false, this.isLast = false});
+class DrawerMenuItem {
+  DrawerMenuItem({@required this.value, this.icon, this.teks = '', this.isFirst = false, this.isLast = false});
   final MenuNavVal value;
   final IconData icon;
   final String teks;
@@ -22,12 +22,12 @@ class MenuNavItem {
   final bool isLast;
 }
 
-class MenuNavContent extends StatefulWidget {
+class DrawerMenu extends StatefulWidget {
   @override
-  _MenuNavContentState createState() => _MenuNavContentState();
+  _DrawerMenuState createState() => _DrawerMenuState();
 }
 
-class _MenuNavContentState extends State<MenuNavContent> {
+class _DrawerMenuState extends State<DrawerMenu> {
   MenuNavVal _inProgress;
 
   _aksiMenu(BuildContext context, MenuNavVal val) async {
@@ -55,15 +55,15 @@ class _MenuNavContentState extends State<MenuNavContent> {
 
   @override
   Widget build(BuildContext context) {
-    final List<MenuNavItem> _menu = [
-      MenuNavItem(value: MenuNavVal.upgrade, icon: MdiIcons.certificateOutline, teks: 'menu_upgrade'.tr()),
-      MenuNavItem(value: MenuNavVal.shop, icon: MdiIcons.storefrontOutline, teks: 'menu_shop'.tr()),
-      MenuNavItem(value: MenuNavVal.settings, icon: MdiIcons.cogOutline, teks: 'menu_settings'.tr()),
-      MenuNavItem(value: MenuNavVal.feedback, icon: MdiIcons.commentCheckOutline, teks: 'menu_feedback'.tr()),
-      MenuNavItem(value: MenuNavVal.logout, icon: MdiIcons.logout, teks: 'menu_logout'.tr()),
+    final List<DrawerMenuItem> _menu = [
+      DrawerMenuItem(value: MenuNavVal.upgrade, icon: MdiIcons.certificateOutline, teks: 'menu_upgrade'.tr()),
+      DrawerMenuItem(value: MenuNavVal.shop, icon: MdiIcons.storefrontOutline, teks: 'menu_shop'.tr()),
+      DrawerMenuItem(value: MenuNavVal.settings, icon: MdiIcons.cogOutline, teks: 'menu_settings'.tr()),
+      DrawerMenuItem(value: MenuNavVal.feedback, icon: MdiIcons.commentCheckOutline, teks: 'menu_feedback'.tr()),
+      DrawerMenuItem(value: MenuNavVal.logout, icon: MdiIcons.logout, teks: 'menu_logout'.tr()),
     ];
     
-    return Column(children: _menu.map((MenuNavItem menu) {
+    return Column(children: _menu.map((DrawerMenuItem menu) {
       bool _isFirst = menu.isFirst || _menu.indexOf(menu) == 0;
       bool _isLast = menu.isLast || _menu.indexOf(menu) == _menu.length - 1;
       return UiMenuList(

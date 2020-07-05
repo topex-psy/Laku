@@ -92,15 +92,17 @@ class IklanModel {
     @required this.judul,
     @required this.deskripsi,
     this.kondisi,
-    this.stok,
     this.harga,
     this.isNego,
+    this.isTersedia,
+    this.stok,
     this.layananAntar,
     this.jadwalMulai,
     this.jadwalAkhir,
     this.keyword,
     this.tipe,
     this.kategori,
+    this.idKategori,
     this.waktu,
     this.waktuUpdate,
     @required this.lat,
@@ -112,6 +114,7 @@ class IklanModel {
     @required this.pengiklan,
     this.pengiklanLastActive,
     this.jumlahIklan,
+    this.jumlahKlik,
     this.jumlahFavoritLapak,
     this.jumlahFavorit,
     this.telepon,
@@ -134,15 +137,17 @@ class IklanModel {
   final String judul;
   final String deskripsi;
   final String kondisi;
-  final String stok;
   final double harga;
   final bool isNego;
+  final bool isTersedia;
+  final int stok;
   final String layananAntar;
   final DateTime jadwalMulai;
   final DateTime jadwalAkhir;
   final String keyword;
   final String tipe;
   final String kategori;
+  final int idKategori;
   final DateTime waktu;
   final DateTime waktuUpdate;
   final double lat;
@@ -163,6 +168,7 @@ class IklanModel {
   final DateTime pengiklanLastActive;
   final int tier;
   final int jumlahIklan;
+  final int jumlahKlik;
   final int jumlahFavoritLapak;
   int jumlahFavorit;
   bool isFavorit;
@@ -188,14 +194,16 @@ class IklanModel {
     judul = parsedJson['JUDUL'],
     deskripsi = parsedJson['DESKRIPSI'],
     kondisi = parsedJson['KONDISI'],
-    stok = parsedJson['STOK'],
     keyword = parsedJson['KEYWORD'],
     harga = double.parse(parsedJson['HARGA'] ?? '0.0'),
     isNego = int.parse(parsedJson['IS_NEGO'] ?? '0') == 1,
+    isTersedia = int.parse(parsedJson['IS_TERSEDIA'] ?? '0') == 1,
+    stok = parsedJson['STOK'] == null ? null : int.parse(parsedJson['STOK']),
     layananAntar = parsedJson['LAYANAN_ANTAR'],
     jadwalMulai = parsedJson['JADWAL_MULAI'] == null ? null : DateTime.parse(parsedJson['JADWAL_MULAI']),
     jadwalAkhir = parsedJson['JADWAL_AKHIR'] == null ? null : DateTime.parse(parsedJson['JADWAL_AKHIR']),
     tipe = parsedJson['TIPE'],
+    idKategori = int.parse(parsedJson['ID_KATEGORI']),
     kategori = parsedJson['JUDUL_KATEGORI'],
     waktu = DateTime.parse(parsedJson['TIMEE']),
     waktuUpdate = DateTime.parse(parsedJson['LAST_UPDATED']),
@@ -208,6 +216,7 @@ class IklanModel {
     pengiklan = parsedJson['PENGIKLAN'],
     pengiklanLastActive = DateTime.parse(parsedJson['PENGIKLAN_LAST_ACTIVE']),
     jumlahIklan = int.parse(parsedJson['JUMLAH_IKLAN']),
+    jumlahKlik = int.parse(parsedJson['KLIK'] ?? '0'),
     jumlahFavoritLapak = int.parse(parsedJson['JUMLAH_FAVORIT_LAPAK']),
     jumlahFavorit = int.parse(parsedJson['JUMLAH_FAVORIT']),
     telepon = parsedJson['TELEPON'],

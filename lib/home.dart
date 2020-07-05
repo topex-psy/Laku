@@ -49,8 +49,6 @@ class _HomeState extends State<Home> {
     IconLabel(MdiIcons.bullhornOutline, "Broadcast", value: 'WTB', color: Colors.yellow),
   ];
 
-  // UserSetupModel _userSetup;
-
   var _selectedIndex = 0;
   var _isWillExit = false;
   var _isPopNotif = false;
@@ -76,18 +74,72 @@ class _HomeState extends State<Home> {
     }
   }
 
+  Widget get _drawer {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.69,
+          decoration: BoxDecoration(
+            boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 25)],
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
+            child: Drawer(semanticLabel: "Menu panel", child: Column(children: <Widget>[
+              Material(
+                color: THEME_COLOR,
+                child: InkWell(
+                  splashColor: Colors.white10,
+                  highlightColor: Colors.white10,
+                  onTap: a.openProfile,
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Row(children: <Widget>[
+                      Selector<PersonProvider, String>(
+                        selector: (buildContext, person) => person.foto,
+                        builder: (context, foto, child) => UiAvatar(foto, size: 70,),
+                      ),
+                      SizedBox(width: 12,),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                        Selector<PersonProvider, String>(
+                          selector: (buildContext, person) => person.namaDepan,
+                          builder: (context, namaDepan, child) => Text("${'prompt_hello'.tr()}, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
+                        ),
+                        SizedBox(height: 2),
+                        Selector<PersonProvider, String>(
+                          selector: (buildContext, person) => person.email,
+                          builder: (context, email, child) => Text(email, style: style.textWhite,),
+                        ),
+                      ],),)
+                    ],),
+                  ),
+                ),
+              ),
+              Consumer<SettingsProvider>(
+                builder: (context, settings, child) {
+                  return settings.notif == null ? SizedBox() : Padding(
+                    padding: EdgeInsets.only(top: 20.0),
+                    child: Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
+                      UiFlatButton(LineIcons.bullhorn, "${f.formatNumber(settings.notif.broadcastAktif)} broadcast", () => _action('broadcast')),
+                      UiFlatButton(LineIcons.tags, "${f.formatNumber(settings.notif.tiketToa)} tiket", () => _action('WTB')),
+                    ],),
+                  );
+                }
+              ),
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: DrawerMenu(),
+              ),
+            ],),),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget get _fab {
-    if (_selectedIndex > 0) return SizedBox();
-    // if (_selectedIndex == 2) return SizedBox(
-    //   width: 64,
-    //   height: 64,
-    //   child: FloatingActionButton(
-    //     child: Icon(MdiIcons.accountEdit, color: Colors.white,),
-    //     backgroundColor: THEME_COLOR_LIGHT,
-    //     onPressed: a.openMap
-    //   ),
-    // );
-    return UiFabCircular(
+    return _selectedIndex > 0 ? SizedBox() : UiFabCircular(
       LineIcons.plus,
       _listActions,
       _action,
@@ -107,12 +159,10 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // var setupApi = await api('user_setup', data: { 'uid': userSession.uid });
+      Vibration.vibrate(duration: 200, amplitude: 1);
       // setState(() {
-      //   _userSetup = UserSetupModel.fromJson(setupApi.result.first);
       //   _isPopNotif = true;
       // });
-      Vibration.vibrate(duration: 200, amplitude: 1);
     });
   }
 
@@ -122,7 +172,7 @@ class _HomeState extends State<Home> {
     final _listPages = <Page>[
       Page(title: 'menu_home'.tr(), icon: MdiIcons.homeOutline, content: Beranda(isOpen: _selectedIndex == 0,),),
       Page(title: 'menu_browse'.tr(), icon: MdiIcons.magnify, content: Temukan(isOpen: _selectedIndex == 1,),), // favorit, featured ad, last viewed
-      Page(title: 'menu_broadcast'.tr(), icon: MdiIcons.bullhornOutline, content: Broadcast(isOpen: _selectedIndex == 2,),),
+      Page(title: 'menu_broadcast'.tr(), icon: MdiIcons.accessPoint, content: Broadcast(isOpen: _selectedIndex == 2,),),
       Page(title: 'menu_user'.tr(), icon: MdiIcons.accountOutline, content: Profil(isOpen: _selectedIndex == 3,),),
     ];
 
@@ -143,67 +193,7 @@ class _HomeState extends State<Home> {
         key: screenScaffoldKey,
         resizeToAvoidBottomInset: true,
         drawerEdgeDragWidth: 20,
-        endDrawer: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.69,
-              decoration: BoxDecoration(
-                boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 25)],
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
-                child: Drawer(semanticLabel: "Menu panel", child: Column(children: <Widget>[
-                  Material(
-                    color: THEME_COLOR,
-                    child: InkWell(
-                      splashColor: Colors.white10,
-                      highlightColor: Colors.white10,
-                      onTap: a.openProfile,
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Row(children: <Widget>[
-                          Selector<PersonProvider, String>(
-                            selector: (buildContext, person) => person.foto,
-                            builder: (context, foto, child) => UiAvatar(foto, size: 70,),
-                          ),
-                          SizedBox(width: 12,),
-                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                            Selector<PersonProvider, String>(
-                              selector: (buildContext, person) => person.namaDepan,
-                              builder: (context, namaDepan, child) => Text("${'prompt_hello'.tr()}, ${namaDepan}!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),),
-                            ),
-                            SizedBox(height: 2),
-                            Selector<PersonProvider, String>(
-                              selector: (buildContext, person) => person.email,
-                              builder: (context, email, child) => Text(email, style: style.textWhite,),
-                            ),
-                          ],),)
-                        ],),
-                      ),
-                    ),
-                  ),
-                  Consumer<SettingsProvider>(
-                    builder: (context, settings, child) {
-                      return settings.notif == null ? SizedBox() : Padding(
-                        padding: EdgeInsets.only(top: 20.0),
-                        child: Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
-                          UiFlatButton(LineIcons.bullhorn, "${f.formatNumber(settings.notif.broadcastAktif)} broadcast", () => _action('broadcast')),
-                          UiFlatButton(LineIcons.tags, "${f.formatNumber(settings.notif.tiketToa)} tiket", () => _action('WTB')),
-                        ],),
-                      );
-                    }
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(10),
-                    child: MenuNavContent(),
-                  ),
-                ],),),
-              ),
-            ),
-          ),
-        ),
+        endDrawer: _drawer,
         body: PreloadPageView.builder(
           preloadPagesCount: 2,
           controller: screenPageController,

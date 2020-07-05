@@ -65,8 +65,11 @@ class _PasangState extends State<Pasang> {
   var _tipe = "WTS";
   var _kondisi = "new";
   var _isNegotiable = false;
+  var _isAvailable = true;
   var _isDeliverable = false;
   String _jarakAntar;
+  int _stok;
+  int _id;
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) setState(() {
@@ -85,7 +88,7 @@ class _PasangState extends State<Pasang> {
       h.failAlert("Tambahkan Foto", "Unggah minimal 1 foto untuk iklan Anda.");
       return;
     }
-    if (_kelompok == null) {
+    if (_kelompok == null || _kategori == null) {
       h.failAlert("Pilih Kategori", "Harap pilih kategori iklan Anda.");
       return;
     }
@@ -97,8 +100,12 @@ class _PasangState extends State<Pasang> {
       'judul': _judulController.text,
       'deskripsi': _deskripsiController.text,
       'harga': _hargaController.text,
+      'kondisi': _kondisi,
+      'jarakAntar': _isDeliverable ? _jarakAntar : null,
       'kategori': _kategori.id.toString(),
       'hash': hash.toString(),
+      'picCount': _images.length.toString(),
+      'imagesEdit': _imagesEdit.join('|'),
     };
     h.loadAlert("Memasang iklan ...");
 
@@ -154,7 +161,6 @@ class _PasangState extends State<Pasang> {
     Navigator.of(context).pop();
     if (postApi.isSuccess) {
       await h.customAlert("Iklan Terpasang!", "Iklan <strong>${postData['judul']}</strong> telah terpasang!", icon: Icon(LineIcons.check_circle, color: Colors.green, size: 69,));
-      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_HOME);
       Navigator.of(context).pop({'isSubmit': true});
     } else {
       h.failAlert("Gagal Memproses", "Terjadi kendala saat memproses pemasangan iklan.");
@@ -166,7 +172,7 @@ class _PasangState extends State<Pasang> {
   int get _maxAllowedPic => _tier?.maxListingPic ?? IMAGE_UPLOAD_MAX;
 
   _pickImages() async {
-    if (_imagesEdit.length + _images.length == _maxAllowedPic) {
+    if (_selectedPicsTotal == _maxAllowedPic) {
       h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak ${_maxAllowedPic} foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
       return;
     }
@@ -180,6 +186,31 @@ class _PasangState extends State<Pasang> {
     if (mounted && resultList.isNotEmpty) setState(() {
       _images.addAll(resultList);
     });
+  }
+
+  _loadData() async {
+    if (_id == null) return;
+    if (!_isLoading) setState(() {
+      _isLoading = true;
+    });
+    var listingApi = await api('listing', data: {'uid': userSession.uid, 'id': _id});
+    var listing = IklanModel.fromJson(listingApi.result.first);
+    if (mounted) setState(() {
+      _tipe = listing.tipe;
+      _judulController.text = listing.judul;
+      _deskripsiController.text = listing.deskripsi;
+      _hargaController.text = f.formatNumber(listing.harga);
+      _kategori = _listKategori.where((kat) => kat.id == listing.idKategori).toList().first;
+      _kelompok = _listKelompok.where((group) => group.id == _kategori.idKelompok).toList().first;
+      _imagesEdit = listing.foto.map((pic) => pic.foto).toList();
+      _isAvailable = listing.isTersedia;
+      _isDeliverable = listing.layananAntar != null;
+      _isNegotiable = listing.isNego;
+      _jarakAntar = listing.layananAntar;
+      _stok = listing.stok;
+      _isLoading = false;
+    });
+
   }
 
   _loadCategory() async {
@@ -200,12 +231,13 @@ class _PasangState extends State<Pasang> {
         isScheduleable: kat.isScheduleable,
       );
     });
-    setState(() {
+    if (mounted) setState(() {
       _listKelompok = listKelompok.values.toList();
       _listKategori = listKategori;
       _isLoadingCategory = false;
       _resetKategori();
     });
+    _loadData();
   }
 
   _resetKategori() {
@@ -296,6 +328,7 @@ class _PasangState extends State<Pasang> {
   @override
   void initState() {
     _tipe = widget.args['tipe'];
+    _id = widget.args['id'];
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
     _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
     _hargaController = TextEditingController()..addListener(() => _dismissError("harga"));
@@ -309,8 +342,8 @@ class _PasangState extends State<Pasang> {
         var tierApi = await api('user_tier', data: {'uid': userSession.uid});
         var tier = UserTierModel.fromJson(tierApi.result.first);
         setState(() {
+          if (_id == null) _isLoading = false;
           _tier = tier;
-          _isLoading = false;
         });
         _loadCategory();
       } else {
@@ -338,7 +371,7 @@ class _PasangState extends State<Pasang> {
       });
       return false;
     }
-    if (_isChanged || _images.isNotEmpty) return await h.showConfirm("Batalkan Iklan", "Apakah Anda yakin ingin membatalkan pemasangan iklan ini?") ?? false;
+    if (_isChanged || _images.isNotEmpty) return await h.showConfirm("Batalkan ${_id == null ? 'Iklan' : 'Edit'}", "Apakah Anda yakin ingin membatalkan ${_id == null ? 'pemasangan' : 'penyuntingan'} iklan ini?") ?? false;
     return true;
   }
 
@@ -346,7 +379,7 @@ class _PasangState extends State<Pasang> {
     if (await _onWillPop()) Navigator.of(context).pop();
   }
 
-  String get _title => _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => _listTipe.first).label;
+  String get _title => _id == null ? _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => _listTipe.first).label : "Sunting Iklan";
 
   bool get _isBuyAndSell => _kelompok?.id == 1 ?? false; // jual-beli
   bool get _isPriceable => _kelompok?.isPriceable ?? false; // jual-beli, jasa
@@ -410,6 +443,33 @@ class _PasangState extends State<Pasang> {
     ) : SizedBox();
   }
 
+  Widget get _inputAvailable {
+    return _isBuyAndSell ? Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text("Ketersediaan:", style: style.textLabel),
+        SizedBox(height: 8.0,),
+        CheckboxListTile(
+          activeColor: Colors.green,
+          controlAffinity: ListTileControlAffinity.leading,
+          dense: true,
+          title: Text("Produk tersedia"),
+          value: _isAvailable,
+          onChanged: (val) {
+            setState(() { _isAvailable = val; });
+          },
+        ),
+        _isAvailable ? Container(
+          child: Column(children: <Widget>[
+            // TODO selalu tersedia, terbatas, pre-order
+          ],),
+        ) : SizedBox(),
+        SizedBox(height: 12,),
+      ],
+    ) : SizedBox();
+  }
+
   Widget get _inputDelivery {
     final _what = _isBuyAndSell ? "Antar" : "Datang";
     return _isPriceable ? Column(
@@ -467,7 +527,7 @@ class _PasangState extends State<Pasang> {
                         },
                         child: Column(children: <Widget>[
 
-                          UiSection(children: <Widget>[
+                          _id != null ? SizedBox() : UiSection(children: <Widget>[
                             // Text("Tipe Iklan", style: style.textTitle,),
                             // SizedBox(height: 12.0,),
                             // Text("Tipe:", style: style.textLabel),
@@ -510,7 +570,14 @@ class _PasangState extends State<Pasang> {
                             children: <Widget>[
                               UiDropImages(
                                 onPickImage: _pickImages,
-                                onDeleteImage: (asset) => setState(() { _images.remove(asset); }),
+                                onTapImage: (asset) {
+                                  if (asset is String) h.viewImage(_imagesEdit, page: _imagesEdit.indexOf(asset));
+                                },
+                                onDeleteImage: (asset) => setState(() {
+                                  if (asset is String) _imagesEdit.remove(asset);
+                                  else _images.remove(asset);
+                                }),
+                                listImagesEdit: _imagesEdit,
                                 listImages: _images,
                                 maxImages: _maxAllowedPic,
                                 height: 200,
@@ -530,6 +597,7 @@ class _PasangState extends State<Pasang> {
                           _isBuyAndSell || _isPriceable || _isScheduleable ? UiSection(title: "Info Lainnya", titleSpacing: 20, children: <Widget>[
                             _inputPrice,
                             _inputCondition,
+                            _inputAvailable,
                             _inputDelivery,
                             // TODO _isScheduleable
                           ]) : SizedBox(),

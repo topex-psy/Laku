@@ -82,6 +82,10 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
         }
         break;
       case 'edit':
+        final pasang = await a.openListingForm(id: _item.id) as Map;
+        if (pasang != null && pasang.containsKey('isSubmit')) {
+          _updateData();
+        }
         break;
       case 'edit_shop':
         break;
@@ -151,31 +155,51 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                   background: SizedBox(
                     height: 300.0,
                     width: MediaQuery.of(context).size.width,
-                    child: Carousel(
-                      images: _item.foto.map((pic) {
-                        var index = _item.foto.indexOf(pic);
-                        var tag = "listing_${_item.id}";
-                        return GestureDetector(
-                          onTap: () => h.viewImage(_item.foto, page: index, heroTag: tag),
-                          child: Hero(
-                            tag: "${tag}_$index",
-                            child: FadeInImage.assetNetwork(
-                              placeholder: IMAGE_DEFAULT_NONE,
-                              image: pic.foto,
-                              fit: BoxFit.cover,
+                    child: Stack(
+                      children: <Widget>[
+                        Positioned.fill(
+                          child: Carousel(
+                            images: _item.foto.map((pic) {
+                              var index = _item.foto.indexOf(pic);
+                              var tag = "listing_${_item.id}";
+                              return GestureDetector(
+                                onTap: () => h.viewImage(_item.foto, page: index, heroTag: tag),
+                                child: Hero(
+                                  tag: "${tag}_$index",
+                                  child: FadeInImage.assetNetwork(
+                                    placeholder: IMAGE_DEFAULT_NONE,
+                                    image: pic.foto,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            autoplay: true,
+                            autoplayDuration: Duration(milliseconds: 8000),
+                            animationDuration: Duration(milliseconds: 800),
+                            showIndicator: _item.foto.length > 1,
+                            dotSize: 5.0,
+                            dotSpacing: 16.0,
+                            dotBgColor: Colors.white,
+                            dotColor: THEME_COLOR,
+                            dotIncreasedColor: THEME_COLOR_LIGHT
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: EdgeInsets.all(THEME_PADDING),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text("${f.formatNumber(_item.jumlahKlik)}x", style: style.textMutedM),
+                                SizedBox(width: 4,),
+                                Icon(MdiIcons.eyeOutline, color: THEME_COLOR, size: 18,),
+                              ],
                             ),
                           ),
-                        );
-                      }).toList(),
-                      autoplay: true,
-                      autoplayDuration: Duration(milliseconds: 8000),
-                      animationDuration: Duration(milliseconds: 800),
-                      showIndicator: _item.foto.length > 1,
-                      dotSize: 5.0,
-                      dotSpacing: 16.0,
-                      dotBgColor: Colors.white,
-                      dotColor: THEME_COLOR,
-                      dotIncreasedColor: THEME_COLOR_LIGHT
+                        ),
+                      ],
                     )
                   ),
                 ),
@@ -449,7 +473,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
                               children: <Widget>[
                                 Icon(MdiIcons.circleMedium, size: 20, color: Colors.grey,),
                                 SizedBox(width: 6,),
-                                Expanded(child: Text(f.formatTimeago(_item.pengiklanLastActive))),
+                                Expanded(child: Text(f.formatTimeago(_item.pengiklanLastActive), style: style.textS)),
                               ],
                             )
                           ],),),
