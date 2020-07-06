@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:numberpicker/numberpicker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'extensions/widget.dart';
@@ -68,6 +69,9 @@ class _PasangState extends State<Pasang> {
   var _isAvailable = true;
   var _isDeliverable = false;
   String _jarakAntar;
+  IconLabel _tipeKetersediaan;
+  int _preOrderDurasi;
+  String _preOrderUnit;
   int _stok;
   int _id;
 
@@ -101,6 +105,10 @@ class _PasangState extends State<Pasang> {
       'deskripsi': _deskripsiController.text,
       'harga': _hargaController.text,
       'kondisi': _kondisi,
+      'tipeKetersediaan': _tipeKetersediaan.value,
+      'preOrderDurasi': _preOrderDurasi.toString(),
+      'preOrderUnit': _preOrderUnit,
+      'stok': _stok.toString(),
       'jarakAntar': _isDeliverable ? _jarakAntar : null,
       'kategori': _kategori.id.toString(),
       'hash': hash.toString(),
@@ -385,6 +393,33 @@ class _PasangState extends State<Pasang> {
   bool get _isPriceable => _kelompok?.isPriceable ?? false; // jual-beli, jasa
   bool get _isScheduleable => _kelompok?.isScheduleable ?? false; // acara, loker
 
+  _setTipeKetersediaan(IconLabel value) {
+    setState(() {
+      _tipeKetersediaan = value;
+    });
+  }
+
+  Widget _formKetersediaan(String tipe) {
+    switch (tipe) {
+      case 'terbatas': return Container(child: Row(children: <Widget>[
+        // Expanded(child: UiInput("Harga", showLabel: false, icon: LineIcons.tag, type: UiInputType.NUMBER, controller: _stokController, focusNode: _stokFocusNode, error: _errorText["stok"],),),
+        NumberPicker.integer(
+          initialValue: _stok,
+          minValue: 1,
+          maxValue: 9999,
+          infiniteLoop: false,
+          onChanged: (val) => setState(() {
+            _stok = val;
+          })
+        ),
+
+
+      ],),);
+      case 'preorder': return Container();
+      default: return Container();
+    }
+  }
+
   Widget get _inputPrice {
     return _isPriceable ? Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -461,9 +496,18 @@ class _PasangState extends State<Pasang> {
           },
         ),
         _isAvailable ? Container(
-          child: Column(children: <Widget>[
-            // TODO selalu tersedia, terbatas, pre-order
-          ],),
+          child: Column(children: <IconLabel>[
+            IconLabel(LineIcons.check_circle_o, 'Selalu Tersedia', value: 'sedia'),
+            IconLabel(LineIcons.check_circle_o, 'Terbatas', value: 'terbatas'),
+            IconLabel(LineIcons.check_circle_o, 'Pre-order', value: 'preorder'),
+          ].map((value) {
+            return UiRadio(
+              currentValue: _tipeKetersediaan,
+              onChanged: _setTipeKetersediaan,
+              value: value,
+              expandOnTrue: _formKetersediaan(value.value)
+            );
+          }).toList()),
         ) : SizedBox(),
         SizedBox(height: 12,),
       ],

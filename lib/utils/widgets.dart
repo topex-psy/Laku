@@ -464,6 +464,46 @@ class _UiInputState extends State<UiInput> {
   }
 }
 
+class UiRadio extends StatefulWidget {
+  UiRadio({Key key, this.value, this.currentValue, this.onChanged, this.expandOnTrue}) : super(key: key);
+  final IconLabel value;
+  final IconLabel currentValue;
+  final void Function(IconLabel) onChanged;
+  final Widget expandOnTrue;
+
+  @override
+  _UiRadioState createState() => _UiRadioState();
+}
+
+class _UiRadioState extends State<UiRadio> with SingleTickerProviderStateMixin {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Radio(
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onChanged: widget.onChanged,
+              groupValue: widget.currentValue,
+              value: widget.value,
+            ),
+            GestureDetector(onTap: () => widget.onChanged(widget.value), child: Text(widget.value.label, style: TextStyle(fontSize: 13.0))),
+          ],
+        ),
+        AnimatedSize(
+          vsync: this,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+          child: widget.value == widget.currentValue ? widget.expandOnTrue : Container(),
+        ),
+      ],
+    );
+  }
+}
+
 class UiSelect extends StatefulWidget {
   UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.margin, this.onSelect, this.error = '', this.simple = false, this.isDense = false}) : super(key: key);
   final IconData icon;
