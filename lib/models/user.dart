@@ -127,4 +127,7 @@ class UserTierModel {
     maxShop = int.parse(parsedJson['MAX_SHOP']),
     maxListingPic = int.parse(parsedJson['MAX_LISTING_PIC']),
     radius = int.parse(parsedJson['RADIUS']);
+
+  @override
+  String toString() => "$tier/$maxShop/$maxListingPic/$radius";
 }

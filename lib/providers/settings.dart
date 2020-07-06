@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geocoder/geocoder.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 
-const DEFAULT_RADIUS = 10000;
 const DEFAULT_ZOOM = 16.34;
 
 class SettingsProvider with ChangeNotifier {
@@ -11,14 +10,12 @@ class SettingsProvider with ChangeNotifier {
   bool _isGettingLocation;
   bool _isUploadListing;
   bool _isViewFavorites;
-  int _radius;
   UserNotifModel _notif;
 
   SettingsProvider() {
     _isGettingLocation = false;
     _isUploadListing = false;
     _isViewFavorites = false;
-    _radius = DEFAULT_RADIUS;
     // loadPreferences();
   }
 
@@ -26,7 +23,6 @@ class SettingsProvider with ChangeNotifier {
   bool get isGettingLocation => _isGettingLocation;
   bool get isUploadListing => _isUploadListing;
   bool get isViewFavorites => _isViewFavorites;
-  int get radius => _radius;
   UserNotifModel get notif => _notif;
 
   setSettings({
@@ -41,21 +37,20 @@ class SettingsProvider with ChangeNotifier {
     if (isGettingLocation != null) _isGettingLocation = isGettingLocation;
     if (isUploadListing != null) _isUploadListing = isUploadListing;
     if (isViewFavorites != null) _isViewFavorites = isViewFavorites;
-    if (radius != null) _radius = radius;
     if (notif != null) _notif = notif;
     notifyListeners();
     // savePreferences();
   }
 
-  savePreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt('settings_radius', radius);
-  }
+  // savePreferences() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setInt('settings_radius', radius);
+  // }
 
-  loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setSettings(
-      radius: prefs.getInt('settings_radius'),
-    );
-  }
+  // loadPreferences() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   setSettings(
+  //     radius: prefs.getInt('settings_radius'),
+  //   );
+  // }
 }

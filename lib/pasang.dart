@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:laku/models/toko.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'extensions/string.dart';
 import 'extensions/widget.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
@@ -33,9 +35,11 @@ class _PasangState extends State<Pasang> {
   var _isChanged = false;
   var _isLoading = true;
   var _isLoadingCategory = true;
+  var _isLoadingShop = true;
   var _errorText = <String, String>{};
   var _listKelompok = <IklanKelompokModel>[];
   var _listKategori = <IklanKategoriModel>[];
+  var _listShop = <TokoModel>[];
   var _listJarakAntar = ["100m", "500m", "< 1km", "< 2km", "< 5km", "< 10km"];
   var _stepIndex = 0;
 
@@ -47,6 +51,11 @@ class _PasangState extends State<Pasang> {
   final _listKondisi = <IconLabel>[
     IconLabel(LineIcons.check_circle_o, "Baru", value: 'new'),
     IconLabel(LineIcons.warning, "Bekas", value: 'used'),
+  ];
+  final _listKetersediaan = <IconLabel>[
+    IconLabel(LineIcons.check_circle_o, "Sedia", value: 'tersedia'),
+    IconLabel(LineIcons.warning, "Terbatas", value: 'terbatas'),
+    IconLabel(LineIcons.hourglass_o, "PO", value: 'preorder'),
   ];
   final _listSteps = <IconLabel>[
     IconLabel(LineIcons.edit, "Detail Iklan"),
@@ -66,15 +75,19 @@ class _PasangState extends State<Pasang> {
   IklanKelompokModel _kelompok;
   IklanKategoriModel _kategori;
   var _tipe = "WTS";
-  var _kondisi = "new";
   var _isNegotiable = false;
   var _isAvailable = true;
   var _isDeliverable = false;
+  String _kondisi;
   String _jarakAntar;
-  IconLabel _tipeKetersediaan;
-  int _preOrderDurasi;
+  String _tipeKetersediaan = 'terbatas';
+  String _stokUnit;
   String _preOrderUnit;
-  int _id;
+  int _preOrderDurasi;
+  DateTime _mulai;
+  DateTime _akhir;
+  TokoModel _shop;
+  IklanModel _edit;
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) setState(() {
@@ -97,25 +110,42 @@ class _PasangState extends State<Pasang> {
       h.failAlert("Pilih Kategori", "Harap pilih kategori iklan Anda.");
       return;
     }
+    if (_shop == null) {
+      if (_listShop.length > 1) {
+        h.failAlert("Pilih Lokasi", "Harap pilih titik lokasi iklan Anda.");
+        return;
+      } else {
+        _shop = _listShop.first;
+      }
+    }
 
-    final hash = DateTime.now().millisecondsSinceEpoch;
+    final hash = _edit == null ? DateTime.now().millisecondsSinceEpoch : _edit.hashCode;
     final postData = <String, String>{
+      'id': _edit?.id.toString(),
+      'idShop': _shop.id.toString(),
       'uid': userSession.uid,
       'tipe': _tipe,
       'judul': _judulController.text,
       'deskripsi': _deskripsiController.text,
-      'harga': _hargaController.text,
+      'harga': _hargaController.text.nominal.toString(),
+      'isNego': _isNegotiable.toString(),
+      'isTersedia': _isAvailable.toString(),
+      'isCOD': _isDeliverable.toString(),
       'kondisi': _kondisi,
-      'tipeKetersediaan': _tipeKetersediaan.value,
+      'tipeKetersediaan': _tipeKetersediaan,
       'preOrderDurasi': _preOrderDurasi.toString(),
       'preOrderUnit': _preOrderUnit,
       'stok': _stokController.text,
+      'stokUnit': _stokUnit,
       'jarakAntar': _isDeliverable ? _jarakAntar : null,
-      'kategori': _kategori.id.toString(),
+      'idKategori': _kategori.id.toString(),
+      'mulai': f.formatDate(_mulai, format: 'yyyy-MM-dd hh:mm:ss'),
+      'akhir': f.formatDate(_akhir, format: 'yyyy-MM-dd hh:mm:ss'),
       'hash': hash.toString(),
       'picCount': _images.length.toString(),
       'imagesEdit': _imagesEdit.join('|'),
     };
+    print(" ... POST DATA: $postData");
     h.loadAlert("Memasang iklan ...");
 
     // upload pic
@@ -198,11 +228,11 @@ class _PasangState extends State<Pasang> {
   }
 
   _loadData() async {
-    if (_id == null) return;
+    if (_edit == null) return;
     if (!_isLoading) setState(() {
       _isLoading = true;
     });
-    var listingApi = await api('listing', data: {'uid': userSession.uid, 'id': _id});
+    var listingApi = await api('listing', data: {'uid': userSession.uid, 'id': _edit.id});
     var listing = IklanModel.fromJson(listingApi.result.first);
     if (mounted) setState(() {
       _tipe = listing.tipe;
@@ -210,6 +240,9 @@ class _PasangState extends State<Pasang> {
       _deskripsiController.text = listing.deskripsi;
       _hargaController.text = f.formatNumber(listing.harga);
       _stokController.text = f.formatNumber(listing.stok);
+      _stokUnit = listing.stokUnit;
+      _preOrderDurasi = listing.preOrder;
+      _preOrderUnit = listing.preOrderUnit;
       _kategori = _listKategori.where((kat) => kat.id == listing.idKategori).toList().first;
       _kelompok = _listKelompok.where((group) => group.id == _kategori.idKelompok).toList().first;
       _imagesEdit = listing.foto.map((pic) => pic.foto).toList();
@@ -222,11 +255,23 @@ class _PasangState extends State<Pasang> {
 
   }
 
-  _loadCategory() async {
-    setState(() {
+  Future<void> _loadShop() async {
+    // TODO load list shop by uid
+    if (!_isLoadingShop) setState(() {
+      _isLoadingShop = true;
+    });
+    var shopApi = await api('shop', data: {'uid': userSession.uid, 'mode': 'mine'});
+    if (mounted) setState(() {
+      _listShop = shopApi.result.map((shop) => TokoModel.fromJson(shop)).toList();
+      _isLoadingShop = false;
+    });
+  }
+
+  Future<void> _loadCategory() async {
+    if (!_isLoadingCategory) setState(() {
       _isLoadingCategory = true;
     });
-    var listingCategoryApi = await api('listing_category', data: {'tier': _tier});
+    var listingCategoryApi = await api('listing_category', data: {'tier': _tier.tier});
     var listKategori = listingCategoryApi.result.map((res) => IklanKategoriModel.fromJson(res)).toList();
     var listKelompok = <int, IklanKelompokModel>{};
     listKategori.forEach((kat) {
@@ -240,13 +285,15 @@ class _PasangState extends State<Pasang> {
         isScheduleable: kat.isScheduleable,
       );
     });
-    if (mounted) setState(() {
-      _listKelompok = listKelompok.values.toList();
-      _listKategori = listKategori;
-      _isLoadingCategory = false;
-      _resetKategori();
-    });
-    _loadData();
+    if (mounted) {
+      setState(() {
+        _listKelompok = listKelompok.values.toList();
+        _listKategori = listKategori;
+        _isLoadingCategory = false;
+        _resetKategori();
+      });
+      _loadData();
+    }
   }
 
   _resetKategori() {
@@ -337,7 +384,7 @@ class _PasangState extends State<Pasang> {
   @override
   void initState() {
     _tipe = widget.args['tipe'];
-    _id = widget.args['id'];
+    _edit = widget.args['edit'];
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
     _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
     _hargaController = TextEditingController()..addListener(() => _dismissError("harga"));
@@ -350,10 +397,13 @@ class _PasangState extends State<Pasang> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       var isGranted = await Permission.location.request().isGranted;
       if (isGranted) {
+        _loadShop();
         var tierApi = await api('user_tier', data: {'uid': userSession.uid});
         var tier = UserTierModel.fromJson(tierApi.result.first);
+        print(" ... GET TIER result = $tier");
+        print(" ... _myRadius = $_myRadius");
         setState(() {
-          if (_id == null) _isLoading = false;
+          if (_edit == null) _isLoading = false;
           _tier = tier;
         });
         _loadCategory();
@@ -384,7 +434,7 @@ class _PasangState extends State<Pasang> {
       });
       return false;
     }
-    if (_isChanged || _images.isNotEmpty) return await h.showConfirm("Batalkan ${_id == null ? 'Iklan' : 'Edit'}", "Apakah Anda yakin ingin membatalkan ${_id == null ? 'pemasangan' : 'penyuntingan'} iklan ini?") ?? false;
+    if (_isChanged || _images.isNotEmpty) return await h.showConfirm("Batalkan ${_edit == null ? 'Iklan' : 'Edit'}", "Apakah Anda yakin ingin membatalkan ${_edit == null ? 'pemasangan' : 'penyuntingan'} iklan ini?") ?? false;
     return true;
   }
 
@@ -392,40 +442,36 @@ class _PasangState extends State<Pasang> {
     if (await _onWillPop()) Navigator.of(context).pop();
   }
 
-  String get _title => _id == null ? _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => _listTipe.first).label : "Sunting Iklan";
+  String get _title => _edit == null ? _listTipe.firstWhere((tipe) => tipe.value == _tipe, orElse: () => _listTipe.first).label : "Sunting Iklan";
 
   bool get _isBuyAndSell => _kelompok?.id == 1 ?? false; // jual-beli
   bool get _isPriceable => _kelompok?.isPriceable ?? false; // jual-beli, jasa
   bool get _isScheduleable => _kelompok?.isScheduleable ?? false; // acara, loker
 
-  _setTipeKetersediaan(IconLabel value) {
-    print("_setTipeKetersediaan: $value");
-    setState(() {
-      _tipeKetersediaan = value;
-    });
-  }
+  double get _myRadius => _tier?.radius?.toDouble() ?? 10000;
 
   Widget _formKetersediaan(String tipe) {
     switch (tipe) {
-      case 'terbatas': return Container(child: Row(children: <Widget>[
-        Expanded(child: UiInput("Stok", showLabel: false, type: UiInputType.NUMBER, controller: _stokController, focusNode: _stokFocusNode, error: _errorText["stok"],),),
+      case 'terbatas': return Container(padding: EdgeInsets.only(top: 12), child: Row(children: <Widget>[
+        SizedBox(width: 100, child: UiInput("Stok", showLabel: false, type: UiInputType.NUMBER, controller: _stokController, focusNode: _stokFocusNode, error: _errorText["stok"],),),
         SizedBox(width: 12,),
         UiSelect(
           placeholder: "Pilih satuan",
           simple: true,
           isDense: true,
           listMenu: <String>['Pcs', 'Pack', 'Roll', 'Kg', 'm2', 'm3'],
-          initialValue: _preOrderUnit,
+          initialValue: _stokUnit,
           onSelect: (val) {
-            setState(() { _preOrderUnit = val; });
+            setState(() { _stokUnit = val; });
           },
         ),
       ],),);
       case 'preorder': return Container(child: Row(children: <Widget>[
         NumberPicker.integer(
           initialValue: _preOrderDurasi ?? 1,
+          itemExtent: 40.0,
           minValue: 1,
-          maxValue: 9999,
+          maxValue: 30,
           infiniteLoop: false,
           onChanged: (val) => setState(() {
             _preOrderDurasi = val;
@@ -524,32 +570,28 @@ class _PasangState extends State<Pasang> {
             },
           ),
         ),
-        _isAvailable ? Container(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <IconLabel>[
-            IconLabel(LineIcons.check_circle_o, 'Selalu Tersedia', value: 'sedia'),
-            IconLabel(LineIcons.check_circle_o, 'Terbatas', value: 'terbatas'),
-            IconLabel(LineIcons.check_circle_o, 'Pre-order', value: 'preorder'),
-          ].map((value) {
-            return UiRadio(
-              currentValue: _tipeKetersediaan,
-              onChanged: _setTipeKetersediaan,
-              value: value,
-              expandOnTrue: _formKetersediaan(value.value)
-            );
-          }).toList()),
+        _isAvailable ? UiToggleButton(
+          height: 45.0,
+          listItem: _listKetersediaan,
+          currentValue: _tipeKetersediaan,
+          onSelect: (int index) {
+            setState(() {
+              _tipeKetersediaan = _listKetersediaan[index].value;
+            });
+          },
         ) : SizedBox(),
+        _formKetersediaan(_tipeKetersediaan),
         SizedBox(height: 12,),
       ],
     ) : SizedBox();
   }
 
   Widget get _inputDelivery {
-    final _what = _isBuyAndSell ? "Antar" : "Datang";
     return _isPriceable ? Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text("Layanan $_what:", style: style.textLabel),
+        Text("Layanan COD:", style: style.textLabel),
         SizedBox(height: 8.0,),
         Transform.translate(
           offset: Offset(-25, 0),
@@ -557,16 +599,20 @@ class _PasangState extends State<Pasang> {
             activeColor: Colors.green,
             controlAffinity: ListTileControlAffinity.leading,
             dense: true,
-            title: Text("Bisa ${_what.toLowerCase()}"),
+            title: Text("Bisa COD"),
             value: _isDeliverable,
             onChanged: (val) {
               setState(() { _isDeliverable = val; });
             },
           ),
         ),
-        _isDeliverable ? UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
-          setState(() { _jarakAntar = val; });
-        },) : SizedBox(),
+        _isDeliverable ? Row(
+          children: <Widget>[
+            UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
+              setState(() { _jarakAntar = val; });
+            },),
+          ],
+        ) : SizedBox(),
         SizedBox(height: 12,),
       ],
     ) : SizedBox();
@@ -603,7 +649,7 @@ class _PasangState extends State<Pasang> {
                         },
                         child: Column(children: <Widget>[
 
-                          _id != null ? SizedBox() : UiSection(children: <Widget>[
+                          _edit != null ? SizedBox() : UiSection(children: <Widget>[
                             // Text("Tipe Iklan", style: style.textTitle,),
                             // SizedBox(height: 12.0,),
                             // Text("Tipe:", style: style.textLabel),
@@ -630,7 +676,7 @@ class _PasangState extends State<Pasang> {
                               ],
                             ),
                             SizedBox(height: 12),
-                            Text(_tipe == 'WTS' ? "Pasang iklan yang dapat ditemukan oleh pengguna $APP_NAME di radius 10km dari Anda kapanpun." : "Broadcast adalah siaran yang berlangsung selama 24 jam kepada semua pengguna $APP_NAME di radius 10km dari Anda. Broadcast membutuhkan 1 tiket toa yang Anda miliki.", style: style.textS)
+                            Text(_tipe == 'WTS' ? "Pasang iklan yang dapat ditemukan oleh pengguna $APP_NAME di radius ${f.distanceLabel(_myRadius)} dari Anda kapanpun." : "Broadcast adalah siaran yang berlangsung selama 24 jam kepada semua pengguna $APP_NAME di radius ${f.distanceLabel(_myRadius)} dari Anda. Broadcast membutuhkan 1 tiket toa yang Anda miliki.", style: style.textS)
                           ]),
 
                           UiSection(

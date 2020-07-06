@@ -143,7 +143,7 @@ class _PetaState extends State<Peta> {
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     _address = settings.address;
     _location = LatLng(_address.coordinates.latitude, _address.coordinates.longitude);
-    _radius = settings.radius;
+    _radius = DEFAULT_RADIUS; // _tier.radius;
     _kategori = _listKategori[0];
     // _cameraPositionDebouncer.values.listen((cameraPosition) {
     //   _setLocation(cameraPosition);

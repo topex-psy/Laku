@@ -118,8 +118,8 @@ class UserHelper {
     return results;
   }
 
-  Future<dynamic> openListingForm({String action = 'WTS', int id}) async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action, 'id': id}) as Map;
+  Future<dynamic> openListingForm({String action = 'WTS', IklanModel edit}) async {
+    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action, 'edit': edit}) as Map;
     print(" ... ROUTE PASANG result: $results");
     closeDrawer();    
     return results;

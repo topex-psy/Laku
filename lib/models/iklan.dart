@@ -96,6 +96,9 @@ class IklanModel {
     this.isNego,
     this.isTersedia,
     this.stok,
+    this.stokUnit,
+    this.preOrder,
+    this.preOrderUnit,
     this.layananAntar,
     this.jadwalMulai,
     this.jadwalAkhir,
@@ -141,6 +144,9 @@ class IklanModel {
   final bool isNego;
   final bool isTersedia;
   final int stok;
+  final String stokUnit;
+  final int preOrder;
+  final String preOrderUnit;
   final String layananAntar;
   final DateTime jadwalMulai;
   final DateTime jadwalAkhir;
@@ -199,6 +205,9 @@ class IklanModel {
     isNego = int.parse(parsedJson['IS_NEGO'] ?? '0') == 1,
     isTersedia = int.parse(parsedJson['IS_TERSEDIA'] ?? '0') == 1,
     stok = parsedJson['STOK'] == null ? null : int.parse(parsedJson['STOK']),
+    stokUnit = parsedJson['STOK_UNIT'],
+    preOrder = parsedJson['PREORDER'] == null ? null : int.parse(parsedJson['PREORDER']),
+    preOrderUnit = parsedJson['PREORDER_UNIT'],
     layananAntar = parsedJson['LAYANAN_ANTAR'],
     jadwalMulai = parsedJson['JADWAL_MULAI'] == null ? null : DateTime.parse(parsedJson['JADWAL_MULAI']),
     jadwalAkhir = parsedJson['JADWAL_AKHIR'] == null ? null : DateTime.parse(parsedJson['JADWAL_AKHIR']),

@@ -82,7 +82,7 @@ class _ListingState extends State<Listing> with TickerProviderStateMixin {
         }
         break;
       case 'edit':
-        final pasang = await a.openListingForm(id: _item.id) as Map;
+        final pasang = await a.openListingForm(edit: _item) as Map;
         if (pasang != null && pasang.containsKey('isSubmit')) {
           _updateData();
         }
