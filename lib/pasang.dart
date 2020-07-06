@@ -56,9 +56,11 @@ class _PasangState extends State<Pasang> {
   TextEditingController _judulController;
   TextEditingController _deskripsiController;
   TextEditingController _hargaController;
+  TextEditingController _stokController;
   FocusNode _judulFocusNode;
   FocusNode _deskripsiFocusNode;
   FocusNode _hargaFocusNode;
+  FocusNode _stokFocusNode;
 
   UserTierModel _tier;
   IklanKelompokModel _kelompok;
@@ -72,7 +74,6 @@ class _PasangState extends State<Pasang> {
   IconLabel _tipeKetersediaan;
   int _preOrderDurasi;
   String _preOrderUnit;
-  int _stok;
   int _id;
 
   _dismissError(String tag) {
@@ -108,7 +109,7 @@ class _PasangState extends State<Pasang> {
       'tipeKetersediaan': _tipeKetersediaan.value,
       'preOrderDurasi': _preOrderDurasi.toString(),
       'preOrderUnit': _preOrderUnit,
-      'stok': _stok.toString(),
+      'stok': _stokController.text,
       'jarakAntar': _isDeliverable ? _jarakAntar : null,
       'kategori': _kategori.id.toString(),
       'hash': hash.toString(),
@@ -208,6 +209,7 @@ class _PasangState extends State<Pasang> {
       _judulController.text = listing.judul;
       _deskripsiController.text = listing.deskripsi;
       _hargaController.text = f.formatNumber(listing.harga);
+      _stokController.text = f.formatNumber(listing.stok);
       _kategori = _listKategori.where((kat) => kat.id == listing.idKategori).toList().first;
       _kelompok = _listKelompok.where((group) => group.id == _kategori.idKelompok).toList().first;
       _imagesEdit = listing.foto.map((pic) => pic.foto).toList();
@@ -215,7 +217,6 @@ class _PasangState extends State<Pasang> {
       _isDeliverable = listing.layananAntar != null;
       _isNegotiable = listing.isNego;
       _jarakAntar = listing.layananAntar;
-      _stok = listing.stok;
       _isLoading = false;
     });
 
@@ -340,9 +341,11 @@ class _PasangState extends State<Pasang> {
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
     _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
     _hargaController = TextEditingController()..addListener(() => _dismissError("harga"));
+    _stokController = TextEditingController()..addListener(() => _dismissError("stok"));
     _judulFocusNode = FocusNode();
     _deskripsiFocusNode = FocusNode();
     _hargaFocusNode = FocusNode();
+    _stokFocusNode = FocusNode();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       var isGranted = await Permission.location.request().isGranted;
@@ -365,9 +368,11 @@ class _PasangState extends State<Pasang> {
     _judulController.dispose();
     _deskripsiController.dispose();
     _hargaController.dispose();
+    _stokController.dispose();
     _judulFocusNode.dispose();
     _deskripsiFocusNode.dispose();
     _hargaFocusNode.dispose();
+    _stokFocusNode.dispose();
     super.dispose();
   }
 
@@ -394,6 +399,7 @@ class _PasangState extends State<Pasang> {
   bool get _isScheduleable => _kelompok?.isScheduleable ?? false; // acara, loker
 
   _setTipeKetersediaan(IconLabel value) {
+    print("_setTipeKetersediaan: $value");
     setState(() {
       _tipeKetersediaan = value;
     });
@@ -402,20 +408,40 @@ class _PasangState extends State<Pasang> {
   Widget _formKetersediaan(String tipe) {
     switch (tipe) {
       case 'terbatas': return Container(child: Row(children: <Widget>[
-        // Expanded(child: UiInput("Harga", showLabel: false, icon: LineIcons.tag, type: UiInputType.NUMBER, controller: _stokController, focusNode: _stokFocusNode, error: _errorText["stok"],),),
+        Expanded(child: UiInput("Stok", showLabel: false, type: UiInputType.NUMBER, controller: _stokController, focusNode: _stokFocusNode, error: _errorText["stok"],),),
+        SizedBox(width: 12,),
+        UiSelect(
+          placeholder: "Pilih satuan",
+          simple: true,
+          isDense: true,
+          listMenu: <String>['Pcs', 'Pack', 'Roll', 'Kg', 'm2', 'm3'],
+          initialValue: _preOrderUnit,
+          onSelect: (val) {
+            setState(() { _preOrderUnit = val; });
+          },
+        ),
+      ],),);
+      case 'preorder': return Container(child: Row(children: <Widget>[
         NumberPicker.integer(
-          initialValue: _stok,
+          initialValue: _preOrderDurasi ?? 1,
           minValue: 1,
           maxValue: 9999,
           infiniteLoop: false,
           onChanged: (val) => setState(() {
-            _stok = val;
+            _preOrderDurasi = val;
           })
         ),
-
-
+        UiSelect(
+          placeholder: "Pilih durasi",
+          simple: true,
+          isDense: true,
+          listMenu: <String>['Hari', 'Minggu', 'Bulan'],
+          initialValue: _preOrderUnit,
+          onSelect: (val) {
+            setState(() { _preOrderUnit = val; });
+          },
+        ),
       ],),);
-      case 'preorder': return Container();
       default: return Container();
     }
   }
@@ -485,18 +511,21 @@ class _PasangState extends State<Pasang> {
       children: <Widget>[
         Text("Ketersediaan:", style: style.textLabel),
         SizedBox(height: 8.0,),
-        CheckboxListTile(
-          activeColor: Colors.green,
-          controlAffinity: ListTileControlAffinity.leading,
-          dense: true,
-          title: Text("Produk tersedia"),
-          value: _isAvailable,
-          onChanged: (val) {
-            setState(() { _isAvailable = val; });
-          },
+        Transform.translate(
+          offset: Offset(-25, 0),
+          child: CheckboxListTile(
+            activeColor: Colors.green,
+            controlAffinity: ListTileControlAffinity.leading,
+            dense: true,
+            title: Text("Produk tersedia"),
+            value: _isAvailable,
+            onChanged: (val) {
+              setState(() { _isAvailable = val; });
+            },
+          ),
         ),
         _isAvailable ? Container(
-          child: Column(children: <IconLabel>[
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <IconLabel>[
             IconLabel(LineIcons.check_circle_o, 'Selalu Tersedia', value: 'sedia'),
             IconLabel(LineIcons.check_circle_o, 'Terbatas', value: 'terbatas'),
             IconLabel(LineIcons.check_circle_o, 'Pre-order', value: 'preorder'),
@@ -522,15 +551,18 @@ class _PasangState extends State<Pasang> {
       children: <Widget>[
         Text("Layanan $_what:", style: style.textLabel),
         SizedBox(height: 8.0,),
-        CheckboxListTile(
-          activeColor: Colors.green,
-          controlAffinity: ListTileControlAffinity.leading,
-          dense: true,
-          title: Text("Bisa ${_what.toLowerCase()}"),
-          value: _isDeliverable,
-          onChanged: (val) {
-            setState(() { _isDeliverable = val; });
-          },
+        Transform.translate(
+          offset: Offset(-25, 0),
+          child: CheckboxListTile(
+            activeColor: Colors.green,
+            controlAffinity: ListTileControlAffinity.leading,
+            dense: true,
+            title: Text("Bisa ${_what.toLowerCase()}"),
+            value: _isDeliverable,
+            onChanged: (val) {
+              setState(() { _isDeliverable = val; });
+            },
+          ),
         ),
         _isDeliverable ? UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
           setState(() { _jarakAntar = val; });

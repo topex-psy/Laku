@@ -10,4 +10,8 @@ class IconLabel {
 
   @override
   String toString() => label;
+
+  @override
+  bool operator ==(Object other) => identical(this, other) ||
+    (other is IconLabel && runtimeType == other.runtimeType && other.icon == icon && other.label == label);
 }

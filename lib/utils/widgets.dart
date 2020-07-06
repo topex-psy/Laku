@@ -37,6 +37,7 @@ enum UiInputType {
   NOTE,
   SEARCH,
   TAG,
+  NUMBER
 }
 
 class UiInput extends StatefulWidget {
@@ -160,6 +161,7 @@ class _UiInputState extends State<UiInput> {
         if (_textCapitalization == null) _textCapitalization = TextCapitalization.words;
         break;
       case UiInputType.CURRENCY:
+      case UiInputType.NUMBER:
         if (_maxLength == null || _maxLength > 15) _maxLength = 15;
         break;
       case UiInputType.TAG:
@@ -303,6 +305,7 @@ class _UiInputState extends State<UiInput> {
         );
         break;
       case UiInputType.CURRENCY:
+      case UiInputType.NUMBER:
         _input = Padding(
           padding: EdgeInsets.only(right: 20.0),
           child: TextFormField(
@@ -314,9 +317,8 @@ class _UiInputState extends State<UiInput> {
             readOnly: widget.readOnly,
             decoration: InputDecoration(
               contentPadding: _contentPadding,
-              prefixStyle: _prefixStyle,
-              prefix: Text(widget.prefix ?? "Rp ",
-              style: _prefixStyle),
+              prefixStyle: widget.type == UiInputType.NUMBER ? null : _prefixStyle,
+              prefix: widget.type == UiInputType.NUMBER ? null : Text(widget.prefix ?? "Rp ", style: _prefixStyle),
               hintStyle: _hintStyle,
               hintText: _hintText,
               icon: _icon,
@@ -479,6 +481,7 @@ class _UiRadioState extends State<UiRadio> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Row(
