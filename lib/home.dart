@@ -4,6 +4,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:laku/models/user.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:preload_page_view/preload_page_view.dart';
@@ -17,6 +18,7 @@ import 'pages/profil.dart';
 import 'pages/temukan.dart';
 import 'providers/person.dart';
 import 'providers/settings.dart';
+import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/curves.dart';
 import 'utils/helpers.dart';
@@ -159,10 +161,12 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      var tierApi = await api('user_tier');
+      tierApi.result.forEach((res) {
+        var tier = UserTierModel.fromJson(res);
+        userTiers[tier.tier] = tier;
+      });
       Vibration.vibrate(duration: 200, amplitude: 1);
-      // setState(() {
-      //   _isPopNotif = true;
-      // });
     });
   }
 

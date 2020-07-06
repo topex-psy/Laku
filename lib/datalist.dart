@@ -37,17 +37,11 @@ class _DataListState extends State<DataList> {
 
   @override
   void initState() {
+    _tier = userTiers[userSession.tier];
     _isMyShopList = widget.args['tipe'] == 'shop' && widget.args['mode'] == 'mine';
     _searchController.addListener(() => _searchDebouncer.value = _searchController.text ?? '');
     _searchDebouncer.values.listen((keyword) => _getAllData());
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      var tierApi = await api('user_tier', data: {'uid': userSession.uid});
-      var tier = UserTierModel.fromJson(tierApi.result.first);
-      setState(() {
-        _tier = tier;
-      });
-    });
   }
 
   @override

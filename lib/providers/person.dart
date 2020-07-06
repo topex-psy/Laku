@@ -8,7 +8,6 @@ class PersonProvider with ChangeNotifier {
   String _jenisKelamin;
   String _email;
   String _foto;
-  int _tier;
 
   PersonProvider() {
     // loadPreferences();
@@ -20,7 +19,6 @@ class PersonProvider with ChangeNotifier {
   String get jenisKelamin => _jenisKelamin;
   String get email => _email;
   String get foto => _foto;
-  int get tier => _tier;
 
   setPerson({
     String namaDepan,
@@ -29,7 +27,6 @@ class PersonProvider with ChangeNotifier {
     String jenisKelamin,
     String email,
     String foto,
-    int tier,
   }) {
     if (namaDepan != null) _namaDepan = namaDepan;
     if (namaBelakang != null) _namaBelakang = namaBelakang;
@@ -37,7 +34,6 @@ class PersonProvider with ChangeNotifier {
     if (jenisKelamin != null) _jenisKelamin = jenisKelamin;
     if (email != null) _email = email;
     if (foto != null) _foto = foto;
-    if (tier != null) _tier = tier;
     notifyListeners();
     // savePreferences();
   }
@@ -50,7 +46,6 @@ class PersonProvider with ChangeNotifier {
     prefs.setString('person_jenisKelamin', jenisKelamin);
     prefs.setString('person_email', email);
     prefs.setString('person_foto', foto);
-    prefs.setInt('person_tier', tier);
   }
 
   loadPreferences() async {
@@ -63,7 +58,6 @@ class PersonProvider with ChangeNotifier {
       jenisKelamin: prefs.getString('person_jenisKelamin'),
       email: prefs.getString('person_email'),
       foto: prefs.getString('person_foto'),
-      tier: prefs.getInt('person_tier'),
     );
   }
 
@@ -75,6 +69,5 @@ class PersonProvider with ChangeNotifier {
     prefs.remove('person_jenisKelamin');
     prefs.remove('person_email');
     prefs.remove('person_foto');
-    prefs.remove('person_tier');
   }
 }

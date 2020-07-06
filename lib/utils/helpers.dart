@@ -28,13 +28,14 @@ import 'constants.dart';
 final firebaseAuth = FirebaseAuth.instance;
 final screenScaffoldKey = GlobalKey<ScaffoldState>();
 final screenPageController = PreloadPageController();
-// PreloadPageController screenPageController;
 UserSessionModel userSession = UserSessionModel();
 bool isTour1Completed = false;
 bool isTour2Completed = false;
 bool isTour3Completed = false;
 bool isDebugMode = false;
 bool isFirstRun = true;
+
+var userTiers = <int, UserTierModel>{};
 
 UIHelper h;
 UserHelper a;

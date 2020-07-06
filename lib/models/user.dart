@@ -69,10 +69,12 @@ class UserModel {
 class UserSessionModel {
   String uid;
   String phone;
+  int tier;
 
   clear() {
     uid = null;
     phone = null;
+    tier = null;
   }
 }
 

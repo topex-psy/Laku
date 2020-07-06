@@ -228,7 +228,12 @@ class _PasangState extends State<Pasang> {
   }
 
   _loadData() async {
-    if (_edit == null) return;
+    if (_edit == null) {
+      if (_isLoading) setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
     if (!_isLoading) setState(() {
       _isLoading = true;
     });
@@ -385,6 +390,7 @@ class _PasangState extends State<Pasang> {
   void initState() {
     _tipe = widget.args['tipe'];
     _edit = widget.args['edit'];
+    _tier = userTiers[userSession.tier];
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
     _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
     _hargaController = TextEditingController()..addListener(() => _dismissError("harga"));
@@ -398,14 +404,6 @@ class _PasangState extends State<Pasang> {
       var isGranted = await Permission.location.request().isGranted;
       if (isGranted) {
         _loadShop();
-        var tierApi = await api('user_tier', data: {'uid': userSession.uid});
-        var tier = UserTierModel.fromJson(tierApi.result.first);
-        print(" ... GET TIER result = $tier");
-        print(" ... _myRadius = $_myRadius");
-        setState(() {
-          if (_edit == null) _isLoading = false;
-          _tier = tier;
-        });
         _loadCategory();
       } else {
         Navigator.of(context).pop({'isGranted': false});

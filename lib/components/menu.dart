@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:launch_review/launch_review.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../utils/helpers.dart';
+import '../utils/styles.dart' as style;
 import '../utils/widgets.dart';
 
 enum MenuNavVal {
@@ -44,6 +45,51 @@ class _DrawerMenuState extends State<DrawerMenu> {
         break;
       case MenuNavVal.upgrade:
         // TODO upgrade akun
+        h.showAlert(title: "Upgrade Akun", showButton: true, buttonText: "Tutup", listView: ListView.separated(
+          padding: EdgeInsets.all(12),
+          itemBuilder: (context, index) {
+            var tier = userTiers[index];
+            var isMine = tier.tier == userSession.tier;
+            return Card(
+              shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              clipBehavior: Clip.antiAlias,
+              color: isMine ? Colors.amber[50] : Colors.teal[50],
+              child: InkWell(
+                onTap: () {},
+                child: Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(children: <Widget>[
+                        Expanded(child: Text("Tier ${tier.tier}", style: style.textTitle,)),
+                        isMine ? Icon(MdiIcons.checkCircle, color: Colors.green) : SizedBox(),
+                      ],),
+                      SizedBox(height: 6,),
+                      Row(children: <Widget>[
+                        Text("Maksimal Radius"),
+                        Spacer(),
+                        Text(f.distanceLabel(tier.radius.toDouble()), textAlign: TextAlign.end, style: style.textCaption,)
+                      ],),
+                      Row(children: <Widget>[
+                        Text("Maksimal Lokasi"),
+                        Spacer(),
+                        Text(f.formatNumber(tier.maxShop), textAlign: TextAlign.end, style: style.textCaption,)
+                      ],),
+                      Row(children: <Widget>[
+                        Text("Maksimal Foto per Iklan"),
+                        Spacer(),
+                        Text(f.formatNumber(tier.maxListingPic), textAlign: TextAlign.end, style: style.textCaption,)
+                      ],),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          separatorBuilder: (context, index) => Container(),
+          itemCount: userTiers.length
+        ));
         break;
       case MenuNavVal.logout:
         Navigator.of(context).pop();
