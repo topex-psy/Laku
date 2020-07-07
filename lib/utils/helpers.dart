@@ -74,7 +74,7 @@ class FormatHelper {
   }
   bool isValidURL(String url) => Uri.parse(url).isAbsolute;
   bool isValidEmail(String email) => !email.isEmptyOrNull && RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
-  num roundNumber(num nominal, {int maxDecimal = 1}) => num.parse((nominal / 1000).toStringAsFixed(maxDecimal));
+  num roundNumber(num nominal, {int maxDecimal = 1}) => num.parse(nominal.toStringAsFixed(maxDecimal));
   String distanceLabel(double meter) {
     if (meter > 999) return "${roundNumber(meter / 1000)} km";
     return "${roundNumber(meter)} m";
