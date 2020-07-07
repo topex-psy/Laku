@@ -36,4 +36,7 @@ class TokoModel {
     jumlahFavorit = int.parse(parsedJson['JUMLAH_FAVORIT']),
     isFavorit = int.parse(parsedJson['IS_FAVORIT']) == 1,
     isDalamRadius = int.parse(parsedJson['IS_DALAM_RADIUS']) == 1;
+
+  @override
+  String toString() => judul;
 }

@@ -192,6 +192,12 @@ class IklanModel {
   bool isInRadius(double meter) {
     return jarakMeter <= meter;
   }
+  String get tipeKetersediaan {
+    if (!isTersedia) return 'kosong';
+    if (stok != null) return 'terbatas';
+    if (preOrder != null) return 'preorder';
+    return 'tersedia';
+  }
 
   IklanModel.fromJson(Map<String, dynamic> parsedJson)
   : id = int.parse(parsedJson['ID']),

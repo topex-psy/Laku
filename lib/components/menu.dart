@@ -69,7 +69,8 @@ class _DrawerMenuState extends State<DrawerMenu> {
                       Row(children: <Widget>[
                         Text("Maksimal Radius"),
                         Spacer(),
-                        Text(f.distanceLabel(tier.radius.toDouble()), textAlign: TextAlign.end, style: style.textCaption,)
+                        Text("${tier.radius}", textAlign: TextAlign.end, style: style.textCaption,)
+                        // Text(f.distanceLabel(tier.radius.toDouble()), textAlign: TextAlign.end, style: style.textCaption,)
                       ],),
                       Row(children: <Widget>[
                         Text("Maksimal Lokasi"),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -28,20 +29,25 @@ class _DataListState extends State<DataList> {
   final _searchFocusNode = FocusNode();
 
   var _listData = [];
-  var _listLokasi = <TokoModel>[];
+  var _listShop = <TokoModel>[];
   var _filterValues = <String, dynamic>{};
   var _isLoaded = false;
   UserTierModel _tier;
   bool _isMyShopList;
-  TokoModel _lokasi;
+  bool _isMyListingList;
+  TokoModel _shop;
 
   @override
   void initState() {
     _tier = userTiers[userSession.tier];
     _isMyShopList = widget.args['tipe'] == 'shop' && widget.args['mode'] == 'mine';
+    _isMyListingList = widget.args['tipe'] == 'listing' && widget.args['mode'] == 'mine';
     _searchController.addListener(() => _searchDebouncer.value = _searchController.text ?? '');
     _searchDebouncer.values.listen((keyword) => _getAllData());
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_isMyListingList) _loadShop();
+    });
   }
 
   @override
@@ -49,6 +55,14 @@ class _DataListState extends State<DataList> {
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadShop() async {
+    var shopApi = await api('shop', data: {'uid': userSession.uid, 'mode': 'mine'});
+    if (mounted) setState(() {
+      _listShop = shopApi.result.map((shop) => TokoModel.fromJson(shop)).toList();
+      _shop = _listShop.firstWhere((shop) => shop.id == widget.args['shop']);
+    });
   }
 
   IconLabel _getTitle() {
@@ -78,8 +92,8 @@ class _DataListState extends State<DataList> {
     });
   }
 
-  _action(String action, [int id]) async {
-    print("TAP ACTION: $action $id");
+  _action(String action, [Map args = const {}]) async {
+    print("TAP ACTION: $action $args");
     switch (action) {
       case 'create':
         if (_isMyShopList && _listData.length == _tier.maxShop) {
@@ -98,7 +112,7 @@ class _DataListState extends State<DataList> {
         }
         break;
       case 'listing':
-        final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'shop': id}) as Map;
+        final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': action, ...args}) as Map;
         print(results);
         break;
       case 'favorit':
@@ -173,10 +187,10 @@ class _DataListState extends State<DataList> {
                 SizedBox(height: 2),
                 Text(_data.alamat),
                 SizedBox(height: 10),
-                Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
-                  UiFlatButton(LineIcons.files_o, "${f.formatNumber(_data.jumlahIklan)} iklan", () => _action('listing', _data.id)),
-                  UiFlatButton(LineIcons.heart_o, "${f.formatNumber(_data.jumlahFavorit)} favorit", () => _action('favorit', _data.id)),
-                ],),
+                widget.args['mode'] == 'mine' ? Wrap(spacing: 8, runSpacing: 8, children: <Widget>[
+                  UiFlatButton(LineIcons.files_o, "${f.formatNumber(_data.jumlahIklan)} iklan", () => _action('listing', {'shop': _data.id, 'mode': 'mine'})),
+                  UiFlatButton(LineIcons.heart_o, "${f.formatNumber(_data.jumlahFavorit)} favorit", () => _action('favorit', {'shop': _data.id})),
+                ],) : SizedBox(),
               ],
             ))
           ],),
@@ -200,59 +214,65 @@ class _DataListState extends State<DataList> {
   }
 
   Widget get _searchBar {
-    switch (widget.args['tipe']) {
-      case 'listing': // TODO harusnya kalo mode 'mine' aja
-        return SizedBox(
-          height: THEME_INPUT_HEIGHT + 32,
-          child: Material(
-            color: THEME_COLOR,
-            elevation: 0,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                SizedBox(width: 15,),
-                Expanded(
-                  child: UiSelect(
-                    placeholder: "Pilih lokasi",
-                    simple: true,
-                    isDense: true,
-                    listMenu: _listLokasi,
-                    initialValue: _lokasi,
-                    onSelect: (val) {
-                      setState(() { _lokasi = val; });
-                    },
-                  ),
-                ),
-                SizedBox(width: 8,),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  icon: Icon(Icons.sort),
-                  color: Colors.white,
-                  // tooltip: 'prompt_sort'.tr(),
-                  onPressed: () {},
-                ),
-                // widget.tool ?? SizedBox(),
-                SizedBox(width: 8,),
-              ],
+    if (_isMyListingList && _listShop != null && _listShop.length > 1) return SizedBox(
+      height: THEME_INPUT_HEIGHT + 32,
+      child: Material(
+        color: THEME_COLOR,
+        elevation: 0,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(width: 16,),
+            Icon(MdiIcons.storefrontOutline, color: Colors.white),
+            SizedBox(width: 12,),
+            Expanded(
+              child: UiSelect(
+                placeholder: "Pilih lokasi",
+                simple: true,
+                isDense: true,
+                listMenu: _listShop,
+                initialValue: _shop,
+                margin: EdgeInsets.zero,
+                labelWidth: MediaQuery.of(context).size.width - 212,
+                onSelect: (val) {
+                  setState(() { _shop = val; });
+                },
+              ),
             ),
-          ),
-        );
-      case 'shop':
-      default:
-        return _tier != null && _tier.tier > 0 ? UiSearchBar(
-          searchController: _searchController,
-          searchFocusNode: _searchFocusNode,
-          backgroundColor: THEME_COLOR,
-          actionColor: Colors.white,
-          dataType: widget.args['tipe'],
-          filterValues: _filterValues,
-          onFilter: (values) {
-            setState(() {
-              _filterValues = values;
-            });
-          },
-        ) : SizedBox();
-    }
+            SizedBox(width: 8,),
+            IconButton(
+              padding: EdgeInsets.zero,
+              icon: Icon(Icons.sort),
+              color: Colors.white,
+              tooltip: 'prompt_sort'.tr(),
+              onPressed: () {},
+            ),
+            IconButton(
+              padding: EdgeInsets.zero,
+              icon: Icon(Icons.search),
+              color: Colors.white,
+              tooltip: 'prompt_search_listing'.tr(),
+              onPressed: () {},
+            ),
+            SizedBox(width: 8,),
+          ],
+        ),
+      ),
+    );
+    if (_isMyShopList && _tier != null && _tier.tier == 0) return SizedBox();
+    return UiSearchBar(
+      searchController: _searchController,
+      searchFocusNode: _searchFocusNode,
+      backgroundColor: THEME_COLOR,
+      actionColor: Colors.white,
+      dataType: widget.args['tipe'],
+      filterValues: _filterValues,
+      onFilter: (values) {
+        setState(() {
+          _filterValues = values;
+        });
+      },
+    );
   }
 
   @override

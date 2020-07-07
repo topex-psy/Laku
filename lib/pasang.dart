@@ -84,8 +84,8 @@ class _PasangState extends State<Pasang> {
   String _stokUnit;
   String _preOrderUnit;
   int _preOrderDurasi;
-  DateTime _mulai;
-  DateTime _akhir;
+  DateTime _jadwalMulai;
+  DateTime _jadwalAkhir;
   TokoModel _shop;
   IklanModel _edit;
 
@@ -139,8 +139,8 @@ class _PasangState extends State<Pasang> {
       'stokUnit': _stokUnit,
       'jarakAntar': _isDeliverable ? _jarakAntar : null,
       'idKategori': _kategori.id.toString(),
-      'mulai': f.formatDate(_mulai, format: 'yyyy-MM-dd hh:mm:ss'),
-      'akhir': f.formatDate(_akhir, format: 'yyyy-MM-dd hh:mm:ss'),
+      'mulai': f.formatDate(_jadwalMulai, format: 'yyyy-MM-dd hh:mm:ss'),
+      'akhir': f.formatDate(_jadwalAkhir, format: 'yyyy-MM-dd hh:mm:ss'),
       'hash': hash.toString(),
       'picCount': _images.length.toString(),
       'imagesEdit': _imagesEdit.join('|'),
@@ -227,22 +227,26 @@ class _PasangState extends State<Pasang> {
     });
   }
 
-  _loadData() async {
+  _loadData([bool online = false]) async {
     if (_edit == null) {
       if (_isLoading) setState(() {
         _isLoading = false;
       });
       return;
     }
-    if (!_isLoading) setState(() {
-      _isLoading = true;
-    });
-    var listingApi = await api('listing', data: {'uid': userSession.uid, 'id': _edit.id});
-    var listing = IklanModel.fromJson(listingApi.result.first);
+    var listing = _edit;
+    if (online) {
+      if (!_isLoading) setState(() {
+        _isLoading = true;
+      });
+      var listingApi = await api('listing', data: {'uid': userSession.uid, 'id': _edit.id});
+      listing = IklanModel.fromJson(listingApi.result.first);
+    }
     if (mounted) setState(() {
       _tipe = listing.tipe;
       _judulController.text = listing.judul;
       _deskripsiController.text = listing.deskripsi;
+      _kondisi = listing.kondisi;
       _hargaController.text = f.formatNumber(listing.harga);
       _stokController.text = f.formatNumber(listing.stok);
       _stokUnit = listing.stokUnit;
@@ -255,13 +259,15 @@ class _PasangState extends State<Pasang> {
       _isDeliverable = listing.layananAntar != null;
       _isNegotiable = listing.isNego;
       _jarakAntar = listing.layananAntar;
+      _shop = _listShop.firstWhere((shop) => shop.id == listing.idShop);
+      _tipeKetersediaan = listing.tipeKetersediaan;
+      _jadwalMulai = listing.jadwalMulai;
+      _jadwalAkhir = listing.jadwalAkhir;
       _isLoading = false;
     });
-
   }
 
   Future<void> _loadShop() async {
-    // TODO load list shop by uid
     if (!_isLoadingShop) setState(() {
       _isLoadingShop = true;
     });
@@ -290,15 +296,12 @@ class _PasangState extends State<Pasang> {
         isScheduleable: kat.isScheduleable,
       );
     });
-    if (mounted) {
-      setState(() {
-        _listKelompok = listKelompok.values.toList();
-        _listKategori = listKategori;
-        _isLoadingCategory = false;
-        _resetKategori();
-      });
-      _loadData();
-    }
+    if (mounted) setState(() {
+      _listKelompok = listKelompok.values.toList();
+      _listKategori = listKategori;
+      _isLoadingCategory = false;
+      _resetKategori();
+    });
   }
 
   _resetKategori() {
@@ -403,8 +406,10 @@ class _PasangState extends State<Pasang> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       var isGranted = await Permission.location.request().isGranted;
       if (isGranted) {
-        _loadShop();
-        _loadCategory();
+        Future.wait([
+          _loadShop(),
+          _loadCategory()
+        ]).then((_) => _loadData());
       } else {
         Navigator.of(context).pop({'isGranted': false});
       }

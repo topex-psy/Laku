@@ -508,13 +508,14 @@ class _UiRadioState extends State<UiRadio> with SingleTickerProviderStateMixin {
 }
 
 class UiSelect extends StatefulWidget {
-  UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.margin, this.onSelect, this.error = '', this.simple = false, this.isDense = false}) : super(key: key);
+  UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.labelWidth, this.margin, this.onSelect, this.error = '', this.simple = false, this.isDense = false}) : super(key: key);
   final IconData icon;
   final List<dynamic> listMenu;
   final dynamic initialValue;
   final dynamic value;
   final String placeholder;
   final double fontSize;
+  final double labelWidth;
   final EdgeInsetsGeometry margin;
   final void Function(dynamic) onSelect;
   final String error;
@@ -570,9 +571,12 @@ class _UiSelectState extends State<UiSelect> {
                   widget.onSelect(val);
                 },
                 items: widget.listMenu.map<DropdownMenuItem<dynamic>>((dynamic val) {
+                  var _text = Text(val.toString(), overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.normal),);
                   return DropdownMenuItem<dynamic>(
                     value: val,
-                    child: Text(val.toString(), style: TextStyle(fontWeight: FontWeight.normal),),
+                    child: widget.labelWidth == null
+                      ? _text
+                      : SizedBox(width: widget.labelWidth, child: _text),
                   );
                 }).toList(),
               ),
