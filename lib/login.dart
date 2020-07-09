@@ -455,7 +455,9 @@ class _LoginFormState extends State<LoginForm> with TickerProviderStateMixin {
     if (smsCode.length < SMS_CODE_LENGTH || _signingIn) return;
     _signingIn = true;
     print(" ==> _signInWithCode ...\n$_smsVerificationCode\n$smsCode");
-    FocusScope.of(context).unfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
+    });
     widget.setLoading(true);
     var authCredential = PhoneAuthProvider.getCredential(verificationId: _smsVerificationCode, smsCode: smsCode);
     try {

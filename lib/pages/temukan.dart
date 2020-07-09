@@ -7,6 +7,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../extensions/widget.dart';
 import '../models/iklan.dart';
@@ -119,7 +120,8 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
   }
 
   _getAllData([bool force = false]) async {
-    if (_isGettingData) return;
+    var _isGranted = await Permission.location.isGranted;
+    if (_isGettingData || !_isGranted) return;
     var keyword = _searchController.text ?? '';
     var limit = _page * ITEM_PER_PAGE;
     print(" ==> GET TEMUKAN DATA .................. $keyword ($limit)");

@@ -94,18 +94,19 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                 alignment: Alignment.center,
                 children: <Widget>[
                   // Image.asset('images/logo_bg.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,),
-                  AnimatedBuilder(
-                    animation: _animation1Controller,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, 17 * _animation1.value),
-                        child: Opacity(
-                          opacity: _animation1.value,
-                          child: Hero(tag: "splash_logo", child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,)),
-                        )
-                      );
-                    }
-                  ),
+                  Hero(tag: "splash_logo", child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,)),
+                  // AnimatedBuilder(
+                  //   animation: _animation1Controller,
+                  //   builder: (context, child) {
+                  //     return Transform.translate(
+                  //       offset: Offset(0, 17 * _animation1.value),
+                  //       child: Opacity(
+                  //         opacity: _animation1.value,
+                  //         child: Hero(tag: "splash_logo", child: Image.asset('images/logo_teks.png', width: SPLASH_LOGO_SIZE, fit: BoxFit.fitWidth,)),
+                  //       )
+                  //     );
+                  //   }
+                  // ),
                   _isFinished ? SizedBox() : Transform.translate(
                     child: SpinKitChasingDots(color: Colors.white70, size: 100,),
                     offset: Offset(40, -50),
