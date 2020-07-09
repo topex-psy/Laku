@@ -10,6 +10,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 import 'package:intl/intl.dart';
 import 'package:laku/models/iklan.dart';
 import 'package:line_icons/line_icons.dart';
@@ -562,6 +563,7 @@ class _UiSelectState extends State<UiSelect> {
               // data: Theme.of(context).copyWith(canvasColor: Colors.white,),
               child: DropdownButton<dynamic>(
                 isDense: true,
+                // isExpanded: true,
                 underline: SizedBox(),
                 value: widget.value ?? _val,
                 hint: Text(widget.placeholder),
@@ -590,6 +592,34 @@ class _UiSelectState extends State<UiSelect> {
       children: <Widget>[
         card,
         (widget.error ?? '').isEmpty ? SizedBox() : ErrorText(widget.error)
+      ],
+    );
+  }
+}
+
+class UiSwitch extends StatelessWidget {
+  UiSwitch({Key key, @required this.label, @required this.value, @required this.onToggle}) : super(key: key);
+  final String label;
+  final bool value;
+  final void Function(bool) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        FlutterSwitch(
+          width: 45.0,
+          height: 24.0,
+          activeColor: THEME_COLOR,
+          inactiveColor: Colors.grey[400],
+          toggleSize: 18.0,
+          value: value,
+          padding: 3.0,
+          onToggle: onToggle,
+        ),
+        SizedBox(width: 8,),
+        Text(label),
       ],
     );
   }

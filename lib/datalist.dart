@@ -233,7 +233,7 @@ class _DataListState extends State<DataList> {
                 listMenu: _listShop,
                 initialValue: _shop,
                 margin: EdgeInsets.zero,
-                labelWidth: MediaQuery.of(context).size.width - 212,
+                // labelWidth: MediaQuery.of(context).size.width - 212,
                 onSelect: (val) {
                   setState(() { _shop = val; });
                 },

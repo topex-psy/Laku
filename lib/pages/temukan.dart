@@ -4,15 +4,18 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:collection/collection.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:laku/providers/settings.dart';
-import 'package:laku/utils/widgets.dart';
+import 'package:flip_card/flip_card.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../extensions/widget.dart';
 import '../models/iklan.dart';
+import '../providers/settings.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
+import '../utils/styles.dart' as style;
+import '../utils/widgets.dart';
 
 const ITEM_PER_PAGE = 12;
 const ITEM_PER_ROW = 2;
@@ -146,7 +149,7 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
 
   Widget _buildListingItem(int index) {
     var item = _listItemFiltered[index];
-    return Card(
+    var card = Card(
       color: Colors.grey[300],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       clipBehavior: Clip.antiAlias,
@@ -227,6 +230,26 @@ class _TemukanState extends State<Temukan> with TickerProviderStateMixin {
         ],
       )
     );
+    if (item.isDewasa) return FlipCard(
+      direction: FlipDirection.HORIZONTAL,
+      front: Card(
+        color: THEME_COLOR,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.zero,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(MdiIcons.eyeOff, color: Colors.white),
+            SizedBox(height: 8,),
+            Text('18+', style: style.textTitleWhite,),
+            Text('Tap untuk melihat', textAlign: TextAlign.center, style: style.textWhite,),
+          ],
+        ),
+      ),
+      back: card,
+    );
+    return card;
   }
 
   @override

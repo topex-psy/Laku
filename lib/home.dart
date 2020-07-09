@@ -100,7 +100,7 @@ class _HomeState extends State<Home> {
                     child: Row(children: <Widget>[
                       Selector<PersonProvider, String>(
                         selector: (buildContext, person) => person.foto,
-                        builder: (context, foto, child) => UiAvatar(foto, size: 70,),
+                        builder: (context, foto, child) => UiAvatar(foto, size: 70, strokeWidth: 0,),
                       ),
                       SizedBox(width: 12,),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
@@ -111,7 +111,7 @@ class _HomeState extends State<Home> {
                         SizedBox(height: 2),
                         Selector<PersonProvider, String>(
                           selector: (buildContext, person) => person.email,
-                          builder: (context, email, child) => Text(email, style: style.textWhite,),
+                          builder: (context, email, child) => Text(email, style: style.textWhiteM,),
                         ),
                       ],),)
                     ],),

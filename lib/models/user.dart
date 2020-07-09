@@ -117,17 +117,19 @@ class UserNotifModel {
 }
 
 class UserTierModel {
-  UserTierModel({this.tier, this.maxShop, this.maxListingPic, this.radius});
+  UserTierModel({this.tier, this.maxShop, this.maxListingPic, this.maxListingDesc, this.radius});
 
   final int tier;
   final int maxShop;
   final int maxListingPic;
+  final int maxListingDesc;
   final int radius;
 
   UserTierModel.fromJson(Map<String, dynamic> parsedJson)
   : tier = int.parse(parsedJson['TIER']),
     maxShop = int.parse(parsedJson['MAX_SHOP']),
     maxListingPic = int.parse(parsedJson['MAX_LISTING_PIC']),
+    maxListingDesc = int.parse(parsedJson['MAX_LISTING_DESC']),
     radius = int.parse(parsedJson['RADIUS']);
 
   @override

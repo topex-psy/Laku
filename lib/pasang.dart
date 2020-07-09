@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:laku/models/toko.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
@@ -12,6 +11,7 @@ import 'extensions/string.dart';
 import 'extensions/widget.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
+import 'models/toko.dart';
 import 'models/user.dart';
 import 'providers/settings.dart';
 import 'utils/api.dart';
@@ -29,7 +29,7 @@ class Pasang extends StatefulWidget {
   _PasangState createState() => _PasangState();
 }
 
-class _PasangState extends State<Pasang> {
+class _PasangState extends State<Pasang> with TickerProviderStateMixin {
   var _imagesEdit = <String>[];
   var _images = <Asset>[];
   var _isChanged = false;
@@ -78,6 +78,8 @@ class _PasangState extends State<Pasang> {
   var _isNegotiable = false;
   var _isAvailable = true;
   var _isDeliverable = false;
+  var _isAdult = false;
+  var _deskripsiLength = 0;
   String _kondisi;
   String _jarakAntar;
   String _tipeKetersediaan = 'terbatas';
@@ -131,6 +133,7 @@ class _PasangState extends State<Pasang> {
       'isNego': _isNegotiable.toString(),
       'isTersedia': _isAvailable.toString(),
       'isCOD': _isDeliverable.toString(),
+      'isDewasa': _isAdult.toString(),
       'kondisi': _kondisi,
       'tipeKetersediaan': _tipeKetersediaan,
       'preOrderDurasi': _preOrderDurasi.toString(),
@@ -207,7 +210,7 @@ class _PasangState extends State<Pasang> {
   }
 
   int get _selectedPicsTotal => _imagesEdit.length + _images.length;
-
+  int get _maxAllowedDesc => _tier?.maxListingDesc ?? 500;
   int get _maxAllowedPic => _tier?.maxListingPic ?? IMAGE_UPLOAD_MAX;
 
   _pickImages() async {
@@ -215,15 +218,19 @@ class _PasangState extends State<Pasang> {
       h.failAlert("Maksimal Foto", "Kamu bisa memasang maksimal sebanyak ${_maxAllowedPic} foto. Upgrade akunmu untuk bisa unggah foto lebih banyak!");
       return;
     }
-    var resultList = <Asset>[];
+    var images = <Asset>[];
     try {
-      resultList = await MultiImagePicker.pickImages(maxImages: _maxAllowedPic - _selectedPicsTotal, enableCamera: true);
+      images = await MultiImagePicker.pickImages(
+        maxImages: _maxAllowedPic - _imagesEdit.length,
+        selectedAssets: _images,
+        enableCamera: true
+      );
     } on Exception catch (e) {
       print("PICK IMAGES ERROOOOOOOOOOOOOOOOOR: $e");
     }
-    print("resultList = $resultList");
-    if (mounted && resultList.isNotEmpty) setState(() {
-      _images.addAll(resultList);
+    print("resultList = $images");
+    if (mounted && images.isNotEmpty) setState(() {
+      _images = images;
     });
   }
 
@@ -395,7 +402,12 @@ class _PasangState extends State<Pasang> {
     _edit = widget.args['edit'];
     _tier = userTiers[userSession.tier];
     _judulController = TextEditingController()..addListener(() => _dismissError("judul"));
-    _deskripsiController = TextEditingController()..addListener(() => _dismissError("deskripsi"));
+    _deskripsiController = TextEditingController()..addListener(() {
+      _dismissError("deskripsi");
+      setState(() {
+        _deskripsiLength = _deskripsiController.text.length;
+      });
+    });
     _hargaController = TextEditingController()..addListener(() => _dismissError("harga"));
     _stokController = TextEditingController()..addListener(() => _dismissError("stok"));
     _judulFocusNode = FocusNode();
@@ -491,7 +503,7 @@ class _PasangState extends State<Pasang> {
           },
         ),
       ],),);
-      default: return Container();
+      default: return SizedBox(height: 8,);
     }
   }
 
@@ -559,32 +571,36 @@ class _PasangState extends State<Pasang> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text("Ketersediaan:", style: style.textLabel),
-        SizedBox(height: 8.0,),
-        Transform.translate(
-          offset: Offset(-25, 0),
-          child: CheckboxListTile(
-            activeColor: Colors.green,
-            controlAffinity: ListTileControlAffinity.leading,
-            dense: true,
-            title: Text("Produk tersedia"),
-            value: _isAvailable,
-            onChanged: (val) {
-              setState(() { _isAvailable = val; });
-            },
-          ),
+        SizedBox(height: 12.0,),
+        UiSwitch(label: "Produk tersedia", value: _isAvailable, onToggle: (val) {
+          setState(() {
+            _isAvailable = val;
+          });
+        },),
+        SizedBox(height: 16.0,),
+        AnimatedSize(
+          vsync: this,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+          child: _isAvailable ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              UiToggleButton(
+                height: 45.0,
+                listItem: _listKetersediaan,
+                currentValue: _tipeKetersediaan,
+                onSelect: (int index) {
+                  setState(() {
+                    _tipeKetersediaan = _listKetersediaan[index].value;
+                  });
+                },
+              ),
+              _formKetersediaan(_tipeKetersediaan),
+              SizedBox(height: 4,),
+            ],
+          ) : Container(),
         ),
-        _isAvailable ? UiToggleButton(
-          height: 45.0,
-          listItem: _listKetersediaan,
-          currentValue: _tipeKetersediaan,
-          onSelect: (int index) {
-            setState(() {
-              _tipeKetersediaan = _listKetersediaan[index].value;
-            });
-          },
-        ) : SizedBox(),
-        _formKetersediaan(_tipeKetersediaan),
-        SizedBox(height: 12,),
       ],
     ) : SizedBox();
   }
@@ -595,28 +611,45 @@ class _PasangState extends State<Pasang> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text("Layanan COD:", style: style.textLabel),
-        SizedBox(height: 8.0,),
-        Transform.translate(
-          offset: Offset(-25, 0),
-          child: CheckboxListTile(
-            activeColor: Colors.green,
-            controlAffinity: ListTileControlAffinity.leading,
-            dense: true,
-            title: Text("Bisa COD"),
-            value: _isDeliverable,
-            onChanged: (val) {
-              setState(() { _isDeliverable = val; });
-            },
-          ),
+        SizedBox(height: 12.0,),
+        // TODO default ikuti setting toko
+        UiSwitch(label: "Bisa COD", value: _isDeliverable, onToggle: (val) {
+          setState(() {
+            _isDeliverable = val;
+          });
+        },),
+        SizedBox(height: 16.0,),
+        AnimatedSize(
+          vsync: this,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+          child: _isDeliverable ? Row(
+            children: <Widget>[
+              UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
+                setState(() { _jarakAntar = val; });
+              },),
+            ],
+          ) : Container(),
         ),
-        _isDeliverable ? Row(
-          children: <Widget>[
-            UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
-              setState(() { _jarakAntar = val; });
-            },),
-          ],
-        ) : SizedBox(),
         SizedBox(height: 12,),
+      ],
+    ) : SizedBox();
+  }
+  
+  Widget get _inputAdult {
+    return _isPriceable ? Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text("Konten Dewasa:", style: style.textLabel),
+        SizedBox(height: 12.0,),
+        // TODO default ikuti setting toko
+        UiSwitch(label: "Unsur dewasa (18+)", value: _isAdult, onToggle: (val) {
+          setState(() {
+            _isAdult = val;
+          });
+        },),
+        SizedBox(height: 16.0,),
       ],
     ) : SizedBox();
   }
@@ -712,8 +745,23 @@ class _PasangState extends State<Pasang> {
 
                           UiSection(title: "Detail Iklan", titleSpacing: 20, children: <Widget>[
                             UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
-                            UiInput("Deskripsi", isRequired: true, placeholder: "Tulis deskripsi iklan dengan jelas dan lengkap ...", height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
-                            Text("Kategori:", style: style.textLabel),
+                            UiInput("Deskripsi", isRequired: true, margin: EdgeInsets.zero, maxLength: _maxAllowedDesc, placeholder: "Tulis deskripsi iklan dengan jelas dan lengkap ...", height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
+                            Row(
+                              children: <Widget>[
+                                Expanded(child: Padding(
+                                  padding: EdgeInsets.only(top: 12.0),
+                                  child: Text("Kategori:", style: style.textLabel),
+                                )),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black38,
+                                    borderRadius: BorderRadius.circular(8)
+                                  ),
+                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  child: Text("${f.formatNumber(_deskripsiLength)}/${f.formatNumber(_maxAllowedDesc)}", style: style.textWhiteMB)
+                                ),
+                              ],
+                            ),
                             SizedBox(height: 12,),
                             // TODO fetch api recent kategori
                             _selectKategori(),
@@ -724,6 +772,7 @@ class _PasangState extends State<Pasang> {
                             _inputCondition,
                             _inputAvailable,
                             _inputDelivery,
+                            _inputAdult,
                             // TODO _isScheduleable
                           ]) : SizedBox(),
 

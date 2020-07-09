@@ -95,6 +95,7 @@ class IklanModel {
     this.harga,
     this.isNego,
     this.isTersedia,
+    this.isDewasa,
     this.stok,
     this.stokUnit,
     this.preOrder,
@@ -143,6 +144,7 @@ class IklanModel {
   final double harga;
   final bool isNego;
   final bool isTersedia;
+  final bool isDewasa;
   final int stok;
   final String stokUnit;
   final int preOrder;
@@ -210,6 +212,7 @@ class IklanModel {
     harga = double.parse(parsedJson['HARGA'] ?? '0.0'),
     isNego = int.parse(parsedJson['IS_NEGO'] ?? '0') == 1,
     isTersedia = int.parse(parsedJson['IS_TERSEDIA'] ?? '0') == 1,
+    isDewasa = int.parse(parsedJson['IS_DEWASA'] ?? '0') == 1,
     stok = parsedJson['STOK'] == null ? null : int.parse(parsedJson['STOK']),
     stokUnit = parsedJson['STOK_UNIT'],
     preOrder = parsedJson['PREORDER'] == null ? null : int.parse(parsedJson['PREORDER']),
