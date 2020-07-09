@@ -721,6 +721,7 @@ class _CardListState extends State<CardList> {
     return notif == 0 && widget.notif != 'iklanTerpasang' ? SizedBox() : Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_CARD_RADIUS)),
       elevation: THEME_CARD_ELEVATION,
+      shadowColor: Colors.grey[300],
       child: Padding(
         padding: EdgeInsets.all(12),
         child: Row(children: <Widget>[

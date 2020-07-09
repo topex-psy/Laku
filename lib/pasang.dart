@@ -623,15 +623,13 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
           vsync: this,
           duration: Duration(milliseconds: 500),
           curve: Curves.easeOut,
-          child: _isDeliverable ? Row(
-            children: <Widget>[
-              UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
-                setState(() { _jarakAntar = val; });
-              },),
-            ],
+          child: _isDeliverable ? Container(
+            padding: EdgeInsets.only(bottom: 12.0),
+            child: UiSelect(listMenu: _listJarakAntar, initialValue: _jarakAntar, placeholder: "Pilih jarak", onSelect: (val) {
+              setState(() { _jarakAntar = val; });
+            },),
           ) : Container(),
         ),
-        SizedBox(height: 12,),
       ],
     ) : SizedBox();
   }
