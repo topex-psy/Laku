@@ -104,7 +104,7 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
       });
       return;
     }
-    if (_images.isEmpty && _tipe == "WTS") {
+    if (_images.isEmpty && _tipe == "WTS" && _edit == null) {
       h.failAlert("Tambahkan Foto", "Unggah minimal 1 foto untuk iklan Anda.");
       return;
     }
@@ -119,6 +119,10 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
       } else {
         _shop = _listShop.first;
       }
+    }
+
+    if (_tipe == 'WTB') {
+      _images.clear();
     }
 
     final hash = _edit == null ? DateTime.now().millisecondsSinceEpoch : _edit.hashCode;
@@ -152,60 +156,70 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
     h.loadAlert("Memasang iklan ...");
 
     // upload pic
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    settings.setSettings(
-      // iklanUploadPic: [...settings.iklanUploadPic, hash],
-      isUploadListing: true
-    );
+    if (_images.isNotEmpty) {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      settings.setSettings(
+        // iklanUploadPic: [...settings.iklanUploadPic, hash],
+        isUploadListing: true
+      );
 
-    int byteCount = 0;
-    int byteProgress = 0;
+      int byteCount = 0;
+      int byteProgress = 0;
 
-    uploadImages('listing', _images, hash).then((response) {
-      print("IMAGES UPLOAD RESPONSE: $response");
-      if (response == null) {
-        h.failAlertInternet(message: "Terjadi masalah saat mengunggah foto transaksi Anda. Coba lagi nanti!");
-      } else {
-        print("IMAGES UPLOAD CONTENT LENGTH: ${response.contentLength}");
-        print("IMAGES UPLOAD STATUS CODE: ${response.statusCode}");
-        print("IMAGES UPLOAD HEADERS: ${response.headers}");
-        response.stream.transform(
-          // utf8.decoder
-          StreamTransformer.fromHandlers(
-            handleData: (data, sink) {
-              byteCount += data.length;
-              print(" -> byteCount: $byteCount / ${response.contentLength}");
-              sink.add(data);
-            },
-            handleError: (error, stack, sink) {},
-            handleDone: (sink) {
-              sink.close();
-            },
-          ),
-        ).listen((value) {
-          print("IMAGES UPLOAD PROGRESS: $value");
-          byteProgress += value.length;
-          print("IMAGES UPLOAD PROGRESS CURRENT: $byteProgress / ${response.contentLength}");
-        }).onDone(() {
-          print("IMAGES UPLOAD DONE");
-          print("IMAGES UPLOAD BYTE COUNT: $byteCount");
-          print("IMAGES UPLOAD BYTE PROGRESS: $byteProgress");
-          // var iklanUploadPicAfter = settings.iklanUploadPic.where((i) => i != hash).toList();
-          settings.setSettings(
-            // iklanUploadPic: iklanUploadPicAfter,
-            isUploadListing: false
-          );
-        });
-      }
-    });
+      uploadImages('listing', _images, hash).then((response) {
+        print("IMAGES UPLOAD RESPONSE: $response");
+        if (response == null) {
+          h.failAlertInternet(message: "Terjadi masalah saat mengunggah foto transaksi Anda. Coba lagi nanti!");
+        } else {
+          print("IMAGES UPLOAD CONTENT LENGTH: ${response.contentLength}");
+          print("IMAGES UPLOAD STATUS CODE: ${response.statusCode}");
+          print("IMAGES UPLOAD HEADERS: ${response.headers}");
+          response.stream.transform(
+            // utf8.decoder
+            StreamTransformer.fromHandlers(
+              handleData: (data, sink) {
+                byteCount += data.length;
+                print(" -> byteCount: $byteCount / ${response.contentLength}");
+                sink.add(data);
+              },
+              handleError: (error, stack, sink) {},
+              handleDone: (sink) {
+                sink.close();
+              },
+            ),
+          ).listen((value) {
+            print("IMAGES UPLOAD PROGRESS: $value");
+            byteProgress += value.length;
+            print("IMAGES UPLOAD PROGRESS CURRENT: $byteProgress / ${response.contentLength}");
+          }).onDone(() {
+            print("IMAGES UPLOAD DONE");
+            print("IMAGES UPLOAD BYTE COUNT: $byteCount");
+            print("IMAGES UPLOAD BYTE PROGRESS: $byteProgress");
+            // var iklanUploadPicAfter = settings.iklanUploadPic.where((i) => i != hash).toList();
+            settings.setSettings(
+              // iklanUploadPic: iklanUploadPicAfter,
+              isUploadListing: false
+            );
+          });
+        }
+      });
+    }
     
     var postApi = await api('listing', type: 'post', data: postData);
     Navigator.of(context).pop();
     if (postApi.isSuccess) {
-      await h.customAlert("Iklan Terpasang!", "Iklan <strong>${postData['judul']}</strong> telah terpasang!", icon: Icon(LineIcons.check_circle, color: Colors.green, size: 69,));
+      String caption, message;
+      if (_tipe == 'WTS') {
+        caption = "Iklan Terpasang!";
+        message = "Iklan <strong>${postData['judul']}</strong> telah terpasang!";
+      } else {
+        caption = "Broadcast Terkirim!";
+        message = "Pesan broadcast Anda telah disiarkan dan dapat dilihat selama 24 jam!";
+      }
+      await h.customAlert(caption, message, icon: Icon(LineIcons.check_circle, color: Colors.green, size: 69,));
       Navigator.of(context).pop({'isSubmit': true});
     } else {
-      h.failAlert("Gagal Memproses", "Terjadi kendala saat memproses pemasangan iklan.");
+      h.failAlert("Gagal Memproses", "Terjadi kendala saat memproses pemasangan ${_tipe == 'WTS' ? 'iklan' : 'broadcast'}.");
     }
   }
 
@@ -309,10 +323,6 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
       _isLoadingCategory = false;
       _resetKategori();
     });
-  }
-
-  _resetImages() {
-    _images.clear();
   }
 
   _resetKategori() {
@@ -577,9 +587,7 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
         Text("Ketersediaan:", style: style.textLabel),
         SizedBox(height: 12.0,),
         UiSwitch(label: "Produk tersedia", value: _isAvailable, onToggle: (val) {
-          setState(() {
-            _isAvailable = val;
-          });
+          setState(() { _isAvailable = val; });
         },),
         SizedBox(height: 16.0,),
         AnimatedSize(
@@ -645,6 +653,7 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
       children: <Widget>[
         Text("Konten Dewasa:", style: style.textLabel),
         SizedBox(height: 12.0,),
+        // TODO default ikuti setting toko
         UiSwitch(label: "Unsur dewasa (18+)", value: _isAdult, onToggle: (val) {
           setState(() {
             _isAdult = val;
@@ -697,7 +706,6 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
                                     onSelect: (int index) {
                                       setState(() {
                                         _tipe = _listTipe[index].value;
-                                        // if (_tipe == 'WTB') _resetImages();
                                         _resetKategori();
                                       });
                                     },
@@ -741,7 +749,7 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
                             ]
                           ),
 
-                          UiSection(title: "Detail Iklan", titleSpacing: 20, children: <Widget>[
+                          UiSection(title: _tipe == 'WTB' ? "Detail Broadcast" : "Detail Iklan", titleSpacing: 20, children: <Widget>[
                             UiInput("Judul iklan", isRequired: true, icon: LineIcons.edit, type: UiInputType.NAME, controller: _judulController, focusNode: _judulFocusNode, error: _errorText["judul"],),
                             UiInput("Deskripsi", isRequired: true, margin: EdgeInsets.zero, maxLength: _maxAllowedDesc, placeholder: "Tulis deskripsi iklan dengan jelas dan lengkap ...", height: 100, icon: LineIcons.sticky_note_o, type: UiInputType.NOTE, controller: _deskripsiController, focusNode: _deskripsiFocusNode, error: _errorText["deskripsi"],),
                             Row(
@@ -789,11 +797,11 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
                           Padding(
                             padding: EdgeInsets.all(20.0),
                             child: UiButton(
-                              _stepIndex == 0 ? "Selanjutnya" : (_tipe == 'WTS' ? "Pasang Iklan" : "Siarkan"),
+                              _stepIndex == 0 ? "Selanjutnya" : (_tipe == 'WTS' ? "Pasang Iklan" : "Kirimkan"),
                               height: style.heightButtonL,
                               textStyle: style.textButtonL,
                               color: Colors.green,
-                              icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : LineIcons.check_circle_o,
+                              icon: _stepIndex == 0 ? LineIcons.chevron_circle_right : (_tipe == 'WTS' ? LineIcons.check_circle_o : LineIcons.paper_plane_o),
                               iconRight: true,
                               onPressed: _submit,
                             ),

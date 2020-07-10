@@ -258,20 +258,20 @@ class _ProfilState extends State<Profil> {
   //   if (await _onWillPop()) Navigator.of(context).pop();
   // }
 
-  Widget _actionButton() {
-    return Container(
-      height: double.infinity,
-      width: 60,
-      child: RaisedButton(
-        elevation: 0,
-        child: Icon(_isEdit ? MdiIcons.check : MdiIcons.pencil, size: 30,),
-        color: _isEdit ? Colors.green : Colors.teal,
-        textColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        onPressed: _isEdit ? _submit : _edit,
-      ),
-    );
-  }
+  // Widget get _actionButton {
+  //   return Container(
+  //     height: double.infinity,
+  //     width: 60,
+  //     child: RaisedButton(
+  //       elevation: 0,
+  //       child: Icon(_isEdit ? MdiIcons.check : MdiIcons.pencil, size: 30,),
+  //       color: _isEdit ? Colors.green : Colors.teal,
+  //       textColor: Colors.white,
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+  //       onPressed: _isEdit ? _submit : _edit,
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +279,7 @@ class _ProfilState extends State<Profil> {
     return SafeArea(
       child: Column(
         children: <Widget>[
-          UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton(), onBackPressed: () => a.navigatePage(0),),
+          // UiAppBar("Profil Saya", icon: LineIcons.user, tool: _actionButton, onBackPressed: () => a.navigatePage(0),),
           Expanded(
             child: IndexedStack(
               alignment: Alignment.center,
@@ -289,104 +289,126 @@ class _ProfilState extends State<Profil> {
                 Container(
                   width: double.infinity,
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      children: <Widget>[
-                        Row(children: <Widget>[
-                          Expanded(child: _isEdit ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
-                              menuPaddingHorizontal: 8,
-                              isLast: source == ImageSource.camera,
-                              icon: {ImageSource.camera: MdiIcons.camera, ImageSource.gallery: MdiIcons.imageMultiple}[source],
-                              teks: {ImageSource.camera: 'Kamera', ImageSource.gallery: 'Pilih dari Galeri'}[source],
-                              value: source,
-                              aksi: (val) => _pickImage(val as ImageSource),
-                            )).toList(),
-                          ) : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(_userData?.namaLengkap ?? '', style: style.textHeadline,),
-                              Divider(color: Colors.grey[400],),
-                              Text(_userData?.email ?? '',),
-                            ],
-                          ),),
-                          UiAvatar(
-                            _image ?? person.foto,
-                            heroTag: "profile_pic",
-                            size: 140,
-                            onPressed: _viewImage,
-                            onTapEdit: _isEdit ? () => _pickImage() : null,
-                          ),
-                        ],),
-                        Padding(
-                          padding: EdgeInsets.only(right: 15.0),
-                          child: Form(
-                            key: _formKey,
-                            autovalidate: false,
-                            onChanged: () {
-                              if (!_isChanged) setState(() {
-                                _isChanged = true;
-                              });
-                            },
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                              _isEdit
-                                ? UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],)
-                                : SizedBox(),
-                              UiInput("Nomor Ponsel", isRequired: true, readOnly: !_isEdit, icon: LineIcons.mobile_phone, type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _errorText["phone"],),
-                              _isEdit
-                                ? UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],)
-                                : SizedBox(),
-                              UiInput("Tanggal lahir", isRequired: true, readOnly: !_isEdit, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, initialValue: _tanggalLahir ?? person.tanggalLahir, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
-                                try {
-                                  setState(() { _tanggalLahir = val as DateTime; });
-                                } catch (e) {
-                                  print("DATETIME PICKER ERROR = $e");
-                                }
-                              },),
-                              Text("Jenis kelamin:", style: style.textLabel),
-                              SizedBox(height: 8.0,),
-                              _isEdit ? SizedBox(
-                                height: 45.0,
-                                child: ToggleButtons(
-                                  borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
-                                  children: <Widget>[
-                                    Row(children: <Widget>[
-                                      SizedBox(width: 20.0),
-                                      Icon(LineIcons.male, size: 17,),
-                                      SizedBox(width: 8.0),
-                                      Text(jenisKelaminLbl[0], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                                      SizedBox(width: 15.0),
-                                    ],),
-                                    Row(children: <Widget>[
-                                      SizedBox(width: 15.0),
-                                      Icon(LineIcons.female, size: 17,),
-                                      SizedBox(width: 8.0),
-                                      Text(jenisKelaminLbl[1], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-                                      SizedBox(width: 20.0),
-                                    ],),
-                                  ],
-                                  onPressed: (int index) {
-                                    setState(() {
-                                      _jenisKelamin = jenisKelaminVal[index];
-                                    });
-                                  },
-                                  isSelected: <bool>[
-                                    _jenisKelamin == jenisKelaminVal[0],
-                                    _jenisKelamin == jenisKelaminVal[1],
-                                  ],
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Card(
+                      margin: EdgeInsets.all(15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      shadowColor: Colors.grey[300],
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 15.0, right: 15.0, bottom: 15.0),
+                        child: Column(
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(left: 10.0),
+                              child: Row(children: <Widget>[
+                                Expanded(
+                                  child: _isEdit ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [ImageSource.gallery, ImageSource.camera].map((source) => UiMenuList(
+                                      menuPaddingHorizontal: 8,
+                                      isLast: source == ImageSource.camera,
+                                      icon: {ImageSource.camera: MdiIcons.camera, ImageSource.gallery: MdiIcons.imageMultiple}[source],
+                                      teks: {ImageSource.camera: 'Kamera', ImageSource.gallery: 'Pilih dari Galeri'}[source],
+                                      value: source,
+                                      aksi: (val) => _pickImage(val as ImageSource),
+                                    )).toList(),
+                                  ) : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(_userData?.namaLengkap ?? '', style: style.textHeadline,),
+                                      Divider(color: Colors.grey[400],),
+                                      Text(_userData?.email ?? '',),
+                                    ],
+                                  ),
                                 ),
-                              ) : UiInput("", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _jenisKelaminController,),
-                              SizedBox(height: 30,),
-                              // TODO edit profil (kontak)
-                              _isEdit ? SizedBox() : UiButton("Ganti Nomor PIN", height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _resetPIN,),
-                              SizedBox(height: 12,),
-                              _isEdit ? SizedBox() : UiButton("Keluar", height: style.heightButtonL, color: Colors.red, icon: LineIcons.sign_out, textStyle: style.textButton, iconRight: true, onPressed: a.logout,),
-                              SizedBox(height: 12,),
-                            ],)
-                          ),
+                                Transform.translate(
+                                  offset: Offset(0, -20),
+                                  child: UiAvatar(
+                                    _image ?? person.foto,
+                                    heroTag: "profile_pic",
+                                    size: 140,
+                                    onPressed: _viewImage,
+                                    onTapEdit: _isEdit ? () => _pickImage() : null,
+                                  ),
+                                ),
+                              ],),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Form(
+                                key: _formKey,
+                                autovalidate: false,
+                                onChanged: () {
+                                  if (!_isChanged) setState(() {
+                                    _isChanged = true;
+                                  });
+                                },
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                                  _isEdit
+                                    ? UiInput("Nama lengkap", isRequired: true, icon: LineIcons.user, type: UiInputType.NAME, controller: _namaLengkapController, focusNode: _namaLengkapFocusNode, error: _errorText["name"],)
+                                    : SizedBox(),
+                                  UiInput("Nomor Ponsel", isRequired: true, readOnly: !_isEdit, icon: LineIcons.mobile_phone, type: UiInputType.PHONE, controller: _nomorPonselController, focusNode: _nomorPonselFocusNode, error: _errorText["phone"],),
+                                  _isEdit
+                                    ? UiInput("Alamat email", isRequired: true, icon: LineIcons.envelope_o, type: UiInputType.EMAIL, controller: _emailController, focusNode: _emailFocusNode, error: _errorText["email"],)
+                                    : SizedBox(),
+                                  UiInput("Tanggal lahir", isRequired: true, readOnly: !_isEdit, icon: LineIcons.calendar, type: UiInputType.DATE_OF_BIRTH, initialValue: _tanggalLahir ?? person.tanggalLahir, controller: _tanggalLahirController, focusNode: _tanggalLahirFocusNode, error: _errorText["dob"], onChanged: (val) {
+                                    try {
+                                      setState(() { _tanggalLahir = val as DateTime; });
+                                    } catch (e) {
+                                      print("DATETIME PICKER ERROR = $e");
+                                    }
+                                  },),
+                                  Text("Jenis kelamin:", style: style.textLabel),
+                                  SizedBox(height: 8.0,),
+                                  _isEdit ? SizedBox(
+                                    height: 45.0,
+                                    child: ToggleButtons(
+                                      borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
+                                      children: <Widget>[
+                                        Row(children: <Widget>[
+                                          SizedBox(width: 20.0),
+                                          Icon(LineIcons.male, size: 17,),
+                                          SizedBox(width: 8.0),
+                                          Text(jenisKelaminLbl[0], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+                                          SizedBox(width: 15.0),
+                                        ],),
+                                        Row(children: <Widget>[
+                                          SizedBox(width: 15.0),
+                                          Icon(LineIcons.female, size: 17,),
+                                          SizedBox(width: 8.0),
+                                          Text(jenisKelaminLbl[1], style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
+                                          SizedBox(width: 20.0),
+                                        ],),
+                                      ],
+                                      onPressed: (int index) {
+                                        setState(() {
+                                          _jenisKelamin = jenisKelaminVal[index];
+                                        });
+                                      },
+                                      isSelected: <bool>[
+                                        _jenisKelamin == jenisKelaminVal[0],
+                                        _jenisKelamin == jenisKelaminVal[1],
+                                      ],
+                                    ),
+                                  ) : UiInput("", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _jenisKelaminController,),
+                                  SizedBox(height: 30,),
+                                  // TODO edit profil (kontak)
+                                  UiButton(_isEdit ? "Simpan" : "Edit Profil", height: style.heightButtonL, color: _isEdit ? Colors.green : Colors.blue, icon: _isEdit ? LineIcons.check_circle_o : LineIcons.pencil, textStyle: style.textButton, iconRight: true, onPressed: _isEdit ? _submit : _edit,),
+                                  SizedBox(height: 12,),
+                                  _isEdit ? Padding(
+                                    padding: EdgeInsets.only(bottom: 12.0),
+                                    child: UiButton("Batalkan", height: style.heightButtonL, color: Colors.grey[400], icon: LineIcons.close, textStyle: style.textButton, iconRight: true, onPressed: _edit,),
+                                  ) : SizedBox(),
+                                  _isEdit ? SizedBox() : UiButton("Ganti Nomor PIN", height: style.heightButtonL, color: Colors.teal[300], icon: LineIcons.unlock_alt, textStyle: style.textButton, iconRight: true, onPressed: _resetPIN,),
+                                  SizedBox(height: 12,),
+                                  _isEdit ? SizedBox() : UiButton("Keluar", height: style.heightButtonL, color: Colors.red, icon: LineIcons.sign_out, textStyle: style.textButton, iconRight: true, onPressed: a.logout,),
+                                  SizedBox(height: 12,),
+                                ],)
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
