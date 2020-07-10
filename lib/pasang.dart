@@ -75,6 +75,7 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
   IklanKelompokModel _kelompok;
   IklanKategoriModel _kategori;
   var _tipe = "WTS";
+  var _tipeKetersediaan = 'terbatas';
   var _isNegotiable = false;
   var _isAvailable = true;
   var _isDeliverable = false;
@@ -82,7 +83,6 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
   var _deskripsiLength = 0;
   String _kondisi;
   String _jarakAntar;
-  String _tipeKetersediaan = 'terbatas';
   String _stokUnit;
   String _preOrderUnit;
   int _preOrderDurasi;
@@ -309,6 +309,10 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
       _isLoadingCategory = false;
       _resetKategori();
     });
+  }
+
+  _resetImages() {
+    _images.clear();
   }
 
   _resetKategori() {
@@ -641,7 +645,6 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
       children: <Widget>[
         Text("Konten Dewasa:", style: style.textLabel),
         SizedBox(height: 12.0,),
-        // TODO default ikuti setting toko
         UiSwitch(label: "Unsur dewasa (18+)", value: _isAdult, onToggle: (val) {
           setState(() {
             _isAdult = val;
@@ -684,10 +687,6 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
                         child: Column(children: <Widget>[
 
                           _edit != null ? SizedBox() : UiSection(children: <Widget>[
-                            // Text("Tipe Iklan", style: style.textTitle,),
-                            // SizedBox(height: 12.0,),
-                            // Text("Tipe:", style: style.textLabel),
-                            // SizedBox(height: 8.0,),
                             Row(
                               children: <Widget>[
                                 Expanded(
@@ -698,6 +697,7 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
                                     onSelect: (int index) {
                                       setState(() {
                                         _tipe = _listTipe[index].value;
+                                        // if (_tipe == 'WTB') _resetImages();
                                         _resetKategori();
                                       });
                                     },
@@ -713,7 +713,7 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
                             Text(_tipe == 'WTS' ? "Pasang iklan yang dapat ditemukan oleh pengguna $APP_NAME di radius ${f.distanceLabel(_myRadius)} dari Anda kapanpun." : "Broadcast adalah siaran yang berlangsung selama 24 jam kepada semua pengguna $APP_NAME di radius ${f.distanceLabel(_myRadius)} dari Anda. Broadcast membutuhkan 1 tiket toa yang Anda miliki.", style: style.textS)
                           ]),
 
-                          UiSection(
+                          _tipe == 'WTB' ? SizedBox() : UiSection(
                             title: "Unggah Foto",
                             tool: _tier == null ? SizedBox() : Container(
                               padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),

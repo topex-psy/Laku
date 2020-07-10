@@ -50,10 +50,11 @@ class _DrawerMenuState extends State<DrawerMenu> {
           itemBuilder: (context, index) {
             var tier = userTiers[index];
             var isMine = tier.tier == userSession.tier;
+            var isNext = tier.tier == userSession.tier + 1;
             return Card(
               shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30)),
               clipBehavior: Clip.antiAlias,
-              color: isMine ? Colors.amber[50] : Colors.teal[50],
+              color: isMine ? Colors.amber[50] : (isNext ? Colors.grey[100] : Colors.teal[50]),
               child: InkWell(
                 onTap: () {},
                 child: Padding(
@@ -69,7 +70,6 @@ class _DrawerMenuState extends State<DrawerMenu> {
                       Row(children: <Widget>[
                         Text("Maksimal Radius"),
                         Spacer(),
-                        // Text("${tier.radius}", textAlign: TextAlign.end, style: style.textCaption,)
                         Text(f.distanceLabel(tier.radius.toDouble()), textAlign: TextAlign.end, style: style.textCaption,)
                       ],),
                       Row(children: <Widget>[
@@ -81,6 +81,11 @@ class _DrawerMenuState extends State<DrawerMenu> {
                         Text("Maksimal Foto per Iklan"),
                         Spacer(),
                         Text(f.formatNumber(tier.maxListingPic), textAlign: TextAlign.end, style: style.textCaption,)
+                      ],),
+                      Row(children: <Widget>[
+                        Text("Maksimal Deskripsi Iklan"),
+                        Spacer(),
+                        Text(f.formatNumber(tier.maxListingDesc), textAlign: TextAlign.end, style: style.textCaption,)
                       ],),
                     ],
                   ),

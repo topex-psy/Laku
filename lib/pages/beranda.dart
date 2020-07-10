@@ -1,4 +1,4 @@
-import 'dart:async';
+// import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -21,7 +21,7 @@ import '../utils/styles.dart' as style;
 import '../utils/widgets.dart';
 
 const SECTION_MARGIN = 26.0;
-const TIMER_INTERVAL_SECONDS = 10;
+// const TIMER_INTERVAL_SECONDS = 10;
 
 class Beranda extends StatefulWidget {
   Beranda({Key key, this.isOpen = false}) : super(key: key);
@@ -37,21 +37,21 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
   AnimationController _spinController;
   var _isGranted = false;
   var _isLoading = true;
-  Timer _timer;
+  // Timer _timer;
 
   AnimationController _headerOffsetAnimationController;
   AnimationController _headerOpacityAnimationController;
   Animation<Offset> _headerOffsetAnimation;
   Animation<double> _headerOpacityAnimation;
 
-  @override
-  void didUpdateWidget(Beranda oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!oldWidget.isOpen && widget.isOpen) _runTimer();
-      if (oldWidget.isOpen && !widget.isOpen) _timer?.cancel();
-    });
-  }
+  // @override
+  // void didUpdateWidget(Beranda oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (!oldWidget.isOpen && widget.isOpen) _runTimer();
+  //     if (oldWidget.isOpen && !widget.isOpen) _timer?.cancel();
+  //   });
+  // }
 
   @override
   void initState() {
@@ -75,20 +75,20 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
     _headerOffsetAnimationController.dispose();
     _headerOpacityAnimationController.dispose();
     _refreshController.dispose();
-    _timer.cancel();
+    // _timer.cancel();
     super.dispose();
   }
 
-  _runTimer() {
-    print("RUN TIMEEEEEEEEEEEEEEEEER");
-    _getAllData();
-    _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getAllData());
-  }
+  // _runTimer() {
+  //   print("RUN TIMEEEEEEEEEEEEEEEEER");
+  //   _getAllData();
+  //   _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getAllData());
+  // }
 
-  _revokeTimer() {
-    _timer?.cancel();
-    _runTimer();
-  }
+  // _revokeTimer() {
+  //   _timer?.cancel();
+  //   _runTimer();
+  // }
 
   _getMyLocation() async {
     var isGranted = await Permission.location.request().isGranted;
@@ -100,7 +100,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     if (settings.isGettingLocation) return;
     settings.setSettings(isGettingLocation: true);
-    _timer?.cancel();
+    // _timer?.cancel();
     _spinController.forward();
 
     print("... GETTING MY LOCATION");
@@ -114,7 +114,8 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
         'lat': coordinates.latitude,
         'lng': coordinates.longitude,
       }).then((locationUpdateApi) {
-        if (locationUpdateApi.isSuccess) _runTimer();
+        // if (locationUpdateApi.isSuccess) _runTimer();
+        _getAllData();
       });
 
       var addresses = <Address>[];
@@ -163,7 +164,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
     } else {
       _refreshController.refreshFailed();
     }
-    if (mounted) setState(() {
+    if (mounted && _isLoading) setState(() {
       _isLoading = false;
     });
   }
@@ -453,7 +454,7 @@ class _BerandaState extends State<Beranda> with TickerProviderStateMixin {
                       enablePullUp: false,
                       header: WaterDropMaterialHeader(color: Colors.white, backgroundColor: THEME_COLOR),
                       controller: _refreshController,
-                      onRefresh: _revokeTimer,
+                      onRefresh: _getAllData,
                       child: SingleChildScrollView(
                         child: AnimatedOpacity(
                           opacity: _isLoading ? 0 : 1,

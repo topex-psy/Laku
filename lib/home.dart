@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -24,6 +26,8 @@ import 'utils/curves.dart';
 import 'utils/helpers.dart';
 import 'utils/styles.dart' as style;
 import 'utils/widgets.dart';
+
+const TIMER_INTERVAL_SECONDS = 10;
 
 class Page {
   Page({@required this.title, @required this.icon, @required this.content});
@@ -55,6 +59,8 @@ class _HomeState extends State<Home> {
   var _isWillExit = false;
   var _isPopNotif = false;
 
+  Timer _timer;
+
   _action(String action) async {
     print("TAP ACTION: $action");
     switch (action) {
@@ -77,11 +83,14 @@ class _HomeState extends State<Home> {
   }
 
   Widget get _drawer {
+    var drawerWidth = MediaQuery.of(context).size.width * 0.69;
+    if (drawerWidth > 270) drawerWidth = 270.0;
+    print("drawerWidth: $drawerWidth");
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.69,
+          width: drawerWidth,
           decoration: BoxDecoration(
             boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 25)],
             borderRadius: BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20),),
@@ -113,6 +122,19 @@ class _HomeState extends State<Home> {
                           selector: (buildContext, person) => person.email,
                           builder: (context, email, child) => Text(email, style: style.textWhiteM,),
                         ),
+                        SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.amber[100],
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                            Icon(LineIcons.certificate, color: Colors.orange,),
+                            SizedBox(width: 4,),
+                            Text("Tier ${userSession.tier}")
+                          ],),
+                        )
                       ],),)
                     ],),
                   ),
@@ -157,6 +179,21 @@ class _HomeState extends State<Home> {
     );
   }
 
+  _getNotif() async {
+    if (mounted) a.loadNotif();
+  }
+
+  _runTimer() {
+    print("RUN TIMEEEEEEEEEEEEEEEEER");
+    _getNotif();
+    _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getNotif());
+  }
+
+  // _revokeTimer() {
+  //   _timer?.cancel();
+  //   _runTimer();
+  // }
+
   @override
   void initState() {
     super.initState();
@@ -167,7 +204,14 @@ class _HomeState extends State<Home> {
         userTiers[tier.tier] = tier;
       });
       Vibration.vibrate(duration: 200, amplitude: 1);
+      _runTimer();
     });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
