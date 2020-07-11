@@ -694,7 +694,8 @@ class _ErrorTextState extends State<ErrorText> with SingleTickerProviderStateMix
 }
 
 class UiPlaceholder extends StatelessWidget {
-  UiPlaceholder({Key key, this.label, this.actionLabel, this.action}) : super(key: key);
+  UiPlaceholder({Key key, this.type, this.label, this.actionLabel, this.action}) : super(key: key);
+  final String type;
   final String label;
   final String actionLabel;
   final VoidCallback action;
@@ -705,6 +706,7 @@ class UiPlaceholder extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
+        // TODO gambar asset berdasarkan tipe
         Image.asset('images/onboarding/2.png', width: MediaQuery.of(context).size.width * .69,),
         SizedBox(height: 20,),
         Text(label, textAlign: TextAlign.center,),
@@ -1403,7 +1405,7 @@ class UiFlatButton extends StatelessWidget {
 }
 
 class UiAvatar extends StatelessWidget {
-  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.placeholder = IMAGE_DEFAULT_USER, this.onPressed, this.onTapEdit}) : super(key: key);
+  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.elevation = 1, this.placeholder = IMAGE_DEFAULT_USER, this.onPressed, this.onTapEdit}) : super(key: key);
   final dynamic pic;
   final String placeholder;
   final double size;
@@ -1411,6 +1413,7 @@ class UiAvatar extends StatelessWidget {
   final void Function() onPressed;
   final void Function() onTapEdit;
   final double strokeWidth;
+  final double elevation;
 
   @override
   Widget build(BuildContext context) {
@@ -1437,7 +1440,7 @@ class UiAvatar extends StatelessWidget {
       alignment: Alignment.bottomRight,
       children: <Widget>[
         Card(
-          elevation: 1,
+          elevation: elevation,
           color: Colors.white,
           clipBehavior: Clip.antiAlias,
           shape: CircleBorder(),

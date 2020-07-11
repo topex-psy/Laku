@@ -99,23 +99,17 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
 
   _submit() async {
     if (_stepIndex == 0) {
-      setState(() {
-        _stepIndex = 1;
-      });
-      return;
+      return setState(() { _stepIndex = 1; });
     }
     if (_images.isEmpty && _tipe == "WTS" && _edit == null) {
-      h.failAlert("Tambahkan Foto", "Unggah minimal 1 foto untuk iklan Anda.");
-      return;
+      return h.failAlert("Tambahkan Foto", "Unggah minimal 1 foto untuk iklan Anda.");
     }
     if (_kelompok == null || _kategori == null) {
-      h.failAlert("Pilih Kategori", "Harap pilih kategori iklan Anda.");
-      return;
+      return h.failAlert("Pilih Kategori", "Harap pilih kategori iklan Anda.");
     }
     if (_shop == null) {
       if (_listShop.length > 1) {
-        h.failAlert("Pilih Lokasi", "Harap pilih titik lokasi iklan Anda.");
-        return;
+        return h.failAlert("Pilih Lokasi", "Harap pilih titik lokasi iklan Anda.");
       } else {
         _shop = _listShop.first;
       }
@@ -273,8 +267,8 @@ class _PasangState extends State<Pasang> with TickerProviderStateMixin {
       _stokUnit = listing.stokUnit;
       _preOrderDurasi = listing.preOrder;
       _preOrderUnit = listing.preOrderUnit;
-      _kategori = _listKategori.where((kat) => kat.id == listing.idKategori).toList().first;
-      _kelompok = _listKelompok.where((group) => group.id == _kategori.idKelompok).toList().first;
+      _kategori = _listKategori.firstWhere((kat) => kat.id == listing.idKategori);
+      _kelompok = _listKelompok.firstWhere((group) => group.id == _kategori.idKelompok);
       _imagesEdit = listing.foto.map((pic) => pic.foto).toList();
       _isAvailable = listing.isTersedia;
       _isDeliverable = listing.layananAntar != null;

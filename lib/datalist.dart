@@ -7,7 +7,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'models/basic.dart';
 import 'models/iklan.dart';
 import 'models/toko.dart';
-import 'models/user.dart';
+// import 'models/user.dart';
 import 'utils/api.dart';
 import 'utils/constants.dart';
 import 'utils/helpers.dart';
@@ -32,14 +32,14 @@ class _DataListState extends State<DataList> {
   var _listShop = <TokoModel>[];
   var _filterValues = <String, dynamic>{};
   var _isLoaded = false;
-  UserTierModel _tier;
+  // UserTierModel _tier;
   bool _isMyShopList;
   bool _isMyListingList;
   TokoModel _shop;
 
   @override
   void initState() {
-    _tier = userTiers[userSession.tier];
+    // _tier = userTiers[userSession.tier];
     _isMyShopList = widget.args['tipe'] == 'shop' && widget.args['mode'] == 'mine';
     _isMyListingList = widget.args['tipe'] == 'listing' && widget.args['mode'] == 'mine';
     _searchController.addListener(() => _searchDebouncer.value = _searchController.text ?? '');
@@ -96,7 +96,7 @@ class _DataListState extends State<DataList> {
     print("TAP ACTION: $action $args");
     switch (action) {
       case 'create':
-        if (_isMyShopList && _listData.length == _tier.maxShop) {
+        if (_isMyShopList && _listData.length == userSession.tier.maxShop) {
           h.showAlert(body: Column(
             children: <Widget>[
               Text('Batas Lokasi Tercapai', style: style.textTitle,),
@@ -199,7 +199,7 @@ class _DataListState extends State<DataList> {
   }
 
   Widget get _actionButton {
-    return _tier == null || (_isMyShopList && _tier.tier == 0) ? SizedBox() : Container(
+    return userSession.tier == null || (_isMyShopList && userSession.tier.tier == 0) ? SizedBox() : Container(
       height: double.infinity,
       width: 60,
       child: RaisedButton(
@@ -259,7 +259,7 @@ class _DataListState extends State<DataList> {
         ),
       ),
     );
-    if (_isMyShopList && _tier != null && _tier.tier == 0) return SizedBox();
+    if (_isMyShopList && userSession.tier != null && userSession.tier.tier == 0) return SizedBox();
     return UiSearchBar(
       searchController: _searchController,
       searchFocusNode: _searchFocusNode,
@@ -314,7 +314,7 @@ class _DataListState extends State<DataList> {
               child: child,
             );
           },
-          child: _tier != null && _tier.tier == 0 && _listData.isNotEmpty ? Container(
+          child: userSession.tier != null && userSession.tier.tier == 0 && _listData.isNotEmpty ? Container(
             width: double.infinity,
             height: 180,
             padding: EdgeInsets.all(20.0),

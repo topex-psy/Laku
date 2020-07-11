@@ -69,7 +69,7 @@ class UserModel {
 class UserSessionModel {
   String uid;
   String phone;
-  int tier;
+  UserTierModel tier;
 
   clear() {
     uid = null;
@@ -117,20 +117,35 @@ class UserNotifModel {
 }
 
 class UserTierModel {
-  UserTierModel({this.tier, this.maxShop, this.maxListingPic, this.maxListingDesc, this.radius});
+  UserTierModel({
+    this.tier,
+    this.judul,
+    this.maxShop,
+    this.maxListingPic,
+    this.maxListingDesc,
+    this.radius,
+    this.hargaUpgrade,
+    this.hargaBeli
+  });
 
   final int tier;
+  final String judul;
   final int maxShop;
   final int maxListingPic;
   final int maxListingDesc;
   final int radius;
+  final double hargaUpgrade;
+  final double hargaBeli;
 
   UserTierModel.fromJson(Map<String, dynamic> parsedJson)
   : tier = int.parse(parsedJson['TIER']),
+    judul = parsedJson['JUDUL'],
     maxShop = int.parse(parsedJson['MAX_SHOP']),
     maxListingPic = int.parse(parsedJson['MAX_LISTING_PIC']),
     maxListingDesc = int.parse(parsedJson['MAX_LISTING_DESC']),
-    radius = int.parse(parsedJson['RADIUS']);
+    radius = int.parse(parsedJson['RADIUS']),
+    hargaUpgrade = double.parse(parsedJson['HARGA_UPGRADE'] ?? '0.0'),
+    hargaBeli = double.parse(parsedJson['HARGA_BELI'] ?? '0.0');
 
   @override
   String toString() => "$tier/$maxShop/$maxListingPic/$radius";

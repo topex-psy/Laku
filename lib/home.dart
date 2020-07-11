@@ -130,9 +130,9 @@ class _HomeState extends State<Home> {
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                            Icon(LineIcons.certificate, color: Colors.orange,),
+                            Icon(LineIcons.certificate, color: Colors.orange, size: 20,),
                             SizedBox(width: 4,),
-                            Text("Tier ${userSession.tier}")
+                            Text(userSession.tier.judul),
                           ],),
                         )
                       ],),)
@@ -186,7 +186,8 @@ class _HomeState extends State<Home> {
   _runTimer() {
     print("RUN TIMEEEEEEEEEEEEEEEEER");
     _getNotif();
-    _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getNotif());
+    // TODO temp
+    // _timer = Timer.periodic(Duration(seconds: TIMER_INTERVAL_SECONDS), (timer) => _getNotif());
   }
 
   // _revokeTimer() {
@@ -198,11 +199,13 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      var tierApi = await api('user_tier');
-      tierApi.result.forEach((res) {
-        var tier = UserTierModel.fromJson(res);
-        userTiers[tier.tier] = tier;
-      });
+      // var tierApi = await api('user_tier');
+      // tierApi.result.forEach((res) {
+      //   var tier = UserTierModel.fromJson(res);
+      //   userTiers[tier.tier] = tier;
+      // });
+      // final person = Provider.of<PersonProvider>(context, listen: false);
+      // userSession.tier = userTiers[person.tier];
       Vibration.vibrate(duration: 200, amplitude: 1);
       _runTimer();
     });

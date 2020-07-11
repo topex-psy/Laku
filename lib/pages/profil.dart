@@ -327,6 +327,8 @@ class _ProfilState extends State<Profil> {
                                     _image ?? person.foto,
                                     heroTag: "profile_pic",
                                     size: 140,
+                                    strokeWidth: 0,
+                                    elevation: 4,
                                     onPressed: _viewImage,
                                     onTapEdit: _isEdit ? () => _pickImage() : null,
                                   ),

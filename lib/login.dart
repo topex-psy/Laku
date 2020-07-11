@@ -169,7 +169,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
         // user sudah register
         var user = UserModel.fromJson(userApi.result.first);
         print(" ... USER RESULT: $user");
-        userSession.tier = user.tier;
         if (user.isBanned) {
           h.failAlert("Akun Terblokir", "Akunmu diblokir hingga ${f.formatDate(user.banUntil)} karena ${user.banReason}");
           setState(() {
@@ -184,7 +183,17 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             tanggalLahir: user.tanggalLahir,
             email: user.email,
             foto: user.foto,
+            tier: user.tier,
           );
+
+          var tierApi = await api('user_tier');
+          tierApi.result.forEach((res) {
+            var tier = UserTierModel.fromJson(res);
+            userTiers[tier.tier] = tier;
+          });
+
+          userSession.tier = userTiers[user.tier];
+
           print(" -> push ROUTE TO HOME");
           await Navigator.of(context).pushNamed(ROUTE_HOME, arguments: {'duration': 1000});
           setState(() {

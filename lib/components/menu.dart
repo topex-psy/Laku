@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:launch_review/launch_review.dart';
+import 'package:line_icons/line_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../utils/helpers.dart';
 import '../utils/styles.dart' as style;
@@ -49,45 +50,70 @@ class _DrawerMenuState extends State<DrawerMenu> {
           padding: EdgeInsets.all(12),
           itemBuilder: (context, index) {
             var tier = userTiers[index];
-            var isMine = tier.tier == userSession.tier;
-            var isNext = tier.tier == userSession.tier + 1;
-            return Card(
-              shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              clipBehavior: Clip.antiAlias,
-              color: isMine ? Colors.amber[50] : (isNext ? Colors.grey[100] : Colors.teal[50]),
-              child: InkWell(
-                onTap: () {},
-                child: Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(children: <Widget>[
-                        Expanded(child: Text("Tier ${tier.tier}", style: style.textTitle,)),
-                        isMine ? Icon(MdiIcons.checkCircle, color: Colors.green) : SizedBox(),
-                      ],),
-                      SizedBox(height: 6,),
-                      Row(children: <Widget>[
-                        Text("Maksimal Radius"),
-                        Spacer(),
-                        Text(f.distanceLabel(tier.radius.toDouble()), textAlign: TextAlign.end, style: style.textCaption,)
-                      ],),
-                      Row(children: <Widget>[
-                        Text("Maksimal Lokasi"),
-                        Spacer(),
-                        Text(f.formatNumber(tier.maxShop), textAlign: TextAlign.end, style: style.textCaption,)
-                      ],),
-                      Row(children: <Widget>[
-                        Text("Maksimal Foto per Iklan"),
-                        Spacer(),
-                        Text(f.formatNumber(tier.maxListingPic), textAlign: TextAlign.end, style: style.textCaption,)
-                      ],),
-                      Row(children: <Widget>[
-                        Text("Maksimal Deskripsi Iklan"),
-                        Spacer(),
-                        Text(f.formatNumber(tier.maxListingDesc), textAlign: TextAlign.end, style: style.textCaption,)
-                      ],),
-                    ],
+            var isMine = tier.tier == userSession.tier.tier;
+            var isNext = tier.tier == userSession.tier.tier + 1;
+            var isPast = tier.tier < userSession.tier.tier;
+            var color = Colors.grey[100];
+            if (isPast) color = Colors.amber[100];
+            if (isMine) color = Colors.green[50];
+            if (isNext) color = Colors.blue[50];
+            return Transform.scale(
+              scale: isNext ? 1.1 : 1.0,
+              child: Card(
+                margin: isNext ? EdgeInsets.symmetric(vertical: 14, horizontal: 6) : EdgeInsets.symmetric(vertical: 4),
+                shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                clipBehavior: Clip.antiAlias,
+                color: color,
+                child: InkWell(
+                  onTap: () {},
+                  child: Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(children: <Widget>[
+                          Expanded(child: Text(tier.judul, style: style.textTitle,)),
+                          isMine ? Icon(MdiIcons.checkCircle, color: Colors.green) : SizedBox(),
+                        ],),
+                        isPast ? SizedBox() : Column(
+                          children: <Widget>[
+                            SizedBox(height: 6,),
+                            Row(children: <Widget>[
+                              Text("Maksimal Radius", style: style.textS),
+                              Spacer(),
+                              Text(f.distanceLabel(tier.radius.toDouble()), textAlign: TextAlign.end, style: style.textCaption,)
+                            ],),
+                            Row(children: <Widget>[
+                              Text("Maksimal Lokasi", style: style.textS),
+                              Spacer(),
+                              Text(f.formatNumber(tier.maxShop), textAlign: TextAlign.end, style: style.textCaption,)
+                            ],),
+                            Row(children: <Widget>[
+                              Text("Maksimal Foto per Iklan", style: style.textS),
+                              Spacer(),
+                              Text(f.formatNumber(tier.maxListingPic), textAlign: TextAlign.end, style: style.textCaption,)
+                            ],),
+                            Row(children: <Widget>[
+                              Text("Maksimal Deskripsi Iklan", style: style.textS),
+                              Spacer(),
+                              Text(f.formatNumber(tier.maxListingDesc), textAlign: TextAlign.end, style: style.textCaption,)
+                            ],),
+                            isNext
+                              ? Padding(
+                                padding: EdgeInsets.only(top: 12, bottom: 8),
+                                child: Text(f.formatPrice2(tier.hargaUpgrade), style: style.textCaption,),
+                              )
+                              : SizedBox(),
+                            isNext
+                              ? Padding(
+                                padding: EdgeInsets.only(bottom: 8),
+                                child: UiButton("Upgrade", height: style.heightButtonL, color: Colors.blue, icon: LineIcons.check_circle_o, textStyle: style.textButtonL, iconRight: true, onPressed: () {},),
+                              )
+                              : SizedBox()
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
