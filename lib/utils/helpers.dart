@@ -316,15 +316,12 @@ class AppHelper {
   Future<String?> compressImage(dynamic image, {bool toBase64 = false}) async {
     Future<File?> getFile() async {
       if (image is AssetEntity) return await image.file; // asset entity
-      if (image is String) {
-        if (await File(image).exists()) return File(image); // path
-        // else return ""; // TODO base64
-      }
+      if (image is String) return File(image); // path
       if (image is File) return image; // file
       return null;
     }
     File? file = await getFile();
-    if (file != null) {
+    if (file != null && await file.exists()) {
       // final fileName = file.path.split('/').last;
       final properties = await FlutterNativeImage.getImageProperties(file.path);
       final imageResized = await FlutterNativeImage.compressImage(
@@ -333,10 +330,7 @@ class AppHelper {
         targetWidth: SETUP_IMAGE_COMPRESS_RESIZE,
         targetHeight: (properties.height! * SETUP_IMAGE_COMPRESS_RESIZE / properties.width!).round()
       );
-      String result = imageResized.path;
-      if (toBase64) {
-        result = fileToBase64(imageResized);
-      }
+      String result = toBase64 ? fileToBase64(imageResized) : imageResized.path;
       return result;
     }
     return null;

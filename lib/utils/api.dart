@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -28,7 +29,7 @@ class ApiProvider {
         : method.toLowerCase() == 'put'
         ? await Dio(baseOptions).put('/$url', queryParameters: getParams, data: data, options: options, onSendProgress: onSendProgress)
         : await Dio(baseOptions).get('/$url', queryParameters: getParams);
-      Map<String, dynamic>? responseBody = response.data;
+      Map<String, dynamic>? responseBody = response.data is String ? json.decode(response.data) : response.data;
       if (withLog) {
         log("> data: ${f!.formatJson(data)}");
         log("> response: ${f!.formatJson(responseBody)}");
