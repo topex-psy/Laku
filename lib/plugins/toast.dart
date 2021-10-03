@@ -13,9 +13,9 @@ class Toast {
     int duration = DEFAULT_DURATION,
     int gravity = BOTTOM,
     Color backgroundColor = const Color(0xAA000000),
-    TextStyle textStyle = const TextStyle(fontFamily: THEME_FONT_SECONDARY, fontSize: 15, color: Colors.white),
-    double backgroundRadius = THEME_BORDER_RADIUS,
-    Border border
+    TextStyle textStyle = const TextStyle(fontFamily: APP_UI_FONT_MAIN, fontSize: 15, color: Colors.white),
+    double backgroundRadius = APP_UI_BORDER_RADIUS,
+    Border border = const Border(),
   }) {
     ToastView.dismiss();
     ToastView.createView(message, context, duration, gravity, backgroundColor, textStyle, backgroundRadius, border);
@@ -31,8 +31,8 @@ class ToastView {
 
   ToastView._internal();
 
-  static OverlayState overlayState;
-  static OverlayEntry _overlayEntry;
+  static OverlayState? overlayState;
+  static OverlayEntry? _overlayEntry;
   static bool _isVisible = false;
 
   static void createView(
@@ -45,7 +45,13 @@ class ToastView {
     double backgroundRadius,
     Border border
   ) async {
-    overlayState = Overlay.of(context);
+    try {
+      overlayState = Overlay.of(context);
+    } catch (e) {
+      overlayState = null;
+    }
+
+    if (overlayState == null) return;
 
     Paint paint = Paint();
     paint.strokeCap = StrokeCap.square;
@@ -54,7 +60,7 @@ class ToastView {
     _overlayEntry = OverlayEntry(
       builder: (BuildContext context) => ToastWidget(
         gravity: gravity,
-        widget: Container(
+        widget: SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Container(
             alignment: Alignment.center,
@@ -65,8 +71,8 @@ class ToastView {
                 borderRadius: BorderRadius.circular(backgroundRadius),
                 border: border,
               ),
-              margin: EdgeInsets.symmetric(horizontal: 20),
-              padding: EdgeInsets.fromLTRB(16, 10, 16, 10),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Text(message, softWrap: true, style: textStyle),
             ),
           ),
@@ -74,8 +80,8 @@ class ToastView {
       ),
     );
     _isVisible = true;
-    overlayState.insert(_overlayEntry);
-    await Future.delayed(Duration(milliseconds: duration ?? Toast.DEFAULT_DURATION));
+    overlayState?.insert(_overlayEntry!);
+    await Future.delayed(Duration(milliseconds: duration));
     dismiss();
   }
 
@@ -87,7 +93,7 @@ class ToastView {
 }
 
 class ToastWidget extends StatefulWidget {
-  ToastWidget({Key key, @required this.widget, @required this.gravity}) : super(key: key);
+  const ToastWidget({Key? key, required this.widget, required this.gravity}) : super(key: key);
   final Widget widget;
   final int gravity;
 
@@ -96,20 +102,20 @@ class ToastWidget extends StatefulWidget {
 }
 
 class _ToastWidgetState extends State<ToastWidget> with TickerProviderStateMixin {
-  AnimationController _animationController;
-  Animation _animation;
+  AnimationController? _animationController;
+  Animation? _animation;
   var _opacity = 0.0;
 
   @override
   void initState() {
-    _animationController = AnimationController(duration: Duration(milliseconds: Toast.DEFAULT_SHOWUP_DURATION), vsync: this);
+    _animationController = AnimationController(duration: const Duration(milliseconds: Toast.DEFAULT_SHOWUP_DURATION), vsync: this);
     _animation = Tween(begin: 1.0, end: 0.0).animate(CurvedAnimation(
-      parent: _animationController,
+      parent: _animationController!,
       curve: Curves.easeOutBack
     ));
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _animationController.forward();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _animationController?.forward();
       setState(() {
         _opacity = 1.0;
       });
@@ -118,7 +124,7 @@ class _ToastWidgetState extends State<ToastWidget> with TickerProviderStateMixin
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _animationController?.dispose();
     super.dispose();
   }
 
@@ -128,12 +134,12 @@ class _ToastWidgetState extends State<ToastWidget> with TickerProviderStateMixin
       top: widget.gravity == Toast.TOP ? MediaQuery.of(context).viewInsets.top + 50 : null,
       bottom: widget.gravity == Toast.BOTTOM ? MediaQuery.of(context).viewInsets.bottom + 50 : null,
       child: AnimatedOpacity(
-        duration: Duration(milliseconds: Toast.DEFAULT_SHOWUP_DURATION),
+        duration: const Duration(milliseconds: Toast.DEFAULT_SHOWUP_DURATION),
         opacity: _opacity,
         child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (BuildContext context, Widget child) => Transform.translate(
-            offset: Offset(0, _animation.value * 100),
+          animation: _animationController!,
+          builder: (BuildContext context, Widget? child) => Transform.translate(
+            offset: Offset(0, _animation?.value * 100),
             child: Material(
               color: Colors.transparent,
               child: widget.widget,

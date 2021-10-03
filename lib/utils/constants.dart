@@ -1,53 +1,65 @@
 import 'package:flutter/material.dart';
 
-const APP_NAME             = 'Laku';
-const APP_DESCRIPTION      = "Aplikasi praktis untuk jual barang bekas";
-const APP_SLOGAN           = "Aplikasi praktis untuk jual barang bekas";
-const APP_COPYRIGHT        = "TaufikNur Production";
-const APP_LOCALE           = "id_ID";
-const APP_HOST          = "https://www.taufiknur.com/laku/";
-// const APP_HOST          = "http://192.168.8.101/laku/public/";
-// const APP_HOST             = "http://192.168.1.68/laku/public/";
-const APP_TERMS_URL        = "${APP_HOST}terms";
-const APP_PRIVACY_URL      = "${APP_HOST}privacy";
-const APP_ABOUT_URL        = "${APP_HOST}about";
-const APP_GOOGLE_MAP_KEY   = 'AIzaSyCJ0ddaiNK8nPVr7nXisrViLCG887KQZgE';
-const APP_COUNTRY_CODE     = '+62';
+const APP_NAME           = "Laku";
+const APP_DESCRIPTION    = "Aplikasi super praktis buat ngiklan apa aja ke sekitarmu.";
+const APP_TAGLINE        = "Jepret aja biar laku";
+const APP_COPYRIGHT      = "TaufikNur Production";
+const APP_LOCALE         = Locale('id', 'ID');
+const APP_LOCALE_SUPPORT = [Locale('id', 'ID'), Locale('en', 'US')];
+const APP_PHONE_CODE     = '+62';
+const APP_URL_HOST       = "https://www.taufiknur.com/laku";
+const APP_URL_PRIVACY    = "$APP_URL_HOST/privacy";
+const APP_URL_TERMS      = "$APP_URL_HOST/terms";
+const APP_URL_API        = "$APP_URL_HOST/api";
+const APP_FACEBOOK_ID    = "844479926196457";
 
-const DEBUG_TOUR           = false;
-const DEBUG_ONBOARDING     = false;
+const APP_UI_BORDER_COLOR  = Colors.grey;
+const APP_UI_BORDER_RADIUS = 50.0;
 
-const ROUTE_SPLASH         = '/Splash';
-const ROUTE_LOGIN          = '/Login';
-const ROUTE_DAFTAR         = '/Daftar';
-const ROUTE_HOME           = '/Home';
-const ROUTE_PASANG         = '/Pasang';
-// const ROUTE_PROFIL         = '/Profil';
-const ROUTE_PETA           = '/Peta';
-const ROUTE_DATA           = '/Data';
-const ROUTE_IMAGE          = '/Image';
-const ROUTE_OTP            = '/Verifikasi';
-const ROUTE_LISTING        = '/Listing';
+// colors from: https://maketintsandshades.com/#009688
+const APP_UI_COLOR_MAIN    = Color(0xFF009688);
+const APP_UI_COLOR_ACCENT  = Color(0xFF75c6bf);
+const APP_UI_COLOR_SUCCESS = Color(0xFF08D159);
+const APP_UI_COLOR_WARNING = Color(0xFFDECB21);
+const APP_UI_COLOR_DANGER  = Color(0xFFFF1744);
+const APP_UI_COLOR_INFO    = Color(0xFF21A5DE);
+const APP_UI_COLOR_SECONDARY = Color(0xFFD6D6D6);
+const APP_UI_COLOR_LIGHT   = Color(0xFFF1F3F1);
+const APP_UI_COLOR = MaterialColor(0xFFDC143C, <int, Color>{
+  50:  Color(0xFFE6F5F3),
+  100: Color(0xFFCCEAE7),
+  200: Color(0xFF99D5CF),
+  300: Color(0xFF66C0B8),
+  400: Color(0xFF33ABA0),
+  500: APP_UI_COLOR_MAIN,
+  600: Color(0xFF00786D),
+  700: Color(0xFF005A52),
+  800: Color(0xFF003C36),
+  900: Color(0xFF001E1B),
+},);
+const APP_UI_FONT_MAIN      = 'Lato';
+const APP_UI_FONT_SECONDARY = 'Quicksand';
+const APP_UI_THEME_LIGHT    = "theme_light";
+const APP_UI_THEME_DARK     = "theme_dark";
 
-const SETUP_MAX_PERSON_AGE = 100;
-const SETUP_MIN_PERSON_AGE = 10;
+const ROUTE_INTRO      = '/Intro';
+const ROUTE_LOGIN      = '/Login';
+const ROUTE_REGISTER   = '/Register';
+const ROUTE_DASHBOARD  = '/Dashboard';
+const ROUTE_PROFILE    = '/Profile';
+const ROUTE_CREATE     = '/Create';
 
-const IMAGE_DEFAULT_TAG    = "hero_tag";
-const IMAGE_DEFAULT_NONE   = "images/none.png";
-const IMAGE_DEFAULT_USER   = "images/anon.png";
-const IMAGE_UPLOAD_QUALITY = 80;
-const IMAGE_UPLOAD_SIZE    = 800.0;
-const IMAGE_UPLOAD_MAX     = 3;
+const DEBUG_USER = "topexgames@yahoo.com";
+const DEBUG_TOUR = true;
+const DEBUG_ONBOARDING = false;
 
-const THEME_BACKGROUND     = Color(0XFFDEFFF3);
-const THEME_BORDER_RADIUS  = 12.0;
-const THEME_COLOR          = Colors.teal;
-const THEME_COLOR_LIGHT    = Color(0xFF26A69A);
-const THEME_ELEVATION_INPUT  = 1.0;
-const THEME_ELEVATION_BUTTON = 2.0;
-const THEME_INPUT_HEIGHT   = 50.0;
-const THEME_PADDING        = 15.0;
-const THEME_FONT_MAIN      = 'Quicksand';
-const THEME_FONT_SECONDARY = 'Quicksand';
-const THEME_CARD_ELEVATION = 4.0;
-const THEME_CARD_RADIUS    = 15.0;
+const DEFAULT_USER_PIC_ASSET = "assets/images/anon.png";
+const DEFAULT_NONE_PIC_ASSET = "assets/images/none.png";
+
+const SETUP_IMAGE_COMPRESS_QUALITY = 75;
+const SETUP_IMAGE_COMPRESS_RESIZE = 1000;
+const SETUP_MAX_LISTING_IMAGES = 5;
+const SETUP_MAX_LENGTH_PIN = 6;
+const SETUP_MAX_LENGTH_CURRENCY = 15;
+const SETUP_MAX_USER_AGE = 100;
+const SETUP_MIN_USER_AGE = 13;

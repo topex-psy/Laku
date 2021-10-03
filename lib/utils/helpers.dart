@@ -1,253 +1,36 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_html/style.dart';
-import 'package:flutter_rounded_date_picker/src/material_rounded_date_picker_style.dart';
-import 'package:flutter_rounded_date_picker/src/material_rounded_year_picker_style.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flash/flash.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
-import 'package:line_icons/line_icons.dart';
-import 'package:preload_page_view/preload_page_view.dart';
-import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
-import '../components/forms/input_pin.dart';
-import '../extensions/string.dart';
-import '../models/iklan.dart';
-import '../models/user.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:theme_provider/theme_provider.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import '../plugins/toast.dart';
-import '../providers/person.dart';
-import '../providers/settings.dart';
-import '../utils/api.dart';
 import 'constants.dart';
+import 'models.dart';
+import 'variables.dart';
+import 'widgets.dart';
 
-final firebaseAuth = FirebaseAuth.instance;
-final screenScaffoldKey = GlobalKey<ScaffoldState>();
-final screenPageController = PreloadPageController();
-UserSessionModel userSession = UserSessionModel();
-bool isTour1Completed = false;
-bool isTour2Completed = false;
-bool isTour3Completed = false;
-bool isDebugMode = false;
-bool isFirstRun = true;
-
-var userTiers = <int, UserTierModel>{};
-
-UIHelper h;
-UserHelper a;
-FormatHelper f;
-
-class FormatHelper {
-  FormatHelper() : this.initialize();
-
-  // inisiasi intl date format untuk locale indonesia
-  FormatHelper.initialize() {
-    var format = initializeDateFormatting(APP_LOCALE);
-    timeago.setLocaleMessages('id', timeago.IdMessages());
-    Future.wait([format]);
-  }
-
-  int randomNumber(int min, int max) => min + Random().nextInt(max - min);
-  String formatNumber(num nominal) => nominal == null ? null : NumberFormat("###,###.###", APP_LOCALE).format(nominal.toDouble());
-  String formatDate(DateTime date, {String format = 'dd/MM/yyyy'}) => date == null ? null : DateFormat(format).format(date);
-  String formatTimeago(DateTime date) => timeago.format(date, locale: h.context.locale.toString().split('_').first);
-  String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => nominal == null ? null : NumberFormat.currency(locale: APP_LOCALE, symbol: symbol).format(nominal);
-  String formatPrice2(dynamic nominal, {String symbol = 'Rp ', bool singkat = false}) {
-    if (nominal == null) return null;
-    var nom = nominal;
-    var suf = '';
-    if (singkat) {
-      if (nom > 999999999999) {
-        nom /= 1000000;
-        suf = 'JT';
-      } else if (nom > 999999999) {
-        nom /= 1000;
-        suf = 'K';
-      }
-    }
-    var res = NumberFormat.currency(locale: APP_LOCALE, symbol: symbol, decimalDigits: 0).format(nom);
-    return "$res$suf";
-  }
-  bool isValidURL(String url) => Uri.parse(url).isAbsolute;
-  bool isValidEmail(String email) => !email.isEmptyOrNull && RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
-  num roundNumber(num nominal, {int maxDecimal = 1}) => num.parse(nominal.toStringAsFixed(maxDecimal));
-  String distanceLabel(double meter) {
-    if (meter > 999) return "${roundNumber(meter / 1000)} km";
-    return "${roundNumber(meter)} m";
-  }
+const ENABLE_GALLERY_UPLOAD = true;
+const MAX_IMAGE_UPLOAD = 10;
+enum MyCallbackType {
+  success,
+  warning,
+  error,
+  info,
 }
-
-class UserHelper {
-  final BuildContext context;
-  UserHelper(this.context);
-
-  Future<bool> loadNotif() async {
-    var notifApi = await api('user_notif', data: {'uid': userSession.uid});
-    if (notifApi.isSuccess) {
-      final settings = Provider.of<SettingsProvider>(context, listen: false);
-      settings.setSettings(notif: UserNotifModel.fromJson(notifApi.result.first));
-    }
-    return notifApi.isSuccess;
-  }
-
-  navigatePage(int page) {
-    closeDrawer();
-    screenPageController.animateToPage(page, duration: Duration(milliseconds: 500), curve: Curves.ease);
-  }
-
-  closeDrawer() {
-    if (screenScaffoldKey.currentState.isEndDrawerOpen) Navigator.of(context).pop();
-  }
-
-  openProfile() => navigatePage(3);
-
-  Future<dynamic> openMyShop() async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'shop', 'mode': 'mine'});
-    print(" ... ROUTE MY SHOP result: $results");
-    closeDrawer();
-    return results;
-  }
-
-  Future<dynamic> openMyBroadcast() async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_DATA, arguments: {'tipe': 'listing', 'type': 'WTB', 'mode': 'mine'});
-    print(" ... ROUTE MY BROADCAST result: $results");
-    closeDrawer();
-    return results;
-  }
-
-  Future<dynamic> openListingForm({String action = 'WTS', IklanModel edit}) async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_PASANG, arguments: {'tipe': action, 'edit': edit}) as Map;
-    print(" ... ROUTE PASANG result: $results");
-    closeDrawer();    
-    return results;
-  }
-
-  Future<dynamic> openMap() async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_PETA);
-    print(" ... ROUTE MAP result: $results");
-    return results;
-  }
-
-  Future<dynamic> openListing(IklanModel item) async {
-    final results = await Navigator.of(context).pushNamed(ROUTE_LISTING, arguments: {'item': item});
-    print(" ... ROUTE LISTING result: $results");
-    return results;
-  }
-
-  Future<bool> favListing(int id, String mode) async {
-    var favApi = await api('listing', sub1: 'fav', type: 'post', data: {
-      'uid': userSession.uid,
-      'mode': mode,
-      'id': id
-    });
-    return favApi.isSuccess;
-  }
-
-  Future<FirebaseUser> firebaseLoginEmailPassword(String email, String password) async {
-    if (email.isEmptyOrNull || password.isEmptyOrNull) return null;
-    FirebaseUser user;
-    try {
-      AuthResult result = await firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-      user = result.user;
-    } catch (error) {
-      print(error.toString());
-      switch (error.code) {
-        case "ERROR_INVALID_EMAIL":
-          h.failAlertLogin("Alamat email yang Anda masukkan salah!");
-          break;
-        case "ERROR_WRONG_PASSWORD":
-          h.failAlertLogin("Nomor PIN yang Anda masukkan salah!");
-          break;
-        case "ERROR_USER_NOT_FOUND":
-          h.failAlertLogin("Pengguna belum terdaftar!");
-          break;
-        case "ERROR_USER_DISABLED":
-          h.failAlertLogin("Status akun Anda sedang diblokir!");
-          break;
-        case "ERROR_TOO_MANY_REQUESTS":
-          h.failAlertLogin("Anda tidak dapat login untuk sementara waktu karena terlalu banyak salah memasukkan nomor PIN/kata sandi.");
-          break;
-        case "ERROR_OPERATION_NOT_ALLOWED":
-        default:
-          h.failAlertLogin();
-      }
-    }
-    return user;
-  }
-
-  Future<bool> firebaseLinkWithCredential(AuthCredential credential) async {
-    final user = await firebaseAuth.currentUser();
-    try {
-      await user.linkWithCredential(credential);
-      print("LINK ACCOUNT SUCCEEEEEEEEEEEEEESS!");
-      return true;
-    } catch(e) {
-      print("LINK ACCOUNT ERROOOOOOOOOOOOOOOOR: $e");
-      return false;
-    }
-  }
-
-  Future<bool> firebaseLinkWithEmail(String email, String password) async {
-    final credential = EmailAuthProvider.getCredential(email: email, password: password);
-    return await firebaseLinkWithCredential(credential);
-  }
-
-  Future<void> firebaseUpdateProfile({String namaLengkap, String foto}) async {
-    final user = await firebaseAuth.currentUser();
-    final info = UserUpdateInfo();
-    if (namaLengkap != null) info.displayName = namaLengkap;
-    if (foto != null) info.photoUrl = foto;
-    return user.updateProfile(info);
-  }
-
-  Future<void> firebaseUpdatePhoneNumber(AuthCredential credential) async {
-    final user = await firebaseAuth.currentUser();
-    return user.updatePhoneNumberCredential(credential);
-  }
-
-  Future<void> firebaseUpdateEmail(String email) async {
-    final user = await firebaseAuth.currentUser();
-    return user.updateEmail(email);
-  }
-
-  Future<dynamic> forgotPIN(email) async {
-    await firebaseAuth.sendPasswordResetEmail(email: email);
-    return h.successAlert("Tautan Pemulihan Terkirim!", "Silakan periksa kotak masuk email Anda untuk membuat nomor PIN baru!");
-  }
-
-  Future<dynamic> inputPIN(UserModel me, {bool pinOnly = false, String title}) {
-    return InputPIN(me, pinOnly: pinOnly, title: title).show();
-  }
-
-  Future<AuthCredential> inputOTP(String phone) async {
-    AuthCredential credential = await Navigator.of(context).pushNamed(ROUTE_OTP, arguments: {'phone': phone});
-    return credential;
-  }
-
-  logout() async {
-    bool confirm = await h.showConfirm("Akhiri Sesi?", "Apakah kamu yakin ingin mengakhiri sesi?") ?? false;
-    if (confirm) signOut();
-  }
-
-  signOut() async {
-    final user = await firebaseAuth.currentUser();
-    if (user != null) {
-      auth('logout', {'uid': user.uid});
-      await firebaseAuth.signOut();
-    }
-    final person = Provider.of<PersonProvider>(context, listen: false);
-    person.clearPreferences();
-    userSession.clear();
-    Future.delayed(Duration.zero, () {
-      // Navigator.of(context).popUntil((route) => route.settings.name == ROUTE_LOGIN);
-      // Navigator.of(context).popUntil(ModalRoute.withName(ROUTE_LOGIN));
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    });
-  }
+enum ImageSource {
+  gallery,
+  camera
 }
 
 class UIHelper {
@@ -255,48 +38,75 @@ class UIHelper {
   UIHelper(this.context);
 
   BuildContext get currentContext => context;
-  // Size get screenSize => MediaQuery.of(context).size;
 
-  /// fungsi untuk menampilkan toast
-  showToast(String message, {int duration = Toast.DEFAULT_DURATION}) {
-    Toast.show(message, context, duration: duration);
+  /// fungsi untuk menampilkan pesan singkat di bawah layar
+  showSnackbar(String message, {String actionText = "OK", VoidCallback? action}) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(
+        onPressed: action ?? () {},
+        label: actionText,
+      ),
+    ));
   }
 
   /// fungsi untuk menampilkan popup dialog berisi pesan atau konten apapun
-  Future showAlert({String title, Widget header, Widget dialog, Widget body, Widget listView, Color backgroundColor, EdgeInsetsGeometry contentPadding, bool barrierDismissible = true, bool showButton = true, String buttonText = "OK", Widget customButton, Color warnaAksen}) {
+  Future showDialog(Widget? body, {
+    String? title,
+    bool isDismissible = true,
+    bool showCloseButton = true,
+    String? closeButtonText,
+    Color? closeButtonColor,
+    List<MenuModel>? buttons,
+    MyButtonSize? buttonSize,
+  }) {
+    _makeButton(String label, {Color? color, VoidCallback? action}) {
+      return Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(4),
+        child: MyButton(
+          label,
+          size: buttonSize,
+          color: color,
+          onPressed: action
+        ),
+      );
+    }
+    List<Widget> actions = buttons?.map((button) {
+      return _makeButton(button.label, action: button.onPressed);
+    }).toList() ?? [];
+
+    if (showCloseButton) actions.add(_makeButton(closeButtonText ?? "Tutup", color: closeButtonColor, action: closeDialog));
+
     return showGeneralDialog(
       barrierColor: Colors.black.withOpacity(0.5),
-      barrierDismissible: barrierDismissible,
+      barrierDismissible: isDismissible,
+      transitionDuration: const Duration(milliseconds: 600),
       transitionBuilder: (context, a1, a2, widget) {
-        final _curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
-        final _contentPadding = contentPadding ?? EdgeInsets.only(left: 24.0, top: (title ?? header) == null ? 24.0 : 16.0, right: 24.0, bottom: 24.0);
+        final _curvedValue = Curves.easeInOutBack.transform(a1.value);
         return Theme(
           data: Theme.of(context),
           child: Transform(
-            transform: Matrix4.identity()..scale(1.0, 1.0 + _curvedValue, 1.0),
+            transform: Matrix4.identity()..scale(1.0, 0.5 + _curvedValue / 2, 1.0),
             child: Opacity(
               opacity: a1.value,
-              child: dialog ?? AlertDialog(
-                backgroundColor: backgroundColor,
-                shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-                title: header ?? (title != null ? Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),) : null),
-                titlePadding: header != null ? EdgeInsets.zero : EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0),
-                content: listView ?? SingleChildScrollView(padding: _contentPadding, child: body,),
-                // contentPadding: _contentPadding,
-                contentPadding: EdgeInsets.zero,
-                actions: showButton ? <Widget>[
-                  customButton ?? SizedBox(),
-                  FlatButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(buttonText, style: TextStyle(fontWeight: FontWeight.bold),),
-                  ),
-                ] : null,
+              child: SafeArea(
+                child: AlertDialog(
+                  backgroundColor: Colors.white,
+                  shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+                  title: title == null ? const SizedBox() : Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18.0),),
+                  titlePadding: title == null ? const EdgeInsets.only(top: 24) : const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 12),
+                  content: SingleChildScrollView(padding: EdgeInsets.only(left: 24, right: 24, bottom: actions.isEmpty ? 24 : 8), child: body,),
+                  contentPadding: EdgeInsets.zero,
+                  actions: actions.isEmpty ? null : actions,
+                ),
               ),
             ),
           ),
         );
       },
-      transitionDuration: Duration(milliseconds: 500),
       barrierLabel: '',
       context: context,
       pageBuilder: (context, animation1, animation2) => Container()
@@ -304,190 +114,98 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan popup dialog konfirmasi
-  Future<bool> showConfirm(String judul, String pesan) async {
-    return await showGeneralDialog(
-      barrierColor: Colors.black.withOpacity(0.5),
-      transitionBuilder: (context, a1, a2, widget) {
-        final _curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
-        return Theme(
-          data: Theme.of(context),
-          child: Transform(
-            transform: Matrix4.identity()..scale(1.0, 1.0 + _curvedValue, 1.0),
-            child: Opacity(
-              opacity: a1.value,
-              child: AlertDialog(
-                shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-                title: judul != null ? Text(judul, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),) : null,
-                content: SingleChildScrollView(child: html(pesan, textStyle: TextStyle(fontSize: 16.0, height: 1.4),),),
-                contentPadding: EdgeInsets.only(left: 24.0, top: judul != null ? 12.0 : 24.0, right: 24.0, bottom: 12.0),
-                actions: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 8.0),
-                    child: FlatButton(child: Text("Tidak", style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),), onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 8.0),
-                    child: FlatButton(child: Text("Ya", style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),), onPressed: () {
-                      Navigator.of(context).pop(true);
-                    },),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-      transitionDuration: Duration(milliseconds: 500),
-      barrierDismissible: true,
-      barrierLabel: '',
-      context: context,
-      pageBuilder: (context, animation1, animation2) => Container()
-    ) ?? false;
+  Future<bool?> showConfirmDialog(String message, {String? title}) async {
+    return await showDialog(
+      Text(message, style: const TextStyle(fontSize: 16),),
+      title: title,
+      buttonSize: MyButtonSize.SMALL,
+      buttons: [
+        MenuModel("Ya", true, onPressed: () => Navigator.of(context).pop(true)),
+        MenuModel("Tidak", false, onPressed: () => Navigator.of(context).pop(false)),
+      ],
+      showCloseButton: false,
+    );
   }
 
-  /// fungsi untuk menutup popup dialog
-  // TODO FIXME seharusnya kalo nggak ada dialog lagi nggak perlu melakukan apa-apa
-  closeDialog() => Navigator.of(context, rootNavigator: true).pop('dialog');
+  /// fungsi untuk menampilkan popup dialog sukses, error, warning, atau info
+  Future showCallbackDialog(String message, {String? title, MyCallbackType type = MyCallbackType.success, String? devNote}) {
+    IconData? icon;
+    Color? color;
+    switch (type) {
+      case MyCallbackType.success:
+        icon = Icons.check_circle;
+        color = APP_UI_COLOR_SUCCESS;
+        break;
+      case MyCallbackType.warning:
+        icon = Icons.warning_rounded;
+        color = APP_UI_COLOR_WARNING;
+        break;
+      case MyCallbackType.error:
+        icon = Icons.error;
+        color = APP_UI_COLOR_DANGER;
+        break;
+      case MyCallbackType.info:
+        icon = Icons.info;
+        color = APP_UI_COLOR_INFO;
+        break;
+    }
+    return showDialog(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(child: Icon(icon, size: 60, color: color)),
+          const SizedBox(height: 12,),
+          title == null ? const SizedBox() : Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(title, textAlign: TextAlign.start, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.grey[800])),
+          ),
+          Text(message, textAlign: TextAlign.start, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[800])),
+          isDebugMode && devNote != null ? Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(devNote, style: const TextStyle(fontSize: 12)),
+          ) : const SizedBox(),
+        ],
+      ),
+      // title: title,
+      closeButtonText: "OK",
+      closeButtonColor: color,
+    );
+  }
 
-  /// fungsi untuk menampilkan popup dialog custom
-  Future<dynamic> customAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onAction, actionLabel}) => showAlert(
-    title: title,
-    body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-      direction == Axis.horizontal ? Row(children: <Widget>[
-        icon ?? SizedBox(),
-        icon == null ? SizedBox() : SizedBox(width: 12,),
-        Expanded(child: html(message, textStyle: TextStyle(height: 1.4),)),
-      ],) : Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-        icon ?? SizedBox(),
-        icon == null ? SizedBox() : SizedBox(height: 12,),
-        html(message, textStyle: TextStyle(height: 1.4),),
-      ],),
-      SizedBox(height: 12.0,),
-      Row(mainAxisSize: MainAxisSize.max, mainAxisAlignment: onAction == null ? MainAxisAlignment.center : MainAxisAlignment.spaceAround, children: <Widget>[
-        onAction == null || actionLabel == null ? SizedBox() : FlatButton(
-          child: Text(actionLabel, style: TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold),),
-          onPressed: onAction,
-        ),
-        FlatButton(
-          child: Text("OK", style: TextStyle(color: Theme.of(context).accentColor, fontWeight: FontWeight.bold),),
-          onPressed: Navigator.of(context).pop,
-        ),
-      ],),
-    ],),
-    showButton: false,
-  );
+  /// fungsi untuk menampilkan notifikasi toast
+  showToast(String message, {int duration = Toast.DEFAULT_DURATION}) {
+    Toast.show(message, context, duration: duration);
+  }
 
-  /// fungsi untuk menampilkan popup pesan sukses
-  Future<dynamic> successAlert(String title, String message, {void Function() onUndo, undoLabel}) => customAlert(
-    title,
-    message,
-    icon: Icon(LineIcons.check_circle, color: Colors.green, size: 40,),
-    onAction: onUndo,
-    actionLabel: undoLabel ?? 'Batalkan',
-  );
-
-  /// fungsi untuk menampilkan popup pesan gagal
-  Future<dynamic> failAlert(String title, String message, {Widget icon, Axis direction = Axis.horizontal, void Function() onRetry}) => customAlert(
-    title,
-    message,
-    icon: icon,
-    direction: direction,
-    onAction: onRetry,
-    actionLabel: 'Coba Lagi',
-  );
-
-  /// fungsi untuk menampilkan popup memuat data
-  loadAlert([String label]) => showAlert(
-    showButton: false,
-    barrierDismissible: false,
-    body: Row(children: <Widget>[
-      SizedBox(width: 30, height: 30, child: Padding(
+  /// fungsi untuk menampilkan loading
+  showLoader([String? label]) => showDialog(
+    Row(children: <Widget>[
+      const SizedBox(width: 30, height: 30, child: Padding(
         padding: EdgeInsets.all(4),
-        child: CircularProgressIndicator(strokeWidth: 4,),
+        child: CircularProgressIndicator(strokeWidth: 3, color: APP_UI_COLOR_MAIN,),
       )),
-      SizedBox(width: 12,),
-      Text(label ?? "Tunggu sebentar ...")
+      const SizedBox(width: 12,),
+      Text(label ?? "Harap tunggu ...", style: const TextStyle(fontWeight: FontWeight.w500),),
     ],),
+    showCloseButton: false,
+    isDismissible: false,
   );
 
-  /// fungsi untuk menampilkan notifikasi flashbar
-  Future<dynamic> showFlashBar(String title, String message, {Widget icon, int duration = 4000, bool showDismiss = true, String actionLabel, VoidCallback action}) {
-    return showFlash(
-      context: context,
-      duration: Duration(milliseconds: duration),
-      persistent: true,
-      builder: (_, controller) {
-        return Flash(
-          controller: controller,
-          backgroundColor: Colors.white,
-          brightness: Brightness.light,
-          boxShadows: [BoxShadow(color: Colors.grey[800], blurRadius: 8.0)],
-          barrierBlur: 3.0,
-          barrierColor: Colors.black38,
-          barrierDismissible: true,
-          style: FlashStyle.grounded,
-          position: FlashPosition.top,
-          child: FlashBar(
-            title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-            // message: html(message),
-            message: Text(message, style: TextStyle(fontSize: 15)),
-            icon: icon,
-            showProgressIndicator: false,
-            primaryAction: showDismiss ? FlatButton(
-              child: Text(actionLabel ?? 'TUTUP', style: TextStyle(color: THEME_COLOR)),
-              onPressed: () {
-                controller.dismiss();
-                if (action != null) action();
-              },
-            ) : null,
-          ),
-        );
-      },
-    );
-  }
+  /// fungsi untuk menutup dialog
+  closeDialog() => Navigator.of(context, rootNavigator: true).pop();
 
-  /// fungsi untuk menampilkan notifikasi flashbar sukses
-  showFlashbarSuccess(String title, String message, {int duration = 5000, IconData icon, Color iconColor}) {
-    showFlashBar(title, message, duration: duration, showDismiss: false, icon: Padding(
-      padding: EdgeInsets.only(left: 15, right: 8),
-      child: Icon(icon ?? LineIcons.check_circle, color: iconColor ?? Colors.green, size: 40,),
-    ));
-  }
-
-  /// fungsi untuk menampilkan popup pesan gagal login
-  failAlertLogin([String message]) {
-    failAlert("Login Gagal", message ?? "Terjadi masalah saat login. Coba kembali nanti!");
-  }
-
-  /// fungsi untuk menampilkan popup pesan gagal konek
-  failAlertInternet({String message, void Function() onRetry, String onRetryLabel}) {
-    showFlashBar(
-      "Gagal Memuat",
-      message ?? "Terjadi masalah saat memuat data. Harap periksa koneksi internet Anda!",
-      actionLabel: onRetry == null ? 'TUTUP' : (onRetryLabel ?? 'REFRESH'),
-      action: onRetry
-    );
-  }
-
-  /// fungsi untuk menampilkan single image
-  viewImage(dynamic image, {int page = 0, String heroTag}) {
-    Navigator.of(context).pushNamed(ROUTE_IMAGE, arguments: {'image': image, 'page': page, 'tag': heroTag});
-  }
-
-  /// fungsi yang mengembalikan teks versi html
-  Html html(String htmlString, {TextStyle textStyle}) {
+  /// fungsi untuk parsing html
+  Html html(String htmlString, {TextStyle? textStyle}) {
     textStyle ??= Theme.of(context).textTheme.bodyText1;
     return Html(
       data: htmlString,
       style: {
         "body": Style(
-          fontFamily: textStyle.fontFamily,
-          fontSize: FontSize(textStyle.fontSize),
-          fontStyle: textStyle.fontStyle,
-          fontWeight: textStyle.fontWeight,
-          color: textStyle.color,
+          fontFamily: textStyle?.fontFamily,
+          fontSize: FontSize(textStyle?.fontSize),
+          fontStyle: textStyle?.fontStyle,
+          fontWeight: textStyle?.fontWeight,
+          color: textStyle?.color,
           textAlign: TextAlign.start,
           margin: EdgeInsets.zero
         ),
@@ -495,43 +213,240 @@ class UIHelper {
     );
   }
 
-  MaterialRoundedDatePickerStyle get datePickerStyle {
-    return MaterialRoundedDatePickerStyle(
-      textStyleDayButton: TextStyle(fontSize: 18, color: Colors.white), //Rab, 19 Feb
-      textStyleYearButton: TextStyle(fontSize: 45, color: Colors.white), //2020
-      textStyleDayHeader: TextStyle(fontSize: 11), // M S S R K J S
-      textStyleCurrentDayOnCalendar: TextStyle(fontSize: 16, color: THEME_COLOR),
-      textStyleDayOnCalendar: TextStyle(fontSize: 16),
-      textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
-      // textStyleDayOnCalendarDisabled: TextStyle(fontSize: 28, color: Colors.white.withOpacity(0.1)),
-      textStyleMonthYearHeader: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold), // Februari 2020
-      paddingDatePicker: EdgeInsets.all(0),
-      paddingMonthHeader: EdgeInsets.all(14),
-      paddingActionBar: EdgeInsets.zero,
-      // paddingDateYearHeader: EdgeInsets.all(32),
-      // sizeArrow: 50,
-      colorArrowNext: Colors.white,
-      colorArrowPrevious: Colors.white,
-      // marginLeftArrowPrevious: 16,
-      // marginTopArrowPrevious: 16,
-      // marginTopArrowNext: 16,
-      // marginRightArrowNext: 32,
-      textStyleButtonAction: TextStyle(fontSize: 14, color: Colors.white),
-      textStyleButtonPositive: TextStyle(fontSize: 14, color: Colors.white),
-      textStyleButtonNegative: TextStyle(fontSize: 14, color: Colors.white),
-      // decorationDateSelected: BoxDecoration(color: Colors.orange[600], shape: BoxShape.circle),
-      // backgroundPicker: Colors.pink[400],
-      backgroundActionBar: THEME_COLOR, // batal ok
-      backgroundHeaderMonth: THEME_COLOR,
+  /// pilih warna berdasarkan tema yang aktif
+  bool isLightMode() => ThemeProvider.themeOf(context).id == APP_UI_THEME_LIGHT;
+  Color pickColor(Color light, Color dark) => isLightMode() ? light : dark;
+  Color textColor([Color? defaultColor]) => pickColor(defaultColor ?? Colors.black, Colors.white);
+  Color bgColor() => pickColor(Colors.white, Colors.black);
+}
+
+class FormatHelper {
+  final BuildContext context;
+
+  FormatHelper(BuildContext ctx) : this.initialize(ctx);
+
+  // docs: https://api.flutter.dev/flutter/intl/DateFormat-class.html
+  FormatHelper.initialize(this.context) {
+    var format = initializeDateFormatting(localeString());
+    Future.wait([format]);
+  }
+
+  String localeString() => context.locale.toString();
+
+  String formatDate(dynamic date, {String format = "MMM dd, yyyy HH:mm"}) {
+    if (date is String) date = DateTime.tryParse(date);
+    if (date == null) return '';
+    return DateFormat(format).format(date);
+  }
+  // String formatTimeago(DateTime date) => timeago.format(date, locale: localeString());
+  String formatJson(dynamic data) => const JsonEncoder.withIndent('  ').convert(data is String ? json.decode(data) : data);
+  String formatNumber(num nominal) => NumberFormat("###,###.###", localeString()).format(nominal.toDouble());
+  String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => NumberFormat.currency(locale: localeString(), symbol: symbol).format(double.tryParse(nominal.toString()) ?? 0);
+  String formatPercentage(num nominal, num total, {int decimal = 1}) => "${percentage(nominal, total).toStringAsFixed(decimal)}%";
+  String formatDistance(double meter) {
+    if (meter > 999) return "${roundNumber(meter / 1000)} km";
+    return "${roundNumber(meter)} m";
+  }
+
+  bool isNumeric(String? s) => s != null && num.tryParse(s) != null;
+  bool isValidEmail(String? email) => email != null && RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$").hasMatch(email);
+  bool isValidURL(String? url) => url != null && Uri.parse(url).isAbsolute;
+
+  double percentage(num nominal, num total) => total == 0 ? 0 : nominal * 100 / total;
+  num roundNumber(num nominal, {int maxDecimal = 1}) => num.parse(nominal.toStringAsFixed(maxDecimal));
+  int generateHash() => DateTime.now().millisecondsSinceEpoch;
+}
+
+class LocationHelper {
+  Future<dynamic> checkGPS() async {
+    LocationPermission permission;
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return await h!.showCallbackDialog(
+        "Harap aktifkan GPS untuk dapat menggunakan aplikasi ini.",
+        title: "GPS Tidak Aktif",
+        type: MyCallbackType.warning,
+      );
+    }
+
+    callbackMessage() async => await h!.showCallbackDialog(
+      "Izin akses lokasi dibutuhkan untuk dapat menggunakan aplikasi ini.",
+      title: "Izin Dibutuhkan",
+      type: MyCallbackType.warning,
+    );
+
+    permission = await Geolocator.checkPermission();
+    print("location permission 1: $permission");
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    print("location permission 2: $permission");
+    if (permission == LocationPermission.deniedForever) {
+      await callbackMessage();
+      print("location permission: will open app settings");
+      await openAppSettings();
+      permission = await Geolocator.checkPermission();
+    }
+    print("location permission 3: $permission");
+    if ([LocationPermission.whileInUse, LocationPermission.always].contains(permission)) return await myPosition();
+    return await callbackMessage();
+  }
+
+  Future<Position> myPosition() async {
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
+  }
+  Future<Position?> lastPosition() async {
+    return await Geolocator.getLastKnownPosition();
+  }
+}
+
+class AppHelper {
+  ImageProvider<Object> imageProvider(src, {String? fallbackAsset}) {
+    final fallback = AssetImage(fallbackAsset ?? DEFAULT_NONE_PIC_ASSET);
+    if (src is AssetEntity) return AssetEntityImageProvider(src, isOriginal: true);
+    if (src is File) return FileImage(src);
+    if (src is String) {
+      if (src.isEmpty) return fallback;
+      if (src.startsWith("http") || src.startsWith("data:image/")) return NetworkImage(src);
+      return AssetImage(src);
+    }
+    return fallback;
+  }
+
+  Future<String?> compressImage(dynamic image, {bool toBase64 = false}) async {
+    Future<File?> getFile() async {
+      if (image is AssetEntity) return await image.file; // asset entity
+      if (image is String) {
+        if (await File(image).exists()) return File(image); // path
+        // else return ""; // TODO base64
+      }
+      if (image is File) return image; // file
+      return null;
+    }
+    File? file = await getFile();
+    if (file != null) {
+      // final fileName = file.path.split('/').last;
+      final properties = await FlutterNativeImage.getImageProperties(file.path);
+      final imageResized = await FlutterNativeImage.compressImage(
+        file.path,
+        quality: SETUP_IMAGE_COMPRESS_QUALITY,
+        targetWidth: SETUP_IMAGE_COMPRESS_RESIZE,
+        targetHeight: (properties.height! * SETUP_IMAGE_COMPRESS_RESIZE / properties.width!).round()
+      );
+      String result = imageResized.path;
+      if (toBase64) {
+        result = fileToBase64(imageResized);
+      }
+      return result;
+    }
+    return null;
+  }
+
+  String fileToBase64(File file) {
+    final imageBytes = file.readAsBytesSync();
+    final base64Image = base64Encode(imageBytes);
+    // final base64 = 'data:image/jpg;base64,' + base64Image;
+    return base64Image;
+  }
+}
+
+class UserHelper {
+  final BuildContext context;
+  UserHelper(this.context);
+
+  Future<List<AssetEntity>?> browsePicture({
+    int? maximum,
+    List<AssetEntity> selectedList = const [],
+    List<String> uploadedList = const [],
+  }) async {
+    final maxSelect = maximum ?? MAX_IMAGE_UPLOAD;
+    final numImages = selectedList.length;
+    final numImagesEdit = uploadedList.length;
+    if (numImages + numImagesEdit == maxSelect) {
+      h!.showCallbackDialog(
+        "Anda sudah memilih maksimal $maxSelect foto!",
+        title: "Maksimal Foto",
+        type: MyCallbackType.warning,
+      );
+      return null;
+    }
+
+    ImageSource? source = ImageSource.camera;
+
+    if (ENABLE_GALLERY_UPLOAD) {
+      source = await h!.showDialog(
+        Column(
+          children: pickImageOptions.map((menu) {
+            final ImageSource source = menu.value;
+            return MyMenuList(
+              isLast: source == ImageSource.camera,
+              menu: MenuModel(menu.label, source, icon: menu.icon),
+              onPressed: (menu) {
+                Navigator.of(context).pop(menu.value);
+              },
+            );
+          }).toList(),
+        ),
+        closeButtonText: "Batal",
+        buttonSize: MyButtonSize.SMALL
+      );
+      if (source == null) return null;
+    }
+
+    var resultList = await takePicture(source, maxSelect: maxSelect - uploadedList.length, selected: selectedList);
+
+    print("resultList = $resultList");
+    return resultList;
+  }
+
+  Future<List<AssetEntity>> takePicture(ImageSource source, {
+    int maxSelect = MAX_IMAGE_UPLOAD,
+    selected = const <AssetEntity>[],
+  }) async {
+    var resultList = <AssetEntity>[...selected];
+    if (source == ImageSource.camera) {
+      final AssetEntity? entity = await CameraPicker.pickFromCamera(
+        context,
+        enableAudio: false,
+        shouldDeletePreviewFile: true,
+        textDelegate: EnglishCameraPickerTextDelegate(),
+      );
+      if (entity != null) {
+        resultList.add(entity);
+      }
+    } else {
+      resultList = await AssetPicker.pickAssets(
+        context,
+        textDelegate: EnglishTextDelegate(),
+        maxAssets: maxSelect,
+        selectedAssets: selected,
+        requestType: RequestType.image,
+      ) ?? [];
+    }
+    return resultList;
+  }
+
+  Future<String?> promptPIN({String? title, bool showForgot = true, bool showUsePassword = true}) async {
+    return await h!.showDialog(
+      MyInputPIN(
+        title: title ?? "Masukkan PIN",
+        showForgot: showForgot,
+        showUsePassword: showUsePassword,
+      ),
+      closeButtonText: "Batal",
+      isDismissible: false,
     );
   }
 
-  MaterialRoundedYearPickerStyle get yearPickerStyle {
-    return MaterialRoundedYearPickerStyle(
-      // textStyleYear: TextStyle(fontSize: 40, color: Colors.white),
-      // textStyleYearSelected: TextStyle(fontSize: 56, color: Colors.white, fontWeight: FontWeight.bold),
-      // heightYearRow: 100,
-      // backgroundPicker: Colors.deepPurple[400],
-    );
+  Future<void> forgotPassword() async {
+
+  }
+
+  logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('login_user_id');
+    await prefs.remove('login_email');
+    await FacebookAuth.instance.logOut();
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 }

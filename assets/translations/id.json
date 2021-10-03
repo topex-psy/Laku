@@ -1,27 +1,11 @@
 {
-  "menu_create": "Buat Iklan",
-  "menu_account": "Akun",
-  "menu_browse": "Temukan",
-  "menu_favorites": "Favorit",
-  "menu_feedback": "Beri Feedback/Rating",
-  "menu_profile": "Profil Saya",
-  "menu_upgrade": "Upgrade Akun",
-  "menu_home": "Beranda",
-  "menu_logout": "Keluar",
-  "menu_settings": "Pengaturan",
-  "menu_shop": "Toko Saya",
-  "menu_listing": "Iklan",
-  "menu_user": "Pengguna",
-  "menu_broadcast": "Broadcast",
-  "menu_seeker": "Pencari",
-  "prompt_current_location": "Kamu berada di:",
-  "prompt_current_items": "Kamu punya:",
-  "prompt_exit": "Ketuk sekali lagi untuk menutup aplikasi.",
-  "prompt_hello": "Halo",
-  "prompt_more": "Selengkapnya",
-  "prompt_search_listing": "Cari iklan",
-  "prompt_search_favorites": "Cari favorit",
-  "prompt_sort": "Urutkan",
-  "new": "Baru",
-  "used": "Bekas"
+  "action_retry": "Coba Lagi",
+  "action_continue": "Lanjutkan",
+  "action_create_listing": "Pasang Iklan",
+  "action_browse": {
+    "camera": "Kamera",
+    "gallery": "Pilih dari Galeri"
+  },
+  "gender_male": "Laki-Laki",
+  "gender_female": "Perempuan"
 }

@@ -8,6 +8,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:167372446266:android:0db09eb398bd6565923303",
+        "android_client_info": {
+          "package_name": "id.laku.laku"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "167372446266-ov92862ls58o8junep38e3vckvhkppjc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCp1TKocQvwDm3Ar2NBTi1AAbb8-honhE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "167372446266-ov92862ls58o8junep38e3vckvhkppjc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:167372446266:android:45fc0d18311541f6923303",
         "android_client_info": {
           "package_name": "io.laku"
@@ -15,19 +44,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "167372446266-p03ot9l09c4m6fo5bps48k40m9eoq4nm.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "io.laku",
-            "certificate_hash": "9780dfef2228e8bb0b41914fa05e68760b6d0a4d"
-          }
-        },
-        {
           "client_id": "167372446266-j321u3o67qfm6qbiee1dbdvavdkbfobq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "io.laku",
             "certificate_hash": "cc6f3f5b8a93989004bd996e64cd6c40ed4515e8"
+          }
+        },
+        {
+          "client_id": "167372446266-p03ot9l09c4m6fo5bps48k40m9eoq4nm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.laku",
+            "certificate_hash": "9780dfef2228e8bb0b41914fa05e68760b6d0a4d"
           }
         },
         {

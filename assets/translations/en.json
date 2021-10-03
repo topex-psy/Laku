@@ -1,36 +1,11 @@
 {
-  "menu_create": "Create Ad",
-  "menu_account": "Account",
-  "menu_browse": "Browse",
-  "menu_favorites": "Favorites",
-  "menu_feedback": "Give Feedback/Rating",
-  "menu_profile": "My Profile",
-  "menu_upgrade": "Upgrade Account",
-  "menu_home": "Home",
-  "menu_logout": "Logout",
-  "menu_settings": "Settings",
-  "menu_shop": "My Shops",
-  "menu_listing": {
-    "one": "Listing",
-    "many": "Listings"
+  "action_retry": "Retry",
+  "action_continue": "Continue",
+  "action_create_listing": "Create Listing",
+  "action_browse": {
+    "camera": "Camera",
+    "gallery": "Select from Gallery"
   },
-  "menu_user": {
-    "one": "User",
-    "many": "Users"
-  },
-  "menu_broadcast": "Broadcast",
-  "menu_seeker": {
-    "one": "Seeker",
-    "many": "Seekers"
-  },
-  "prompt_current_location": "Your're here:",
-  "prompt_current_items": "You have:",
-  "prompt_exit": "Tap again to close the application.",
-  "prompt_hello": "Hello",
-  "prompt_more": "View all",
-  "prompt_search_listing": "Search listing",
-  "prompt_search_favorites": "Search favorites",
-  "prompt_sort": "Sort",
-  "new": "New",
-  "used": "Used"
+  "gender_male": "Male",
+  "gender_female": "Female"
 }

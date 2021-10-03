@@ -3,13 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class PageReveal extends StatelessWidget {
+  const PageReveal({
+    required this.revealPercent,
+    required this.child,
+    Key? key,
+  }) : super(key: key);
   final double revealPercent;
   final Widget child;
-
-  PageReveal({
-    this.revealPercent,
-    this.child
-  });
 
   @override
   Widget build(BuildContext context) {

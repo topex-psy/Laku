@@ -1,50 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
-import 'package:page_transition/page_transition.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
-import 'plugins/image_viewer.dart';
-import 'providers/person.dart';
-import 'providers/settings.dart';
+import 'package:theme_provider/theme_provider.dart';
+import 'pages/splash.dart';
+import 'pages/intro.dart';
+import 'pages/login.dart';
+import 'pages/register.dart';
+import 'pages/dashboard.dart';
+import 'pages/create.dart';
 import 'utils/constants.dart';
-import 'utils/helpers.dart';
-import 'login.dart';
-import 'register.dart';
-import 'datalist.dart';
-import 'home.dart';
-import 'listing.dart';
-import 'pasang.dart';
-import 'peta.dart';
-// import 'profil.dart';
-import 'splash.dart';
-import 'verifikasi.dart';
+import 'utils/provider.dart';
+import 'utils/variables.dart';
 
-void main() {
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    systemNavigationBarIconBrightness: Brightness.light,
-    statusBarIconBrightness: Brightness.light,
-    // systemNavigationBarColor: Colors.teal[700],
-    statusBarColor: Colors.teal[800],
-  ));
-  final supportedLocales = [Locale('id', 'ID'), Locale('en', 'US')];
-  final defaultLocale = Locale('id', 'ID');
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(EasyLocalization(
-    path: 'assets/translations',
-    supportedLocales: supportedLocales,
-    fallbackLocale: defaultLocale,
-    startLocale: defaultLocale,
-    preloaderColor: THEME_COLOR,
-    useOnlyLangCode: true,
-    child: MyApp()
-  ),);
+// handle notifikasi background
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
+
+  print("push notif got a background message: ${message.messageId}");
 }
 
-class MyApp extends StatelessWidget {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  runApp(EasyLocalization(
+    path: 'assets/translations',
+    supportedLocales: APP_LOCALE_SUPPORT,
+    fallbackLocale: APP_LOCALE,
+    startLocale: APP_LOCALE,
+    useOnlyLangCode: true,
+    child: const MyApp()
+  ));
+}
 
-  // inisiasi firebase analytics untuk route navigation observer
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
   static FirebaseAnalytics analytics = FirebaseAnalytics();
   static FirebaseAnalyticsObserver observer = FirebaseAnalyticsObserver(analytics: analytics);
 
@@ -53,85 +57,111 @@ class MyApp extends StatelessWidget {
     // cek apakah aplikasi berjalan dalam mode debug
     assert(isDebugMode = true);
 
+    // menggunakan tipografi material design 2018
+    TextTheme textTheme = const TextTheme(
+      headline5: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
+      headline6: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+      subtitle1: TextStyle(fontSize: 16.0, fontWeight: FontWeight.normal),
+      subtitle2: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w500),
+      bodyText1: TextStyle(fontSize: 15.0, height: 1.4),
+      bodyText2: TextStyle(fontSize: 14.0, height: 1.4),
+      button:    TextStyle(fontSize: 15.0, fontWeight: FontWeight.w500),
+      caption:   TextStyle(fontSize: 13.0, height: 1.4),
+      overline:  TextStyle(fontSize: 11.0, height: 1.4),
+    );
+
+    // deklarasi tema terang
+    ThemeData lightTheme = ThemeData(
+      primarySwatch: APP_UI_COLOR,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: const Color(0XFFF8F2FA),
+      fontFamily: APP_UI_FONT_MAIN,
+      textTheme: textTheme,
+    )..textTheme.apply(
+      bodyColor: Colors.black,
+      displayColor: Colors.black,
+    );
+
+    // deklarasi tema gelap
+    ThemeData darkTheme = ThemeData(
+      primarySwatch: APP_UI_COLOR,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0XFF262224),
+      fontFamily: APP_UI_FONT_MAIN,
+      textTheme: textTheme,
+    )..textTheme.apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white,
+    );
+
+    // pake multiprovider untuk state management
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => PersonProvider()),
-        ChangeNotifierProvider(create: (context) => SettingsProvider()),
+        ChangeNotifierProvider(create: (context) => PengirimanState()),
       ],
-      child: MaterialApp(
-        title: APP_NAME,
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
-        theme: ThemeData(
-          scaffoldBackgroundColor: THEME_BACKGROUND,
-          primarySwatch: THEME_COLOR,
-          fontFamily: THEME_FONT_MAIN,
+      // menyediakan tema custom yang dapat dipilih secara runtime
+      child: ThemeProvider(
+        saveThemesOnChange: true,
+        loadThemeOnInit: true,
+        defaultThemeId: APP_UI_THEME_LIGHT,
+        themes: [
+          AppTheme(
+            id: APP_UI_THEME_LIGHT,
+            description: "Mode Terang",
+            data: lightTheme,
+          ),
+          AppTheme(
+            id: APP_UI_THEME_DARK,
+            description: "Mode Gelap",
+            data: darkTheme,
+          ),
+        ],
+        child: MaterialApp(
+          title: APP_NAME,
+          locale: context.locale,
+          supportedLocales: context.supportedLocales,
+          localizationsDelegates: context.localizationDelegates,
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            scaffoldBackgroundColor: Colors.white,
+            primarySwatch: APP_UI_COLOR,
+            fontFamily: APP_UI_FONT_MAIN,
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                TargetPlatform.iOS: CupertinoPageTransitionsBuilder()
+              }
+            ),
+          ),
+          initialRoute: '/',
+          onGenerateRoute: (settings) {
+            final args = settings.arguments as Map<String, dynamic>? ?? {};
+            Widget page = const SplashPage();
+            switch (settings.name) {
+              case ROUTE_INTRO: page = IntroPage(analytics, args); break;
+              case ROUTE_LOGIN: page = LoginPage(analytics, args); break;
+              case ROUTE_REGISTER: page = RegisterPage(analytics, args); break;
+              case ROUTE_DASHBOARD: page = DashboardPage(analytics, args); break;
+              case ROUTE_CREATE: page = CreatePage(analytics, args); break;
+            }
+            // return PageTransition(
+            //   type: PageTransitionType.fade,
+            //   duration: Duration(milliseconds: arguments['duration'] ?? 300),
+            //   settings: settings,
+            //   child: page ?? Login()
+            // );
+            Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) {
+                reInitContext(context);
+                return page;
+              }
+            );
+          },
+          navigatorObservers: <NavigatorObserver>[observer],
         ),
-        onGenerateRoute: (RouteSettings settings) {
-          final Map arguments = settings.arguments ?? {};
-          print(" ==> TO ROUTE: ${settings.name} $arguments");
-          Widget page;
-
-          switch (settings.name) {
-            case ROUTE_SPLASH:   page = Splash(); break;
-            case ROUTE_HOME:     page = Home(analytics: analytics, observer: observer,); break;
-            case ROUTE_DAFTAR:   page = Register(); break;
-            case ROUTE_PASANG:   page = Pasang(arguments); break;
-            case ROUTE_PETA:     page = Peta(); break;
-            // case ROUTE_PROFIL:   page = Profil(); break;
-            case ROUTE_DATA:     page = DataList(arguments); break;
-            case ROUTE_IMAGE:    page = ImageViewer(arguments); break;
-            case ROUTE_OTP:      page = Verifikasi(arguments); break;
-            case ROUTE_LISTING:  page = Listing(arguments); break;
-          }
-
-          // return MaterialPageRoute(settings: settings, builder: (_) => page);
-          return PageTransition(
-            type: PageTransitionType.fade,
-            duration: Duration(milliseconds: arguments['duration'] ?? 300),
-            settings: settings,
-            child: page ?? Login()
-          );
-        },
-        navigatorObservers: [MyRouteObserver()],
-        initialRoute: '/',
       ),
     );
-  }
-}
-
-class MyRouteObserver extends RouteObserver<PageRoute<dynamic>> {
-  void _sendScreenView(String what, PageRoute<dynamic> routeTo, PageRoute<dynamic> routeFrom) {
-    var newScreenName = routeTo?.settings?.name;
-    var oldScreenName = routeFrom?.settings?.name;
-    if (what == "pop") print(' ==> ROUTE DID $what: $newScreenName => $oldScreenName');
-    else print(' ==> ROUTE DID $what: $oldScreenName => $newScreenName');
-    // do something with it, ie. send it to your analytics service collector
-  }
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {
-    super.didPush(route, previousRoute);
-    if (route is PageRoute) {
-      _sendScreenView("push", route, previousRoute);
-    }
-  }
-
-  @override
-  void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {
-    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    if (newRoute is PageRoute) {
-      _sendScreenView("replace", newRoute, oldRoute);
-    }
-  }
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic> previousRoute) {
-    super.didPop(route, previousRoute);
-    if (previousRoute is PageRoute && route is PageRoute) {
-      _sendScreenView("pop", route, previousRoute);
-    }
   }
 }

@@ -1,688 +1,1123 @@
-import 'dart:async';
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dotted_border/dotted_border.dart';
-import 'package:fab_circular_menu/fab_circular_menu.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/style.dart';
-import 'package:flutter_rounded_date_picker/rounded_picker.dart';
+import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_switch/flutter_switch.dart';
-import 'package:intl/intl.dart';
-import 'package:laku/models/iklan.dart';
+import 'package:laku/plugins/image_viewer.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
-import 'package:step_progress_indicator/step_progress_indicator.dart';
-import '../extensions/string.dart';
-import '../models/basic.dart';
+import 'package:theme_provider/theme_provider.dart';
 import '../plugins/datetime_picker_formfield.dart';
-import 'api.dart';
 import 'constants.dart';
-import 'helpers.dart';
-import 'styles.dart' as style;
+import 'models.dart';
+import 'variables.dart';
 
-enum UiInputType {
+enum MyInputType {
   TEXT,
-  NAME,
   PASSWORD,
-  DATE,
-  DATE_OF_BIRTH,
-  CURRENCY,
-  PHONE,
+  NAME,
   EMAIL,
-  PIN,
+  ADDRESS,
+  PHONE,
   NOTE,
-  SEARCH,
-  TAG,
-  NUMBER
+  URL,
+  DATE,
+  DATETIME,
+  BIRTHDATE,
+  NUMBER,
+  CURRENCY,
+  PIN,
+  QTY,
 }
 
-class UiInput extends StatefulWidget {
-  UiInput(this.label, {
-    Key key,
-    this.icon,
-    this.maxLength,
-    this.textStyle,
-    this.textAlign = TextAlign.start,
-    this.showLabel = true,
-    this.showHint = true,
-    this.placeholder,
-    this.labelStyle,
-    this.info,
-    this.prefix,
-    this.height = THEME_INPUT_HEIGHT,
-    this.contentPadding,
-    this.color,
-    this.borderColor,
-    this.borderWidth = 1.0,
-    this.type = UiInputType.TEXT,
-    this.caps,
-    this.controller,
-    this.focusNode,
-    this.autoFocus = false,
-    this.initialValue,
-    this.isRequired = false,
-    this.readOnly = false,
-    this.onSubmit,
-    this.onTap,
-    this.cancelAction,
-    this.onChanged,
-    this.margin,
-    this.borderRadius,
-    this.dateFormat = "dd/MM/yyyy",
-    this.isClearable = true,
-    this.elevation = THEME_ELEVATION_INPUT,
-    this.error,
-    // this.onValidate,
-  }) : super(key: key);
-
-  final IconData icon;
-  final String label;
-  final int maxLength;
-  final TextStyle textStyle;
-  final TextAlign textAlign;
-  final String info;
-  final String prefix;
-  final bool showLabel;
-  final bool showHint;
-  final String placeholder;
-  final TextStyle labelStyle;
-  final double height;
-  final EdgeInsetsGeometry contentPadding;
-  final Color color;
-  final Color borderColor;
-  final double borderWidth;
-  final UiInputType type;
-  final TextCapitalization caps;
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final bool autoFocus;
-  final dynamic initialValue;
-  final bool isRequired;
-  final bool isClearable;
-  final bool readOnly;
-  final void Function(String) onSubmit;
-  final void Function() onTap;
-  final void Function() cancelAction;
-  final void Function(dynamic) onChanged;
-  final EdgeInsets margin;
-  final BorderRadius borderRadius;
-  final double elevation;
-  final String dateFormat;
-  final String error;
-  // final void Function(String) onValidate;
-
-  @override
-  _UiInputState createState() => _UiInputState();
+enum MyButtonSize {
+  SMALLEST,
+  SMALLER,
+  SMALL,
+  MEDIUM,
+  LARGE,
 }
 
-class _UiInputState extends State<UiInput> {
-  EdgeInsetsGeometry _contentPadding;
-  TextStyle _prefixStyle;
-  TextStyle _textStyle;
-  TextCapitalization _textCapitalization;
-  String Function(String) _validator;
-  String Function(DateTime) _validatorDate;
-  Widget _input;
-  double _fontSize;
-  FontWeight _fontWeight;
-  Color _fontColor;
-  String _hintText;
-  TextStyle _hintStyle;
-  double _iconSize;
-  Widget _icon;
-  bool _viewText;
-  int _maxLength;
-  VoidCallback _onTap;
+enum MyLogoType {
+  logo,
+  icon,
+  iconFull,
+  splash,
+  text,
+  inverted,
+}
+
+class MyAppLogo extends StatelessWidget {
+  const MyAppLogo({ this.size = 100.0, this.type = MyLogoType.logo, this.fit = BoxFit.contain, Key? key }) : super(key: key);
+  final double size;
+  final MyLogoType type;
+  final BoxFit fit;
 
   @override
-  void initState() {
-    super.initState();
-    _contentPadding = widget.contentPadding ?? EdgeInsets.zero;
-    _textStyle = widget.textStyle ?? style.textInput;
-    _fontSize = _textStyle.fontSize;
-    _fontWeight = _textStyle.fontWeight;
-    _fontColor = _textStyle.color;
-    _viewText = widget.type != UiInputType.PASSWORD && widget.type != UiInputType.PIN;
-    _hintText = widget.showHint ? (widget.placeholder ?? widget.label) : '';
-    _hintStyle = TextStyle(fontSize: _fontSize, color: style.textHint.color, fontWeight: FontWeight.normal);
-    _iconSize = _fontSize * 1.3;
-    _maxLength = widget.maxLength;
-    _textCapitalization = widget.caps;
-    _onTap = widget.onTap == null ? null : () {
-      FocusScope.of(context).unfocus();
-      widget.onTap();
-    };
-    switch (widget.type) {
-      case UiInputType.NAME:
-        if (_textCapitalization == null) _textCapitalization = TextCapitalization.words;
+  Widget build(BuildContext context) {
+    String path;
+    switch (type) {
+      case MyLogoType.icon:
+        path = "assets/images/logo/icon.png";
         break;
-      case UiInputType.CURRENCY:
-      case UiInputType.NUMBER:
-        if (_maxLength == null || _maxLength > 15) _maxLength = 15;
+      case MyLogoType.iconFull:
+        path = "assets/images/logo/icon-full.png";
         break;
-      case UiInputType.TAG:
-        if (_textCapitalization == null) _textCapitalization = TextCapitalization.words;
-        if (_maxLength == null) _maxLength = 50;
+      case MyLogoType.splash:
+        path = "assets/images/logo/splash.png";
         break;
-      case UiInputType.NOTE:
-        if (_textCapitalization == null) _textCapitalization = TextCapitalization.sentences;
+      case MyLogoType.text:
+        path = "assets/images/logo/text.png";
+        break;
+      case MyLogoType.inverted:
+        path = "assets/images/logo/logo-inverted.png";
         break;
       default:
-        if (_textCapitalization == null) _textCapitalization = TextCapitalization.none;
+        path = "assets/images/logo/logo.png";
+        break;
     }
-    _validatorDate = (val) {
-      DateTime date = val;
-      String result;
-      switch (widget.type) {
-        case UiInputType.DATE_OF_BIRTH:
-          var now = DateTime.now();
-          var min = now.subtract(Duration(days: SETUP_MAX_PERSON_AGE * 365));
-          var max = now.subtract(Duration(days: SETUP_MIN_PERSON_AGE * 365));
-          if (date.isBefore(min) || date.isAfter(max)) {
-            result = "Tanggal lahir tidak valid";
-          }
-          break;
-        default:
-      }
-      return result;
-    };
-    _validator = (val) {
-      String value = val;
-      String result;
-      if (widget.isRequired && value.isEmpty) {
-        result = "${widget.label ?? 'Kolom ini'} harus diisi";
-      }
-      if (widget.type == UiInputType.EMAIL && !f.isValidEmail(value)) {
-        result = "${widget.label ?? 'Alamat email'} tidak valid";
-      }
-      // widget.onValidate(result);
-      return result;
-      // return null;
-    };
+    return Semantics(
+      label: "$APP_NAME logo",
+      image: true,
+      child: Image.asset(path, width: size, height: size, fit: fit),
+    );
+  }
+}
+
+class MyInputCheck extends StatelessWidget {
+  const MyInputCheck({ required this.onChanged, required this.value, required this.label, Key? key }) : super(key: key);
+  final void Function(bool?) onChanged;
+  final bool value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return CheckboxListTile(
+      activeColor: APP_UI_COLOR_SUCCESS,
+      controlAffinity: ListTileControlAffinity.leading,
+      dense: true,
+      title: Text(label, style: const TextStyle(fontSize: 16)),
+      value: value,
+      onChanged: onChanged,
+    );
+  }
+}
+
+class MyButton extends StatelessWidget {
+  const MyButton(this.text, {
+    Key? key,
+    this.color,
+    this.textColor,
+    this.textColorPressed,
+    this.highlightColor,
+    this.border,
+    this.radius,
+    this.fullWidth = false,
+    this.icon,
+    this.size,
+    this.onPressed,
+    this.disabled = false
+  }) : super(key: key);
+  final Color? color;
+  final Color? textColor;
+  final Color? textColorPressed;
+  final Color? highlightColor;
+  final BorderSide? border;
+  final double? radius;
+  final String text;
+  final VoidCallback? onPressed;
+  final bool fullWidth;
+  final IconData? icon;
+  final MyButtonSize? size;
+  final bool disabled;
+
+  double get fontSize {
+    switch (size) {
+      case MyButtonSize.SMALLEST: return 14;
+      case MyButtonSize.SMALLER: return 16;
+      case MyButtonSize.SMALL: return 18;
+      case MyButtonSize.LARGE: return 22;
+      default: return 20;
+    }
   }
 
-  TextInputType get _getKeyboardType {
-    switch (widget.type) {
-      case UiInputType.NOTE: return TextInputType.multiline;
-      case UiInputType.EMAIL: return TextInputType.emailAddress;
-      default: return TextInputType.text;
+  EdgeInsets get padding {
+    switch (size) {
+      case MyButtonSize.SMALLEST: return const EdgeInsets.symmetric(horizontal: 12, vertical: 4);
+      case MyButtonSize.SMALLER: return const EdgeInsets.symmetric(horizontal: 18, vertical: 7);
+      case MyButtonSize.SMALL: return const EdgeInsets.symmetric(horizontal: 24, vertical: 10);
+      case MyButtonSize.LARGE: return const EdgeInsets.symmetric(horizontal: 36, vertical: 16);
+      default: return const EdgeInsets.symmetric(horizontal: 30, vertical: 13);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    _textStyle = TextStyle(color: _fontColor, fontSize: _fontSize, fontWeight: _fontWeight);
-    _prefixStyle = TextStyle(color: _fontColor, fontSize: _fontSize, fontWeight: FontWeight.bold);
-    _icon = widget.icon == null ? SizedBox() : Padding(padding: EdgeInsets.only(left: 20), child: Icon(widget.icon, size: _iconSize, color: widget.readOnly ? THEME_COLOR : Colors.grey));
-    switch (widget.type) {
-      case UiInputType.TEXT:
-      case UiInputType.NAME:
-      case UiInputType.NOTE:
-      case UiInputType.SEARCH:
-      case UiInputType.EMAIL:
-      case UiInputType.TAG:
-        _input = Stack(alignment: Alignment.topRight, children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(right: widget.cancelAction == null ? 16.0 : 40.0),
-            child: TextFormField(
-              // initialValue: widget.initialValue,
-              keyboardType: _getKeyboardType,
-              textCapitalization: _textCapitalization,
-              style: _textStyle,
-              textAlign: widget.textAlign,
-              readOnly: widget.readOnly,
-              maxLines: widget.type == UiInputType.NOTE ? null : 1,
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: _contentPadding,
-                hintStyle: _hintStyle,
-                hintMaxLines: widget.type == UiInputType.NOTE ? null : 1,
-                hintText: _hintText,
-                icon: _icon,
-                border: InputBorder.none
-              ),
-              textInputAction: TextInputAction.go,
-              controller: widget.controller,
-              focusNode: widget.focusNode,
-              inputFormatters: _maxLength != null ? <TextInputFormatter>[
-                LengthLimitingTextInputFormatter(_maxLength),
-              ] : null,
-              enableInteractiveSelection: _onTap == null,
-              onTap: _onTap,
-              onFieldSubmitted: widget.onSubmit,
-              // onChanged: widget.onChanged,
-              onChanged: (val) {
-                if (widget.controller != null) {
-                  if (widget.type == UiInputType.TAG && val.contains(' ')) {
-                    widget.controller.text = val.replaceAll(' ', '');
-                  }
-                }
-                widget.onChanged(val);
-              },
-              validator: _validator,
-            ),
-          ),
-          widget.cancelAction == null ? SizedBox() : IconButton(icon: Icon(LineIcons.close), iconSize: _iconSize, color: Colors.grey, onPressed: widget.cancelAction,),
-        ],);
-        break;
-      case UiInputType.PHONE:
-        _input = Padding(
-          padding: EdgeInsets.only(right: 20.0),
-          child: TextFormField(
-            keyboardType: TextInputType.phone,
-            maxLines: 1,
-            style: _textStyle,
-            readOnly: widget.readOnly,
-            decoration: InputDecoration(
-              contentPadding: _contentPadding,
-              prefixStyle: _prefixStyle,
-              prefix: Text(widget.prefix ?? "$APP_COUNTRY_CODE ", style: _prefixStyle),
-              hintStyle: _hintStyle,
-              hintText: _hintText,
-              icon: _icon,
-              border: InputBorder.none,
-              isDense: true,
-            ),
-            textInputAction: TextInputAction.go,
-            controller: widget.controller,
-            focusNode: widget.focusNode,
-            //onSubmitted: widget.onSubmit,
-            autofocus: widget.autoFocus,
-            onChanged: (val) {
-              if (widget.controller != null) {
-                if (val[0] == '0') {
-                  widget.controller.text = val.substring(1);
-                }
-              }
-              widget.onChanged(val);
-            },
-            validator: _validator,
-          ),
-        );
-        break;
-      case UiInputType.CURRENCY:
-      case UiInputType.NUMBER:
-        _input = Padding(
-          padding: EdgeInsets.only(right: 20.0),
-          child: TextFormField(
-            initialValue: widget.initialValue,
-            keyboardType: TextInputType.number,
-            maxLines: 1,
-            style: _textStyle,
-            textAlign: widget.textAlign,
-            readOnly: widget.readOnly,
-            decoration: InputDecoration(
-              contentPadding: _contentPadding,
-              prefixStyle: widget.type == UiInputType.NUMBER ? null : _prefixStyle,
-              prefix: widget.type == UiInputType.NUMBER ? null : Text(widget.prefix ?? "Rp ", style: _prefixStyle),
-              hintStyle: _hintStyle,
-              hintText: _hintText,
-              icon: _icon,
-              border: InputBorder.none,
-              isDense: true,
-            ),
-            textInputAction: TextInputAction.go,
-            controller: widget.controller,
-            focusNode: widget.focusNode,
-            enableInteractiveSelection: _onTap == null,
-            onTap: _onTap,
-            inputFormatters: <TextInputFormatter>[
-              WhitelistingTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(_maxLength),
-              CurrencyInputFormatter()
+    return SizedBox(
+      width: fullWidth ? double.infinity : null,
+      child: Opacity(
+        opacity: disabled || onPressed == null ? 0.7 : 1.0,
+        child: ElevatedButton(
+          onPressed: disabled ? null : onPressed,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+            children: [
+              icon == null ? const SizedBox() : Icon(icon, color: Colors.white),
+              icon == null || text.isEmpty ? const SizedBox() : const SizedBox(width: 8),
+              Text(text),
             ],
-            onChanged: widget.onChanged,
-            //onSubmitted: widget.onSubmit,
-            validator: _validator,
           ),
-        );
-        break;
-      case UiInputType.PASSWORD:
-      case UiInputType.PIN:
-        _input = Stack(children: <Widget>[
-          Center(
-            child: Padding(
-              padding: EdgeInsets.only(right: 40.0),
-              child: TextFormField(
-                obscureText: !_viewText,
-                enableInteractiveSelection: false,
-                keyboardType: widget.type == UiInputType.PIN ? TextInputType.number : null,
-                inputFormatters: widget.type == UiInputType.PIN ? <TextInputFormatter>[
-                  LengthLimitingTextInputFormatter(_maxLength ?? 6),
-                  WhitelistingTextInputFormatter.digitsOnly,
-                ] : <TextInputFormatter>[
-                  LengthLimitingTextInputFormatter(_maxLength ?? 32),
-                ],
-                maxLines: 1,
-                style: _textStyle,
-                decoration: InputDecoration(
-                  contentPadding: _contentPadding,
-                  hintStyle: _hintStyle,
-                  hintText: _hintText,
-                  icon: _icon,
-                  border: InputBorder.none,
-                  isDense: true,
-                ),
-                textInputAction: TextInputAction.go,
-                controller: widget.controller,
-                focusNode: widget.focusNode,
-                validator: _validator,
+          style: ButtonStyle(
+            foregroundColor: MaterialStateProperty.all(textColor ?? Colors.white),
+            backgroundColor: MaterialStateProperty.all(color ?? APP_UI_COLOR_MAIN),
+            overlayColor: MaterialStateProperty.all(highlightColor ?? Colors.white24),
+            padding: MaterialStateProperty.all(padding),
+            textStyle: MaterialStateProperty.resolveWith<TextStyle>((Set<MaterialState> states) {
+              if (states.contains(MaterialState.pressed)) {
+                return TextStyle(
+                  fontFamily: APP_UI_FONT_MAIN,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w600,
+                  color: textColorPressed ?? Colors.white
+                );
+              }
+              return TextStyle(
+                fontFamily: APP_UI_FONT_MAIN,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                color: textColor ?? Colors.white
+              );
+            },),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius ?? APP_UI_BORDER_RADIUS),
+                side: border ?? BorderSide(color: color ?? APP_UI_COLOR_MAIN)
               ),
             ),
+            elevation: MaterialStateProperty.all(0),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Transform.translate(
-              offset: Offset(0, 0),
-              child: IconButton(
-                icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility),
-                iconSize: _iconSize,
-                color: Colors.grey,
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  setState(() { _viewText = !_viewText; });
-                },
-              ),
-            ),
-          ),
-        ],);
-        break;
-      case UiInputType.DATE:
-      case UiInputType.DATE_OF_BIRTH:
-        _input = DateTimeField(
-          textAlign: widget.textAlign,
-          readOnly: true,
-          showCursor: false,
-          format: DateFormat(widget.dateFormat, APP_LOCALE),
-          initialValue: widget.initialValue == null ? null : (widget.initialValue is DateTime ? widget.initialValue : DateTime.parse(widget.initialValue.toString())),
-          style: _textStyle,
-          maxLines: 1,
-          decoration: InputDecoration(
-            contentPadding: _contentPadding,
-            hintStyle: _hintStyle,
-            hintText: _hintText,
-            icon: _icon,
-            border: InputBorder.none,
-            isDense: true,
-          ),
-          resetIcon: !widget.readOnly && widget.isClearable ? Icon(LineIcons.close, size: _fontSize,) : null,
-          onShowPicker: (context, currentValue) {
-            DateTime now = DateTime.now();
-            DateTime min = DateTime(2020);
-            DateTime max = now;
-            if (widget.type == UiInputType.DATE_OF_BIRTH) {
-              min = now.subtract(Duration(days: SETUP_MAX_PERSON_AGE * 365));
-              max = now.subtract(Duration(days: SETUP_MIN_PERSON_AGE * 365));
-            }
-            return showRoundedDatePicker(
-              context: context,
-              initialDate: currentValue ?? max,
-              firstDate: min,
-              lastDate: max,
-              borderRadius: THEME_BORDER_RADIUS,
-              locale: Locale('id', 'ID'),
-              initialDatePickerMode: widget.type == UiInputType.DATE_OF_BIRTH ? DatePickerMode.year : DatePickerMode.day,
-              theme: Theme.of(context),
-              customWeekDays: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
-              onTapDay: (dateTime, available) => available,
-              styleDatePicker: h.datePickerStyle,
-              styleYearPicker: h.yearPickerStyle
-            );
-          },
-          onChanged: widget.onChanged,
-          validator: _validatorDate,
-        );
-        break;
-    }
-
-    return Padding(
-      padding: widget.margin ?? EdgeInsets.only(bottom: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          widget.showLabel
-            ? Padding(padding: EdgeInsets.only(bottom: 8.0), child: Text(widget.label + ((widget.info ?? "").isEmpty ? ":" : " (${widget.info}):"), style: widget.labelStyle ?? style.textLabel,),)
-            : SizedBox(),
-          IgnorePointer(
-            ignoring: widget.readOnly,
-            child: Card(
-              color: widget.readOnly ? Colors.teal[300].withOpacity(.2) : (widget.color ?? Theme.of(context).cardColor),
-              shape: RoundedRectangleBorder(borderRadius: widget.borderRadius ?? BorderRadius.circular(THEME_BORDER_RADIUS),),
-              elevation: widget.readOnly ? 0 : widget.elevation,
-              clipBehavior: Clip.antiAlias,
-              margin: EdgeInsets.zero,
-              // TODO input note autosize height
-              child: widget.height == null ? _input : SizedBox(height: widget.height, child: Padding(padding: EdgeInsets.symmetric(vertical: 15), child: _input,),),
-            ),
-          ),
-          widget.error.isEmptyOrNull ? SizedBox() : ErrorText(widget.error)
-        ],
+        ),
       ),
     );
   }
 }
 
-class UiRadio extends StatefulWidget {
-  UiRadio({Key key, this.value, this.currentValue, this.onChanged, this.expandOnTrue}) : super(key: key);
-  final IconLabel value;
-  final IconLabel currentValue;
-  final void Function(IconLabel) onChanged;
-  final Widget expandOnTrue;
+class MyInputField extends StatefulWidget {
+  const MyInputField({
+    Key? key,
+    required this.label,
+    this.inputType = MyInputType.TEXT,
+    this.inputAction = TextInputAction.done,
+    this.size = MyButtonSize.MEDIUM,
+    this.icon,
+    this.maxLength,
+    this.showLabel = true,
+    this.readOnly = false,
+    this.browseIcon,
+    this.onBrowse,
+    this.onSubmitted,
+    this.dateFormat = "dd/MM/yyyy",
+    this.controller,
+    this.focusNode,
+    this.error,
+    this.editMode = false,
+  }) : super(key: key);
+  final String label;
+  final MyInputType inputType;
+  final TextInputAction? inputAction;
+  final MyButtonSize size;
+  final IconData? icon;
+  final int? maxLength;
+  final bool showLabel;
+  final bool readOnly;
+  final IconData? browseIcon;
+  final VoidCallback? onBrowse;
+  final void Function(String)? onSubmitted;
+  final String dateFormat;
+  final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final String? error;
+  final bool editMode;
 
   @override
-  _UiRadioState createState() => _UiRadioState();
+  State<MyInputField> createState() => _MyInputFieldState();
 }
 
-class _UiRadioState extends State<UiRadio> with SingleTickerProviderStateMixin {
+class _MyInputFieldState extends State<MyInputField> {
+  var _viewText = false;
+  var _editText = false;
+
+  TextInputType get keyboardType {
+    if (isNumberInput) return TextInputType.number;
+    switch (widget.inputType) {
+      case MyInputType.NAME: return TextInputType.name;
+      case MyInputType.EMAIL: return TextInputType.emailAddress;
+      case MyInputType.ADDRESS: return TextInputType.streetAddress;
+      case MyInputType.PHONE: return TextInputType.phone;
+      case MyInputType.NOTE: return TextInputType.multiline;
+      case MyInputType.URL: return TextInputType.url;
+      case MyInputType.DATETIME: return TextInputType.datetime;
+      default: return TextInputType.text;
+    }
+  }
+
+  TextCapitalization get textCapitalization {
+    switch (widget.inputType) {
+      case MyInputType.NAME: return TextCapitalization.words;
+      case MyInputType.NOTE: return TextCapitalization.sentences;
+      default: return TextCapitalization.none;
+    }
+  }
+
+  Widget? get suffixIcon {
+    if (widget.editMode) {
+      return IconButton(icon: Icon(_editText ? Icons.lock : Icons.edit), iconSize: _editText ? 18 : 24, color: Colors.grey, onPressed: () {
+        setState(() {
+          _editText = !_editText;
+        });
+      },);
+    }
+    if (widget.onBrowse != null || widget.inputType == MyInputType.PIN) {
+      var browseIcon = widget.browseIcon;
+      if (widget.browseIcon == null) {
+        switch (widget.inputType) {
+          case MyInputType.PIN:
+            browseIcon = Icons.keyboard;
+            break;
+          default:
+            browseIcon = Icons.chevron_right;
+        }
+      }
+      return IconButton(icon: Icon(browseIcon), iconSize: 24, color: Colors.grey, onPressed: onBrowse,);
+    }
+    if (widget.inputType == MyInputType.PASSWORD) {
+      return IconButton(icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility), iconSize: 24, color: Colors.grey, onPressed: () {
+        setState(() { _viewText = !_viewText; });
+      },);
+    }
+    return null;
+  }
+
+  EdgeInsetsGeometry get padding {
+    switch (widget.size) {
+      case MyButtonSize.SMALLEST: return const EdgeInsets.symmetric(horizontal: 14, vertical: 8.0);
+      case MyButtonSize.SMALLER: return const EdgeInsets.symmetric(horizontal: 16, vertical: 10.0);
+      case MyButtonSize.SMALL: return const EdgeInsets.symmetric(horizontal: 18, vertical: 12.0);
+      case MyButtonSize.MEDIUM: return const EdgeInsets.symmetric(horizontal: 20, vertical: 14.0);
+      case MyButtonSize.LARGE: return const EdgeInsets.symmetric(horizontal: 24, vertical: 16.0);
+    }
+  }
+
+  double get fontSize {
+    switch (widget.size) {
+      case MyButtonSize.SMALLEST: return 13.0;
+      case MyButtonSize.SMALLER: return 14.0;
+      case MyButtonSize.SMALL: return 15.0;
+      case MyButtonSize.MEDIUM: return 16.0;
+      case MyButtonSize.LARGE: return 18.0;
+    }
+  }
+
+  InputBorder inputBorder({String type = "normal"}) {
+    return OutlineInputBorder(
+      borderRadius: const BorderRadius.all(Radius.circular(APP_UI_BORDER_RADIUS),),
+      borderSide: BorderSide(
+        color: {"focus": APP_UI_COLOR_MAIN, "error": APP_UI_COLOR_DANGER}[type] ?? APP_UI_BORDER_COLOR,
+        width: 1,
+      ),
+      gapPadding: 0
+    );
+  }
+
+  InputDecoration get inputDecoration {
+    Widget? prefix;
+    switch (widget.inputType) {
+      case MyInputType.CURRENCY:
+        prefix = Text("Rp ", style: inputStyle);
+        break;
+      case MyInputType.PHONE:
+        prefix = Text("$APP_PHONE_CODE ", style: inputStyle);
+        break;
+      default:
+    }
+    return InputDecoration(
+      errorBorder: inputBorder(type: "error"),
+      focusedBorder: inputBorder(type: "focus"),
+      focusedErrorBorder: inputBorder(type: "error"),
+      labelText: widget.showLabel ? widget.label : null,
+      prefix: prefix,
+      prefixIcon: widget.icon == null ? null : Icon(widget.icon, color: Colors.grey,),
+      suffixIcon: suffixIcon,
+      border: inputBorder(),
+      enabledBorder: inputBorder(),
+      contentPadding: padding,
+      hintText: widget.label,
+      hintMaxLines: widget.inputType == MyInputType.NOTE ? null : 1,
+      hintStyle: const TextStyle(color: Colors.grey),
+      filled: true,
+      fillColor: widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white,
+      isDense: true,
+    );
+  }
+
+  bool get isNumberInput => widget.inputType == MyInputType.CURRENCY || widget.inputType == MyInputType.NUMBER || widget.inputType == MyInputType.PIN || widget.inputType == MyInputType.QTY;
+  bool get isDateInput => widget.inputType == MyInputType.DATE || widget.inputType == MyInputType.BIRTHDATE;
+
+  List<TextInputFormatter> get inputFormatters {
+    var formatters = <TextInputFormatter>[];
+    if (widget.maxLength != null) {
+      formatters.add(LengthLimitingTextInputFormatter(widget.maxLength));
+    } else if (widget.inputType == MyInputType.CURRENCY) {
+      formatters.add(LengthLimitingTextInputFormatter(SETUP_MAX_LENGTH_CURRENCY));
+    } else if (widget.inputType == MyInputType.PIN) {
+      formatters.add(LengthLimitingTextInputFormatter(SETUP_MAX_LENGTH_PIN));
+    }
+    if (isNumberInput) {
+      // formatters.add(FilteringTextInputFormatter.allow(RegExp(r'[1-9]')));
+      formatters.add(FilteringTextInputFormatter.digitsOnly);
+    }
+    if (widget.inputType == MyInputType.CURRENCY) {
+      formatters.add(MyCurrencyInputFormatter(context));
+    }
+    return formatters;
+  }
+
+  VoidCallback? get onBrowse {
+    if (widget.onBrowse != null) widget.onBrowse;
+    switch (widget.inputType) {
+      case MyInputType.PIN:
+        return () => widget.focusNode?.requestFocus();
+      default:
+        return null;
+    }
+  }
+
+  TextStyle get inputStyle {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: FontWeight.w600,
+      color: Colors.black,
+    );
+  }
+
+  Widget get inputField {
+
+    if (isDateInput) {
+      final datePickerStyle = MaterialRoundedDatePickerStyle(
+        backgroundHeader: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // header
+        backgroundActionBar: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // footer
+        backgroundHeaderMonth: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[850]!),
+        textStyleDayButton: TextStyle(fontSize: 18, color: h!.textColor()), // header tanggal
+        textStyleYearButton: const TextStyle(fontSize: 45, color: Colors.white), // header tahun
+        textStyleDayHeader: TextStyle(fontSize: 11, color: h!.textColor().withOpacity(0.54)), // M S S R K J S
+        textStyleCurrentDayOnCalendar: TextStyle(fontSize: 16, color: h!.pickColor(APP_UI_COLOR_MAIN, APP_UI_COLOR[300]!)),
+        textStyleDayOnCalendar: TextStyle(fontSize: 16, color: h!.textColor()),
+        textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, color: h!.bgColor(), fontWeight: FontWeight.bold),
+        textStyleMonthYearHeader: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold), // Februari 2020
+        paddingDatePicker: EdgeInsets.zero,
+        paddingMonthHeader: const EdgeInsets.all(14),
+        paddingActionBar: EdgeInsets.zero,
+        colorArrowNext: Colors.white,
+        colorArrowPrevious: Colors.white,
+        textStyleButtonAction: const TextStyle(fontSize: 14, color: Colors.white),
+        textStyleButtonPositive: const TextStyle(fontSize: 14, color: Colors.white),
+        textStyleButtonNegative: const TextStyle(fontSize: 14, color: Colors.white),
+      );
+
+      final yearPickerStyle = MaterialRoundedYearPickerStyle(
+        textStyleYear: TextStyle(fontSize: 20, color: h!.textColor(Colors.grey[700])),
+        textStyleYearSelected: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: APP_UI_COLOR_MAIN),
+      );
+
+      return DateTimeField(
+        textAlign: TextAlign.start,
+        readOnly: widget.readOnly,
+        controller: widget.controller,
+        showCursor: false,
+        format: DateFormat(widget.dateFormat, context.locale.toString()),
+        // initialValue: widget.initialValue == null ? null : (widget.initialValue is DateTime ? widget.initialValue : DateTime.parse(widget.initialValue.toString())),
+        style: inputStyle,
+        decoration: inputDecoration,
+        onShowPicker: (context, currentValue) {
+          DateTime now = DateTime.now();
+          DateTime min = DateTime(2019);
+          DateTime max = now;
+          if (widget.inputType == MyInputType.BIRTHDATE) {
+            min = now.subtract(const Duration(days: SETUP_MAX_USER_AGE * 365)); // umur maksimal
+            max = now.subtract(const Duration(days: SETUP_MIN_USER_AGE * 365)); // umur minimal
+          }
+          return showRoundedDatePicker(
+            context: context,
+            initialDate: currentValue ?? max,
+            firstDate: min,
+            lastDate: max,
+            borderRadius: 16, //APP_UI_BORDER_RADIUS,
+            locale: APP_LOCALE,
+            initialDatePickerMode: widget.inputType == MyInputType.BIRTHDATE ? DatePickerMode.year : DatePickerMode.day,
+            theme: ThemeProvider.themeOf(context).data,
+            customWeekDays: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+            onTapDay: (dateTime, available) => available,
+            styleDatePicker: datePickerStyle,
+            styleYearPicker: yearPickerStyle
+          );
+        },
+        // onChanged: widget.onChanged,
+        // validator: _validator,
+      );
+    }
+
+    final readOnly = widget.editMode ? !_editText : widget.readOnly;
+
+    return TextField(
+      controller: widget.controller,
+      focusNode: widget.focusNode,
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      obscureText: widget.inputType == MyInputType.PASSWORD && !_viewText,
+      decoration: inputDecoration,
+      maxLines: widget.inputType == MyInputType.NOTE ? 3 : 1,
+      inputFormatters: inputFormatters,
+      style: inputStyle,
+      textInputAction: widget.inputAction,
+      onSubmitted: widget.onSubmitted,
+      enableInteractiveSelection: !readOnly && widget.onBrowse == null && !isDateInput,
+      readOnly: readOnly,
+      onTap: onBrowse,
+      onChanged: (val) {
+        if (widget.controller != null) {
+          switch (widget.inputType) {
+            case MyInputType.PHONE:
+              if (val[0] == '0') {
+                widget.controller!.text = val.substring(1);
+              }
+              break;
+            default:
+          }
+        }
+        // widget.onChanged(val);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Radio(
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              onChanged: widget.onChanged,
-              groupValue: widget.currentValue,
-              value: widget.value,
-            ),
-            GestureDetector(onTap: () => widget.onChanged(widget.value), child: Text(widget.value.label, style: TextStyle(fontSize: 13.0))),
-          ],
-        ),
-        AnimatedSize(
-          vsync: this,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.easeOut,
-          child: widget.value == widget.currentValue ? widget.expandOnTrue : Container(),
-        ),
+      children: [
+        inputField,
+        widget.error == null ? const SizedBox() : MyInputError(widget.error!),
       ],
     );
   }
 }
 
-class UiSelect extends StatefulWidget {
-  UiSelect({Key key, this.icon, this.listMenu, this.initialValue, this.value, this.placeholder, this.fontSize, this.labelWidth, this.margin, this.onSelect, this.error = '', this.simple = false, this.isDense = false}) : super(key: key);
-  final IconData icon;
-  final List<dynamic> listMenu;
-  final dynamic initialValue;
-  final dynamic value;
-  final String placeholder;
-  final double fontSize;
-  final double labelWidth;
-  final EdgeInsetsGeometry margin;
-  final void Function(dynamic) onSelect;
-  final String error;
-  final bool simple;
-  final bool isDense;
+class MyInputPIN extends StatefulWidget {
+  const MyInputPIN({this.title, this.showForgot = true, this.showUsePassword = true, Key? key}) : super(key: key);
+  final String? title;
+  final bool showForgot;
+  final bool showUsePassword;
 
   @override
-  _UiSelectState createState() => _UiSelectState();
+  _MyInputPINState createState() => _MyInputPINState();
 }
 
-class _UiSelectState extends State<UiSelect> {
-  var _val;
+class _MyInputPINState extends State<MyInputPIN> {
+  var _usePassword = false;
+  var _isSendingRecoveryEmail = false;
+  var _pressKey = 0;
+
+  final TextEditingController textController = TextEditingController();
+  final FocusNode textFocus = FocusNode();
 
   @override
   void initState() {
-    _val = widget.initialValue;
     super.initState();
   }
 
   @override
-  void didUpdateWidget(UiSelect oldWidget) {
-    _val = widget.initialValue;
+  void dispose() {
+    textController.dispose();
+    textFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget _makeButton(int angka) {
+      bool isPencetTombol = _pressKey == angka;
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 100),
+          opacity: isPencetTombol ? 0.5 : 1,
+          child: SizedBox(width: 64, height: 64, child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: APP_UI_COLOR_MAIN.withOpacity(0.5), width: isPencetTombol ? 4.0 : 1.0,),
+              borderRadius: BorderRadius.circular(50.0),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Material(
+              color: isPencetTombol ? APP_UI_COLOR_MAIN : Colors.transparent,
+              child: InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                onHighlightChanged: (val) => setState(() { _pressKey = val ? angka : 0; }),
+                onTap: () {
+                  if (textController.text.length < SETUP_MAX_LENGTH_PIN) {
+                    textController.text = "${textController.text}$angka";
+                    if (textController.text.length == SETUP_MAX_LENGTH_PIN) Navigator.of(context).pop(textController.text);
+                  }
+                },
+                child: Center(child: Text("$angka", style: const TextStyle(fontSize: 20),),),
+              ),
+            ),
+          ),),
+        ),
+      );
+    }
+    return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+      Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+        Expanded(child: Text(widget.title ?? "Masukkan ${_usePassword ? 'Sandi' : 'PIN'}:", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
+        const SizedBox(width: 4,),
+        widget.showForgot
+        ? Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: _isSendingRecoveryEmail ? const MyMiniLoader() : GestureDetector(
+            child: const Chip(label: Text("Lupa?", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),),),
+            onTap: () async {
+              setState(() { _isSendingRecoveryEmail = true; });
+              await u!.forgotPassword();
+              setState(() { _isSendingRecoveryEmail = false; });
+            },
+          ),
+        )
+        : const SizedBox(),
+      ],),
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: _usePassword ? <Widget>[
+          const SizedBox(height: 20,),
+          MyInputField(
+            label: "Kata sandi",
+            inputType: MyInputType.PASSWORD,
+            controller: textController,
+            focusNode: textFocus,
+            onSubmitted: (val) => Navigator.of(context).pop(val)
+          ),
+          const SizedBox(height: 12.0,),
+          MyButton("Masuk", fullWidth: true, onPressed: () => Navigator.of(context).pop(textController.text),),
+          const SizedBox(height: 20,),
+          GestureDetector(
+            child: const Text("Gunakan PIN", style: TextStyle(color: APP_UI_COLOR_MAIN, fontSize: 15, fontWeight: FontWeight.w600),),
+            onTap: () {
+              setState(() { _usePassword = false; });
+              textController.text = '';
+            },
+          ),
+        ] : <Widget>[
+          Stack(
+            alignment: Alignment.centerRight,
+            children: <Widget>[
+              IgnorePointer(
+                child: TextFormField(
+                  obscureText: true,
+                  readOnly: true,
+                  // inputFormatters: <TextInputFormatter>[
+                  //   WhitelistingTextInputFormatter.digitsOnly,
+                  //   FilteringTextInputFormatter.allow(RegExp(r'[1-9]')),
+                  //   LengthLimitingTextInputFormatter(6),
+                  // ],
+                  maxLines: 1,
+                  decoration: const InputDecoration(border: InputBorder.none),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontFamily: APP_UI_FONT_MAIN, fontSize: 30, letterSpacing: 5, color: APP_UI_COLOR_MAIN),
+                  controller: textController,
+                  focusNode: textFocus,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  if (textController.text.isNotEmpty) textController.text = textController.text.substring(0, textController.text.length - 1);
+                },
+                icon: const Icon(Icons.backspace, color: Colors.grey, size: 18,),
+              )
+            ],
+          ),
+          Row(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
+            for (var n = 1; n <= 3; n++) _makeButton(n)
+          ],),
+          Row(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
+            for (var n = 4; n <= 6; n++) _makeButton(n)
+          ],),
+          Row(mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
+            for (var n = 7; n <= 9; n++) _makeButton(n)
+          ],),
+          widget.showUsePassword ? Padding(
+            padding: const EdgeInsets.only(top: 20.0),
+            child: GestureDetector(
+              child: const Text("Gunakan kata sandi", style: TextStyle(color: APP_UI_COLOR_MAIN, fontSize: 15, fontWeight: FontWeight.w600),),
+              onTap: () {
+                setState(() { _usePassword = true; });
+                textController.text = '';
+              },
+            ),
+          ) : const SizedBox(),
+        ],
+      ),
+    ],);
+  }
+}
+
+class MyInputSelect extends StatefulWidget {
+  const MyInputSelect({
+    Key? key,
+    this.icon,
+    required this.listMenu,
+    required this.onSelect,
+    this.value,
+    this.color,
+    this.placeholder,
+    this.size = MyButtonSize.MEDIUM,
+    this.margin,
+    this.error = ''
+  }) : super(key: key);
+  final IconData? icon;
+  final List<MenuModel> listMenu;
+  final MenuModel? value;
+  final Color? color;
+  final String? placeholder;
+  final EdgeInsetsGeometry? margin;
+  final MyButtonSize size;
+  final void Function(MenuModel?) onSelect;
+  final String error;
+
+  @override
+  _MyInputSelectState createState() => _MyInputSelectState();
+}
+
+class _MyInputSelectState extends State<MyInputSelect> {
+  MenuModel? _val;
+
+  EdgeInsetsGeometry get padding {
+    switch (widget.size) {
+      case MyButtonSize.SMALLEST: return const EdgeInsets.symmetric(vertical: 1, horizontal: 0);
+      case MyButtonSize.SMALLER: return const EdgeInsets.symmetric(vertical: 2, horizontal: 3);
+      case MyButtonSize.SMALL: return const EdgeInsets.symmetric(vertical: 4, horizontal: 6);
+      case MyButtonSize.MEDIUM: return const EdgeInsets.symmetric(vertical: 8, horizontal: 10);
+      case MyButtonSize.LARGE: return const EdgeInsets.symmetric(vertical: 12, horizontal: 14);
+    }
+  }
+
+  double get fontSize {
+    switch (widget.size) {
+      case MyButtonSize.SMALLEST: return 10;
+      case MyButtonSize.SMALLER: return 12;
+      case MyButtonSize.SMALL: return 14;
+      case MyButtonSize.MEDIUM: return 16;
+      case MyButtonSize.LARGE: return 18;
+    }
+  }
+
+
+  @override
+  void initState() {
+    _val = widget.value;
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(MyInputSelect oldWidget) {
+    if (widget.value != oldWidget.value) _val = widget.value;
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget card = Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),),
-      elevation: 1.0,
-      margin: widget.margin ?? EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: widget.isDense ? EdgeInsets.all(10) : EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            SizedBox(width: 4,),
-            widget.icon == null ? SizedBox() : Padding(
-              padding: EdgeInsets.only(right: widget.isDense ? 12 : 15),
-              child: Icon(widget.icon, size: 19.5, color: Colors.grey,),
-            ),
-            Theme(
-              data: Theme.of(context),
-              // data: Theme.of(context).copyWith(canvasColor: Colors.white,),
-              child: DropdownButton<dynamic>(
-                isDense: true,
-                // isExpanded: true,
-                underline: SizedBox(),
-                value: widget.value ?? _val,
-                hint: Text(widget.placeholder),
-                style: TextStyle(fontFamily: THEME_FONT_MAIN, fontSize: widget.fontSize ?? 16, color: Theme.of(context).textTheme.bodyText1.color),
-                onChanged: (dynamic val) {
-                  setState(() { _val = val; });
-                  widget.onSelect(val);
-                },
-                items: widget.listMenu.map<DropdownMenuItem<dynamic>>((dynamic val) {
-                  var _text = Text(val.toString(), overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.normal),);
-                  return DropdownMenuItem<dynamic>(
-                    value: val,
-                    child: widget.labelWidth == null
-                      ? _text
-                      : SizedBox(width: widget.labelWidth, child: _text),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-    return widget.simple ? card : Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        card,
-        (widget.error ?? '').isEmpty ? SizedBox() : ErrorText(widget.error)
+        Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),),
+          clipBehavior: Clip.antiAlias,
+          margin: widget.margin ?? const EdgeInsets.only(bottom: 8),
+          elevation: 0,
+          color: widget.color ?? Colors.white,
+          child: Padding(
+            padding: padding,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const SizedBox(width: 4,),
+                widget.icon == null ? const SizedBox() : Icon(widget.icon, size: 19.5, color: Colors.grey,),
+                widget.icon == null ? const SizedBox() : const SizedBox(width: 14,),
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<MenuModel>(
+                    isDense: true,
+                    underline: null,
+                    value: widget.value ?? _val,
+                    hint: Text(widget.placeholder ?? "Pilih satu"),
+                    style: TextStyle(
+                      fontFamily: APP_UI_FONT_MAIN,
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                      // color: Theme.of(context).textTheme.bodyText1!.color
+                    ),
+                    onChanged: (MenuModel? val) {
+                      setState(() { _val = val; });
+                      widget.onSelect(val);
+                    },
+                    items: widget.listMenu.map<DropdownMenuItem<MenuModel>>((MenuModel val) {
+                      return DropdownMenuItem<MenuModel>(
+                        value: val,
+                        child: Text(val.label),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        widget.error.isEmpty ? const SizedBox() : MyInputError(widget.error)
       ],
     );
   }
 }
 
-class UiSwitch extends StatelessWidget {
-  UiSwitch({Key key, @required this.label, @required this.value, @required this.onToggle}) : super(key: key);
-  final String label;
-  final bool value;
-  final void Function(bool) onToggle;
+class MyToggleButton extends StatelessWidget {
+  const MyToggleButton({ Key? key, required this.options, required this.onSelect, required this.selected }) : super(key: key);
+  final List<MenuModel> options;
+  final Function(int) onSelect;
+  final MenuModel selected;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        FlutterSwitch(
-          width: 45.0,
-          height: 24.0,
-          activeColor: THEME_COLOR,
-          inactiveColor: Colors.grey[400],
-          toggleSize: 18.0,
-          value: value,
-          padding: 3.0,
-          onToggle: onToggle,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),
+        border: Border.all(
+          color: APP_UI_BORDER_COLOR,
         ),
-        SizedBox(width: 8,),
-        Text(label),
-      ],
+      ),
+      child: LayoutBuilder(builder: (context, constraints) {
+        return ToggleButtons(
+          selectedColor: APP_UI_COLOR[800],
+          fillColor: APP_UI_COLOR_MAIN.withOpacity(0.2),
+          splashColor: APP_UI_COLOR[300]!.withOpacity(0.3),
+          renderBorder: false,
+          constraints: BoxConstraints.expand(width: constraints.maxWidth / options.length),
+          borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),
+          children: options.map<Widget>((item) {
+            return Container(
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  item.icon == null ? const SizedBox() : Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Icon(item.icon, size: 20,),
+                  ),
+                  Text(item.label, style: const TextStyle(fontSize: 16),),
+                ],
+              ),
+            );
+          }).toList(),
+          isSelected: options.map((t) => t == selected).toList(),
+          onPressed: onSelect,
+        );
+      }),
     );
   }
 }
 
-class CurrencyInputFormatter extends TextInputFormatter {
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.selection.baseOffset == 0) return newValue;
-    double value = double.parse(newValue.text);
-    String newText = NumberFormat("###,###.###", APP_LOCALE).format(value);
-    return newValue.copyWith(
-      text: newText,
-      selection: TextSelection.collapsed(offset: newText.length)
+class MyAvatar extends StatelessWidget {
+  const MyAvatar(this.image, {
+    Key? key,
+    this.heroTag,
+    this.onPressed,
+    this.strokeWidth = 4,
+    this.elevation = 1,
+    this.size = 50.0,
+    this.cached = false,
+  }) : super(key: key);
+  final dynamic image;
+  final String? heroTag;
+  final VoidCallback? onPressed;
+  final double strokeWidth;
+  final double elevation;
+  final double size;
+  final bool cached;
+
+  @override
+  Widget build(BuildContext context) {
+
+    Widget imageWidget;
+    if (image is Widget) {
+      imageWidget = image;
+    } else if (cached && image is String) {
+      final fallbackImage = Image.asset(DEFAULT_USER_PIC_ASSET, width: size, height: size, fit: BoxFit.cover);
+      return image == null ? fallbackImage : CachedNetworkImage(
+        imageUrl: Uri.encodeFull(image!),
+        placeholder: (context, url) => SizedBox(width: size, height: size, child: const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: APP_UI_COLOR_MAIN))),
+        errorWidget: (context, url, error) => fallbackImage,
+        width: size, height: size,
+        fit: BoxFit.cover,
+      );
+    } else {
+      imageWidget = Image(
+        image: a.imageProvider(image, fallbackAsset: DEFAULT_USER_PIC_ASSET),
+        width: size,
+        height: size,
+        fit: BoxFit.cover
+      );
+    }
+
+    final clipWidget = ClipOval(
+      child: InkWell(
+        onTap: onPressed ?? () => Navigator.push(context, MaterialPageRoute(builder: (context) => ImageViewer(image))),
+        child: imageWidget,
+      )
+    );
+
+    return Card(
+      elevation: elevation,
+      color: Colors.white,
+      clipBehavior: Clip.antiAlias,
+      shape: const CircleBorder(),
+      child: Padding(
+        padding: EdgeInsets.all(strokeWidth),
+        child: heroTag == null ? clipWidget : Hero(
+          tag: heroTag!,
+          child: clipWidget,
+        ),
+      ),
     );
   }
 }
 
-class ErrorText extends StatefulWidget {
-  ErrorText(this.error, {Key key}) : super(key: key);
+class MyMiniLoader extends StatelessWidget {
+  const MyMiniLoader({Key? key, this.size = 40.0}) : super(key: key);
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(width: size, height: size, child: const Card(
+      shape: CircleBorder(),
+      child: Padding(
+        padding: EdgeInsets.all(4),
+        child: CircularProgressIndicator(strokeWidth: 2, color: APP_UI_COLOR_MAIN,),
+      ),
+    ),);
+  }
+}
+
+class MyLoader extends StatelessWidget {
+  const MyLoader({ Key? key, this.isLoading = true, this.message, this.progress }) : super(key: key);
+  final bool isLoading;
+  final String? message;
+  final double? progress;
+
+  @override
+  Widget build(BuildContext context) {
+    String caption = "";
+
+    if (message != null) caption += "$message ...";
+    if (progress != null && progress! > 0) caption += "${(progress! * 100).toStringAsFixed(1)}%";
+
+    return IgnorePointer(
+      ignoring: !isLoading,
+      child: AnimatedOpacity(
+        opacity: isLoading ? 1 : 0,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          width: double.infinity,
+          color: Colors.white,
+          child: isLoading ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(
+                width: 60,
+                height: 60,
+                child: CircularProgressIndicator(strokeWidth: 4, color: APP_UI_COLOR_MAIN,)
+              ),
+              caption.isEmpty ? const SizedBox() : Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: Text(caption, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+              ),
+            ],
+          ) : const SizedBox(),
+        ),
+      ),
+    );
+  }
+}
+
+class MyPlaceholder extends StatelessWidget {
+  const MyPlaceholder({ required this.content, this.onRetry, this.retryLabel, Key? key }) : super(key: key);
+  final ContentModel content;
+  final VoidCallback? onRetry;
+  final String? retryLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset(content.image!, width: 200),
+        Text(content.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
+        const SizedBox(height: 12,),
+        Text(content.description!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey,),),
+        onRetry == null ? const SizedBox() : Padding(
+          padding: const EdgeInsets.only(top: 30.0),
+          child: MyButton(retryLabel ?? 'action_retry'.tr(), onPressed: onRetry),
+        ),
+      ]
+    );
+  }
+}
+
+class MyMenuList extends StatelessWidget {
+  const MyMenuList({
+    Key? key,
+    this.menuPaddingVertical = 16,
+    this.menuPaddingHorizontal = 16,
+    this.isFirst = false,
+    this.isLast = false,
+    this.isActive = false,
+    this.isLocked = false,
+    this.separatorColor,
+    required this.menu,
+    required this.onPressed,
+  }): super(key: key);
+  final double menuPaddingVertical;
+  final double menuPaddingHorizontal;
+  final bool isFirst;
+  final bool isLast;
+  final bool isActive;
+  final bool isLocked;
+  final Color? separatorColor;
+  final MenuModel menu;
+  final void Function(MenuModel) onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    // final _textTheme = ThemeProvider.themeOf(context).data.textTheme;
+    // final fontSize = _textTheme.bodyText1.fontSize;
+    // final color = _textTheme.bodyText1.color;
+    return Container(
+      decoration: BoxDecoration(
+        color: isActive ? APP_UI_COLOR_MAIN.withOpacity(0.3) : Colors.transparent,
+        border: Border(
+          bottom: isLast ? BorderSide.none : BorderSide(color: separatorColor ?? APP_UI_COLOR_LIGHT, width: 1.0,)
+        )
+      ),
+      width: double.infinity,
+      child: InkWell(onTap: isLocked ? null : () => onPressed(menu), child: Padding(
+        padding: EdgeInsets.symmetric(vertical: menuPaddingVertical, horizontal: menuPaddingHorizontal),
+        child: Row(children: <Widget>[
+          Icon(menu.icon, color: isLocked ? Colors.grey : Colors.blueGrey, size: 20,),
+          const SizedBox(width: 8,),
+          Expanded(child: Text(menu.label, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: isLocked ? Colors.grey : Colors.grey[800]),),),
+          isLocked ? const Icon(Icons.lock, color: APP_UI_COLOR_MAIN, size: 20,) : const SizedBox(),
+        ],),
+      )),
+    );
+  }
+}
+
+class MyFooter extends StatelessWidget {
+  const MyFooter({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+      Html(
+        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="$APP_URL_TERMS"><strong>Syarat & Aturan</strong></a> dan <a href="$APP_URL_PRIVACY"><strong>Kebijakan Privasi</strong></a>.',
+        style: {
+          "body": Style(
+            margin: EdgeInsets.zero,
+            fontSize: const FontSize(13.0),
+            textAlign: TextAlign.center,
+            color: Colors.grey[700],
+          ),
+          "a": Style(
+            fontWeight: FontWeight.w500,
+            color: APP_UI_COLOR_MAIN,
+          ),
+        },
+      ),
+      Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.only(top: 12.0),
+        child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+      ),
+    ],);
+  }
+}
+
+class MyInputError extends StatefulWidget {
+  const MyInputError(this.error, {Key? key}) : super(key: key);
   final String error;
 
   @override
-  _ErrorTextState createState() => _ErrorTextState();
+  _MyInputErrorState createState() => _MyInputErrorState();
 }
 
-class _ErrorTextState extends State<ErrorText> with SingleTickerProviderStateMixin {
-  AnimationController _animationController;
-  Animation _animation1;
+class _MyInputErrorState extends State<MyInputError> with SingleTickerProviderStateMixin {
+  AnimationController? _animationController;
+  Animation<double>? _animation1;
 
   @override
   void initState() {
-    _animationController = AnimationController(duration: Duration(milliseconds: 500), vsync: this);
-    _animation1 = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutBack
+    _animationController = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
+    _animation1 = Tween(begin: -10.0, end: 0.0).animate(CurvedAnimation(
+      parent: _animationController!,
+      curve: Curves.easeOut
     ));
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _animationController.forward();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _animationController?.forward();
     });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _animationController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 5),
+      padding: const EdgeInsets.only(top: 5),
       child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (BuildContext context, Widget child) {
-          return Transform.scale(
-            scale: _animation1.value,
+        animation: _animationController!,
+        builder: (BuildContext context, Widget? child) {
+          return Transform.translate(
+            offset: Offset(0.0, _animation1!.value),
             child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              decoration: BoxDecoration(
+                color: Colors.red[400],
+                borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS)
+              ),
               child: Row(
                 children: <Widget>[
-                  Icon(LineIcons.exclamation_circle, color: Colors.red),
-                  SizedBox(width: 5,),
-                  Text(widget.error, style: TextStyle(fontSize: 13, color: Colors.red)),
+                  const Icon(LineIcons.exclamationCircle, color: Colors.white),
+                  const SizedBox(width: 5,),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Text(widget.error, style: const TextStyle(fontSize: 13, color: Colors.white)),
+                  )),
                 ],
               ),
             ),
@@ -693,923 +1128,60 @@ class _ErrorTextState extends State<ErrorText> with SingleTickerProviderStateMix
   }
 }
 
-class UiPlaceholder extends StatelessWidget {
-  UiPlaceholder({Key key, this.type, this.label, this.actionLabel, this.action}) : super(key: key);
-  final String type;
-  final String label;
-  final String actionLabel;
-  final VoidCallback action;
+class MyStepIndicator extends StatelessWidget {
+  const MyStepIndicator({required this.count, required this.step, this.dotSize = 30.0, this.color, this.activeColor, Key? key }) : super(key: key);
+  final int count;
+  final int step;
+  final double dotSize;
+  final Color? color;
+  final Color? activeColor;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        // TODO gambar asset berdasarkan tipe
-        Image.asset('images/onboarding/2.png', width: MediaQuery.of(context).size.width * .69,),
-        SizedBox(height: 20,),
-        Text(label, textAlign: TextAlign.center,),
-        action == null ? SizedBox() : Padding(
-          padding: EdgeInsets.only(top: 20.0),
-          child: UiButton(actionLabel ?? 'Muat ulang', height: style.heightButtonL, color: Colors.teal[300], textStyle: style.textButtonL, icon: LineIcons.check_circle, iconSize: 20, iconRight: true, onPressed: action,),
-        ),
-      ],
-    );
-  }
-}
-
-class UiToggleButton extends StatefulWidget {
-  UiToggleButton({Key key, this.height = THEME_INPUT_HEIGHT, this.listItem, this.currentValue, this.onSelect}) : super(key:key);
-  final double height;
-  final List<dynamic> listItem;
-  final dynamic currentValue;
-  final void Function(int) onSelect;
-
-  @override
-  _UiToggleButtonState createState() => _UiToggleButtonState();
-}
-
-class _UiToggleButtonState extends State<UiToggleButton> {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: widget.height,
-      child: ToggleButtons(
-        borderRadius: BorderRadius.circular(THEME_BORDER_RADIUS),
-        children: widget.listItem.asMap().map((index, item) {
-          var isFirst = index == 0;
-          var isLast = index == widget.listItem.length - 1;
-          return MapEntry(index, Row(children: <Widget>[
-            SizedBox(width: isFirst ? 20.0 : 15.0),
-            Icon(item.icon, size: 17,),
-            SizedBox(width: 8.0),
-            Text(item.label, style: TextStyle(fontSize: Theme.of(context).textTheme.bodyText1.fontSize),),
-            SizedBox(width: isLast ? 20.0 : 15.0),
-          ],));
-        }).values.toList(),
-        isSelected: widget.listItem.map((t) => t.value == widget.currentValue).toList(),
-        onPressed: widget.onSelect,
-      ),
-    );
-  }
-}
-
-class UiFabCircular extends StatelessWidget {
-  UiFabCircular(this.icon, this.listActions, this.onAction, {Key key, this.getOffset, this.getSize}) : super(key: key);
-  final IconData icon;
-  final List<IconLabel> listActions;
-  final void Function(String) onAction;
-  final Offset Function(int) getOffset;
-  final double Function(int) getSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return FabCircularMenu(
-      fabOpenIcon: Icon(icon, color: Colors.white,),
-      fabCloseIcon: Icon(LineIcons.close, color: Colors.white,),
-      fabOpenColor: Colors.teal[300],
-      fabCloseColor: THEME_COLOR_LIGHT,
-      ringColor: THEME_COLOR.withOpacity(.8),
-      ringWidth: 120,
-      ringDiameter: 300,
-      children: listActions.asMap().map((i, action) {
-        return MapEntry(i, Transform.translate(
-          offset: getOffset == null ? Offset(0, 0) : getOffset(i),
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: <Widget>[
-              Material(
-                shape: CircleBorder(),
-                color: Colors.transparent,
-                clipBehavior: Clip.antiAlias,
-                child: IconButton(
-                  splashColor: action.color,
-                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 12),
-                  icon: Icon(action.icon),
-                  iconSize: getSize == null ? 24.0 : getSize(i),
-                  color: Colors.white,
-                  tooltip: action.label,
-                  onPressed: () {
-                    onAction(action.value);
-                  }
-                ),
-              ),
-              IgnorePointer(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 12.0),
-                  child: Text(action.label, textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 12),),
-                ),
-              )
-            ],
-          ),
-        ));
-      }).values.toList(),
-    );
-  }
-}
-
-class UiCountdown extends StatefulWidget {
-  UiCountdown(this.label, {Key key, @required this.duration, this.onFinish}) : super(key: key);
-  final String label;
-  final int duration;
-  final VoidCallback onFinish;
-
-  @override
-  _UiCountdownState createState() => _UiCountdownState();
-}
-
-class _UiCountdownState extends State<UiCountdown> {
-  int _detik;
-  Timer _timer;
-
-  @override
-  void initState() {
-    _detik = widget.duration;
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-        if (_detik > 0) setState(() { _detik--; });
-        else if (widget.onFinish != null) widget.onFinish();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(widget.label, style: style.textWhite,),
-        SizedBox(width: 8,),
-        ClipRRect(borderRadius: BorderRadius.circular(5), child: Text("  $_detik  ", style: TextStyle(color: Colors.white, backgroundColor: Colors.white30, fontWeight: FontWeight.bold),),),
-      ],
-    );
-  }
-}
-
-class UiDropImages extends StatelessWidget {
-  UiDropImages({
-    Key key,
-    this.onPickImage,
-    this.onTapImage,
-    this.onDeleteImage,
-    this.listImagesEdit = const [],
-    this.listImages = const [],
-    this.maxImages = IMAGE_UPLOAD_MAX,
-    this.height = 100.0
-  }) : super(key: key);
-  
-  final VoidCallback onPickImage;
-  final void Function(dynamic) onTapImage;
-  final void Function(dynamic) onDeleteImage;
-  final double height;
-  final int maxImages;
-  final List<String> listImagesEdit;
-  final List<dynamic> listImages;
-
-  Widget _getPlaceholder({double width = double.infinity}) {
-    return Container(
-      width: width,
-      height: height,
-      padding: EdgeInsets.all(4.0),
-      child: DottedBorder(
-        dashPattern: <double>[10, 6],
-        color: Colors.blueGrey[100],
-        strokeWidth: 2,
-        borderType: BorderType.RRect,
-        radius: Radius.circular(8.0),
-        padding: EdgeInsets.zero,
-        child: Material(
-          color: Colors.white,
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0),),),
-          child: InkWell(
-            splashColor: style.colorSplash,
-            highlightColor: style.colorSplash,
-            child: Center(child: Icon(MdiIcons.cameraPlusOutline, color: Colors.blueGrey[100], size: 50,),),
-            onTap: onPickImage,
-          ),
-        )
-      ),
-    );
-  }
-
-  Widget _getImage(asset) {
-    if (asset is Asset) return AssetThumb(asset: asset, width: 300, height: 300,);
-    if (asset is IklanPicModel) return Image.network(asset.foto, width: 300, height: 300, fit: BoxFit.cover,);
-    return Image.network(asset, width: 300, height: 300, fit: BoxFit.cover,);
-  }
-
-  int get _totalImages => listImages.length + listImagesEdit.length;
-
-  Widget _imageItem(asset) {
-    return Container(
-      padding: EdgeInsets.all(4.0),
-      child: Stack(
-        alignment: Alignment.topRight,
-        children: <Widget>[
-          GestureDetector(
-            onTap: onTapImage == null ? null : () => onTapImage(asset),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: _getImage(asset),
-            ),
-          ),
-          onDeleteImage == null ? Container() : GestureDetector(
-            onTap: () => onDeleteImage(asset),
-            child: Padding(
-              padding: EdgeInsets.all(4.0),
-              child: Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-                child: Icon(MdiIcons.closeCircle, color: Colors.grey[850], size: 22,)
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // if (listImages.isEmpty) return _getPlaceholder();
-    List<Widget> _gridItems = [
-      ...listImagesEdit.map((url) => _imageItem(url)).toList(),
-      ...listImages.map((asset) => _imageItem(asset)).toList()
-    ];
-
-    if (_totalImages < maxImages && onPickImage != null)
-      for (var i = 0; i < maxImages - _totalImages; i++)
-        _gridItems.add(_getPlaceholder(width: height));
-
-    return Container(
-      height: height,
-      child: GridView.count(
-        scrollDirection: Axis.horizontal,
-        crossAxisCount: 1,
-        children: _gridItems,
-      ),
-    );
-  }
-}
-
-class UiSearchBar extends StatefulWidget {
-  UiSearchBar({
-    Key key,
-    this.tool,
-    this.height,
-    this.backgroundColor,
-    this.actionColor,
-    this.searchController,
-    this.searchFocusNode,
-    this.searchPlaceholder = "Cari data ...",
-    this.dataType,
-    this.filterValues = const {},
-    this.onFilter,
-  }) : super(key: key);
-  
-  final TextEditingController searchController;
-  final FocusNode searchFocusNode;
-  final String searchPlaceholder;
-  final Widget tool;
-  final double height;
-  final Color backgroundColor;
-  final Color actionColor;
-  final String dataType;
-  final Map<String, dynamic> filterValues;
-  final void Function(Map<String, dynamic>) onFilter;
-
-  @override
-  _UiSearchBarState createState() => _UiSearchBarState();
-}
-
-class _UiSearchBarState extends State<UiSearchBar> {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: widget.height ?? (THEME_INPUT_HEIGHT + 32),
-      child: Material(
-        color: widget.backgroundColor ?? THEME_BACKGROUND,
-        elevation: 0,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: UiInput(
-                widget.searchPlaceholder,
-                key: ValueKey(widget.searchPlaceholder),
-                isClearable: true,
-                margin: EdgeInsets.only(left: 15, top: 15),
-                showLabel: false,
-                icon: LineIcons.search,
-                type: UiInputType.SEARCH,
-                controller: widget.searchController,
-                focusNode: widget.searchFocusNode,
-              ),
-            ),
-            SizedBox(width: 8,),
-            IconButton(
-              padding: EdgeInsets.zero,
-              icon: Icon(Icons.sort),
-              color: widget.actionColor ?? Colors.grey[850],
-              tooltip: 'prompt_sort'.tr(),
-              onPressed: () async {
-                final filter = await h.showAlert(showButton: false, body: UiDataFilter(
-                  dataType: widget. dataType,
-                  initialValues: widget.filterValues,
-                ));
-                print("filter result: $filter");
-                if (filter != null) widget.onFilter(filter);
-              },
-            ),
-            widget.tool ?? SizedBox(),
-            SizedBox(width: 8,),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class UiDataFilter extends StatefulWidget {
-  UiDataFilter({Key key, this.dataType, this.initialValues = const {}}) : super(key: key);
-  final String dataType;
-  final Map<String, dynamic> initialValues;
-
-  @override
-  _UiDataFilterState createState() => _UiDataFilterState();
-}
-
-class _UiDataFilterState extends State<UiDataFilter> {
-  bool _isCanDeliver;
-
-  @override
-  void initState() {
-    _isCanDeliver = widget.initialValues['isCanDeliver'] ?? false;
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        widget.dataType == 'listing' ? Row(
-          children: <Widget>[
-            Expanded(child: Text("Melayani antar")),
-            Switch(
-              activeTrackColor: THEME_COLOR,
-              activeColor: THEME_COLOR_LIGHT,
-              value: _isCanDeliver,
-              onChanged: (value) {
-                setState(() {
-                  _isCanDeliver = value;
-                });
-              },
-            ),
-          ],
-        ) : SizedBox(),
-        Divider(),
-        UiButton(
-          "Terapkan",
-          height: style.heightButtonL,
-          color: Colors.green,
-          icon: LineIcons.check_circle_o,
-          textStyle: style.textButtonL,
-          iconRight: true,
-          onPressed: () => Navigator.of(context).pop({
-            'isCanDeliver': _isCanDeliver,
-          }),
-        ),
-      ],
-    );
-  }
-}
-
-class UiSection extends StatelessWidget {
-  UiSection({Key key, @required this.children, this.title, this.titleSpacing, this.tool}) : super(key: key);
-  final List<Widget> children;
-  final String title;
-  final double titleSpacing;
-  final Widget tool;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.0),
-      child: Container(
-        width: double.infinity,
-        color: Colors.white,
-        padding: EdgeInsets.all(20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          title == null && tool == null ? SizedBox() : Padding(
-            padding: EdgeInsets.only(bottom: titleSpacing ?? 12.0),
-            child: Row(children: <Widget>[
-              Expanded(child: title == null ? SizedBox() : Text(title, style: style.textTitle,),),
-              tool == null ? SizedBox() : Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: tool,
-              ),
-            ],),
-          ),
-          ...children
-        ],),
-      ),
-    );
-  }
-}
-
-class UiLoader extends StatelessWidget {
-  UiLoader({Key key, this.loaderColor = THEME_COLOR, this.textStyle, this.label = "Tunggu sebentar ..."}) : super(key: key);
-  final Color loaderColor;
-  final TextStyle textStyle;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        SizedBox(width: 50, height: 50, child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(loaderColor), strokeWidth: 5.0,)),
-        SizedBox(height: 20,),
-        Text(label, textAlign: TextAlign.center, style: textStyle ?? style.textMuted,)
-      ],
-    );
-  }
-}
-
-class UiButton extends StatelessWidget {
-  UiButton(this.label, {
-    this.btnKey,
-    this.color = THEME_COLOR,
-    // this.borderColor,
-    this.icon,
-    this.iconSize,
-    this.iconColor,
-    this.iconPadding = 8.0,
-    this.iconRight = false,
-    this.onPressed,
-    this.borderRadius,
-    this.elevation = THEME_ELEVATION_BUTTON,
-    this.textStyle,
-    this.alignment,
-    this.padding,
-    this.width,
-    this.height
-  });
-  final Color color;
-  // final Color borderColor;
-  final IconData icon;
-  final String label;
-  final TextStyle textStyle;
-  final double iconSize;
-  final Color iconColor;
-  final double iconPadding;
-  final bool iconRight;
-  final BorderRadius borderRadius;
-  final double elevation;
-  final Key btnKey;
-  final MainAxisAlignment alignment;
-  final void Function() onPressed;
-  final EdgeInsetsGeometry padding;
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    var _textStyle = textStyle ?? style.textButton;
-    // var _borderColor = borderColor ?? color;
-    var _fontSize = _textStyle.fontSize;
-    var _fontColor = _textStyle.color;
-    var _fontWeight = _textStyle.fontWeight;
-    var _icon = Icon(icon, color: iconColor ?? _fontColor, size: iconSize ?? (_fontSize * 1.2),);
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: height ?? style.heightButton,
-      child: IgnorePointer(
-        ignoring: onPressed == null,
-        child: Opacity(
-          opacity: onPressed == null ? 0.5 : 1,
-          child: RaisedButton(
-            padding: padding ?? Theme.of(context).buttonTheme.padding,
-            key: btnKey,
-            color: color,
-            elevation: elevation,
-            hoverElevation: elevation,
-            focusElevation: elevation,
-            highlightElevation: elevation,
-            shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(THEME_BORDER_RADIUS)),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: alignment ?? MainAxisAlignment.center,
-              children: <Widget>[
-                icon == null || iconRight ? SizedBox() : Padding(padding: EdgeInsets.only(right: iconPadding), child: _icon,),
-                label == null ? SizedBox() : Text(label, style: TextStyle(color: _fontColor, fontWeight: _fontWeight, fontSize: _fontSize),),
-                icon == null || !iconRight ? SizedBox() : Padding(padding: EdgeInsets.only(left: iconPadding), child: _icon,),
-              ],
-            ),
-            onPressed: onPressed ?? () {},
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class UiButtonIcon extends StatelessWidget {
-  UiButtonIcon(this.icon, {Key key, this.iconSize = 25.0, this.size = THEME_INPUT_HEIGHT, this.radius, this.color = THEME_COLOR, this.iconColor = Colors.white, this.elevation = THEME_ELEVATION_BUTTON, this.onPressed, this.tooltip}) : super(key: key);
-  final IconData icon;
-  final double size;
-  final double iconSize;
-  final double radius;
-  final Color color;
-  final Color iconColor;
-  final double elevation;
-  final VoidCallback onPressed;
-  final String tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    return UiButton("", width: size, height: size, elevation: elevation, borderRadius: BorderRadius.circular(radius ?? (size / 2)), padding: EdgeInsets.zero, icon: icon, iconPadding: 0, iconSize: iconSize, iconColor: iconColor, color: color, onPressed: onPressed,);
-  }
-}
-
-class UiStepIndicator extends StatelessWidget {
-  UiStepIndicator({Key key, this.steps = const [], this.currentIndex = 0, this.stepAction}) : super(key: key);
-  final List<IconLabel> steps;
-  final int currentIndex;
-  final void Function(int) stepAction;
-
-  @override
-  Widget build(BuildContext context) {
-    var _screenWidth = MediaQuery.of(context).size.width;
-    var _barWidth = _screenWidth - _screenWidth / steps.length;
+    final secondaryColor = color ?? APP_UI_COLOR[300]!;
+    final primaryColor = activeColor ?? APP_UI_COLOR_MAIN;
     return Stack(
       alignment: Alignment.center,
-      children: <Widget>[
-        Container(width: _barWidth, height: 3, color: THEME_COLOR,),
-        StepProgressIndicator(
-          totalSteps: steps.length,
-          currentStep: currentIndex + 1,
-          size: 36,
-          selectedColor: THEME_COLOR,
-          unselectedColor: Colors.teal[400],
-          customStep: (index, color, _) => UiStepIndicatorDot(index, item: steps[index], currentIndex: currentIndex, onTap: stepAction,),
+      children: [
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return SizedBox(
+              child: Divider(color: secondaryColor, thickness: 2,),
+              width: constraints.maxWidth - dotSize,
+            );
+          },
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (int i = 0; i < count; i++) Transform.scale(
+              scale: i == step ? 1.8 : (i < step ? 1.0 : 0.8),
+              child: Stack(
+                children: [
+                  Icon(Icons.circle, size: dotSize, color: Colors.white),
+                  Icon(i < step ? Icons.check_circle : Icons.circle, size: dotSize, color: i < step ? primaryColor : secondaryColor),
+                ],
+              ),
+            )
+          ],
         ),
       ],
     );
   }
 }
 
-class UiStepIndicatorDot extends StatelessWidget {
-  UiStepIndicatorDot(this.index, {Key key, this.item, this.currentIndex = 0, this.onTap}) : super(key: key);
-  final IconLabel item;
-  final int index;
-  final int currentIndex;
-  final void Function(int) onTap;
+class MyCurrencyInputFormatter extends TextInputFormatter {
+  MyCurrencyInputFormatter(this.context);
+  final BuildContext context;
 
   @override
-  Widget build(BuildContext context) {
-    var _isDone = index < currentIndex;
-    var _isCurrent = index == currentIndex;
-    var _icon = _isDone ? Icons.check_circle : item.icon;
-    return Transform.scale(
-      scale: _isCurrent ? 1.5 : 1.0,
-      child: GestureDetector(
-        onTap: onTap == null ? null : () => onTap(index),
-        child: Container(
-          decoration: BoxDecoration(
-            color: _isCurrent ? Colors.teal[400] : THEME_COLOR,
-            shape: BoxShape.circle,
-          ),
-          child: Center(child: _icon == null ? SizedBox() : Icon(
-            _icon,
-            color: Colors.white,
-            // color: _isDone ? Colors.white : THEME_COLOR,
-          ),),
-        ),
-      ),
-    );
-  }
-}
-
-class UiMapMarker extends StatefulWidget {
-  UiMapMarker({Key key, this.size = 50.0, this.onTap}) : super(key: key);
-  final double size;
-  final VoidCallback onTap;
-
-  @override
-  _UiMapMarkerState createState() => _UiMapMarkerState();
-}
-
-class _UiMapMarkerState extends State<UiMapMarker> with SingleTickerProviderStateMixin {
-  AnimationController _animationController;
-  Animation _animation;
-
-  @override
-  void initState() {
-    _animationController = AnimationController(duration: Duration(milliseconds: 1500), vsync: this)..repeat(reverse: true);
-    _animation = Tween(begin: 1.0, end: 0.0).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.bounceOut,
-    ));
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(Duration(milliseconds: 1000), () {
-        if (mounted) _animationController.forward();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(0, widget.size * -0.5 + -100.0 * _animation.value),
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: Image.asset("images/marker.png", width: widget.size, height: widget.size,)
-        ),
-      ),
-    );
-  }
-}
-
-class UiMenuList extends StatelessWidget {
-  UiMenuList({Key key, this.menuPaddingVertical = 14, this.menuPaddingHorizontal = 16, this.isFirst = false, this.isLast = false, this.isLocked = false, this.icon, @required this.teks, @required this.value, @required this.aksi}): super(key: key);
-  final double menuPaddingVertical;
-  final double menuPaddingHorizontal;
-  final bool isFirst;
-  final bool isLast;
-  final bool isLocked;
-  final IconData icon;
-  final String teks;
-  final dynamic value;
-  final void Function(dynamic) aksi;
-
-  @override
-  Widget build(BuildContext context) {
-    var _textTheme = Theme.of(context).textTheme;
-    return Container(
-      decoration: isLast ? null : BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300], width: 1.0,))),
-      width: double.infinity,
-      child: InkWell(onTap: isLocked || aksi == null ? null : () => aksi(value), child: Padding(
-        padding: EdgeInsets.symmetric(vertical: menuPaddingVertical, horizontal: menuPaddingHorizontal),
-        child: Row(children: <Widget>[
-          Icon(icon, color: isLocked || aksi == null ? Colors.grey : Colors.blueGrey, size: 22,),
-          SizedBox(width: 8,),
-          Expanded(child: Text(teks, style: TextStyle(fontSize: 15, color: isLocked || aksi == null ? Colors.grey : _textTheme.bodyText1.color),),),
-          isLocked ? Icon(LineIcons.lock, color: THEME_COLOR, size: 17,) : SizedBox(),
-        ],),
-      )),
-    );
-  }
-}
-
-class UiFlatButton extends StatelessWidget {
-  UiFlatButton(this.icon, this.label, this.action, {Key key}) : super(key: key);
-  final IconData icon;
-  final String label;
-  final VoidCallback action;
-
-  @override
-  Widget build(BuildContext context) {
-    return FlatButton(
-      splashColor: Colors.teal[200].withOpacity(.2),
-      highlightColor: Colors.teal[200].withOpacity(.2),
-      padding: EdgeInsets.all(8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      color: Colors.teal[200].withOpacity(.2),
-      onPressed: action,
-      child: Column(children: <Widget>[
-        Icon(icon, color: THEME_COLOR,),
-        SizedBox(height: 8,),
-        Text(label, style: TextStyle(color: THEME_COLOR),)
-      ],),
-    );
-  }
-}
-
-class UiAvatar extends StatelessWidget {
-  UiAvatar(this.pic, {Key key, this.size = 100.0, this.heroTag, this.strokeWidth = 3, this.elevation = 1, this.placeholder = IMAGE_DEFAULT_USER, this.onPressed, this.onTapEdit}) : super(key: key);
-  final dynamic pic;
-  final String placeholder;
-  final double size;
-  final String heroTag;
-  final void Function() onPressed;
-  final void Function() onTapEdit;
-  final double strokeWidth;
-  final double elevation;
-
-  @override
-  Widget build(BuildContext context) {
-    final _imageDefault = Image.asset(placeholder, width: size, height: size, fit: BoxFit.cover);
-    Widget _imageWidget = _imageDefault;
-    if (pic != null) {
-      if (pic is File) {
-        _imageWidget = Image.file(pic, width: size, height: size, fit: BoxFit.cover);
-      } else if (pic.isNotEmpty) {
-        _imageWidget = f.isValidURL(pic) ? CachedNetworkImage(
-          imageUrl: Uri.encodeFull(pic),
-          placeholder: (context, url) => SizedBox(width: size, height: size, child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
-          errorWidget: (context, url, error) => _imageDefault,
-          width: size, height: size,
-          fit: BoxFit.cover,
-        ) : Image.asset(pic, width: size, height: size, fit: BoxFit.cover);
-      }
-    }
-    final _image = Material(shape: CircleBorder(), clipBehavior: Clip.antiAlias, child: InkWell(
-      onTap: onPressed,
-      child: _imageWidget
-    ));
-    return Stack(
-      alignment: Alignment.bottomRight,
-      children: <Widget>[
-        Card(
-          elevation: elevation,
-          color: Colors.white,
-          clipBehavior: Clip.antiAlias,
-          shape: CircleBorder(),
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: EdgeInsets.all(strokeWidth),
-            child: heroTag == null ? _image : Hero(child: _image, tag: heroTag),
-          ),
-        ),
-        onTapEdit == null ? Container() : UiButtonIcon(Icons.add_a_photo, onPressed: onTapEdit,)
-      ],
-    );
-  }
-}
-
-class Copyright extends StatelessWidget {
-  Copyright({Key key, this.prefix, this.suffix, this.showCopyright = true, this.colorText, this.colorLink, this.textAlign}) : super(key: key);
-  final String prefix;
-  final String suffix;
-  final bool showCopyright;
-  final Color colorText;
-  final Color colorLink;
-  final TextAlign textAlign;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-      showCopyright ? Padding(
-        padding: EdgeInsets.only(bottom: 12.0),
-        child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", style: style.textWhiteS),
-      ) : SizedBox(),
-      Html(
-        data: '${prefix != null ? '$prefix ' : 'Menggunakan aplikasi ini berarti menyetujui '}<a href="${APP_TERMS_URL}">Syarat Penggunaan</a> & <a href="${APP_PRIVACY_URL}">Kebijakan Privasi</a>${suffix != null ? ' $suffix' : ''}.',
-        style: {
-          "body": Style(
-            margin: EdgeInsets.zero,
-            fontSize: FontSize(13.0),
-            textAlign: textAlign ?? TextAlign.start,
-            color: colorText ?? Colors.white70,
-          ),
-          "a": Style(
-            fontWeight: FontWeight.bold,
-            color: colorLink ?? Colors.white,
-          ),
-        },
-        onLinkTap: (url) async {
-          print("OPENING URL: $url");
-          print("OPENING PAGE: ${url.replaceAll(APP_HOST, '')}");
-          h.loadAlert();
-          var pageApi = await api('page', type: url.replaceAll(APP_HOST, ''));
-          Map pageRes = pageApi.result.first;
-          h.closeDialog();
-          h.showAlert(title: pageRes['JUDUL'], body: h.html(pageRes['ISI'], textStyle: TextStyle(fontSize: 14)));
-        },
-      )
-    ],);
-  }
-}
-
-class UiAppBar extends StatelessWidget {
-  UiAppBar(this.title, {Key key, this.icon, this.tool, this.backButton = true, this.onBackPressed}) : super(key: key);
-  final String title;
-  final IconData icon;
-  final bool backButton;
-  final VoidCallback onBackPressed;
-  final Widget tool;
-
-  @override
-  Widget build(BuildContext context) {
-    return UiCaption(
-      steps: [IconLabel(icon, title)],
-      hideSteps: true,
-      backButton: backButton,
-      onBackPressed: onBackPressed,
-      tool: tool,
-    );
-  }
-}
-
-class UiCaption extends StatelessWidget {
-  UiCaption({Key key, this.title, this.steps, this.currentIndex = 0, this.stepAction, this.hideSteps = false, this.backButton = false, this.onBackPressed, this.tool}) : super(key: key);
-  final String title;
-  final List<IconLabel> steps;
-  final int currentIndex;
-  final void Function(int) stepAction;
-  final bool hideSteps;
-  final bool backButton;
-  final VoidCallback onBackPressed;
-  final Widget tool;
-
-  @override
-  Widget build(BuildContext context) {
-    var no = currentIndex + 1;
-    var icon = backButton ? Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4),
-      child: IconButton(
-        iconSize: 32.0,
-        color: Colors.white,
-        icon: Icon(MdiIcons.chevronLeft),
-        onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
-      ),
-    ) : (steps[currentIndex].icon == null ? SizedBox() : Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12),
-      child: Icon(steps[currentIndex].icon, color: Colors.white, size: 32.0,),
-    ));
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: THEME_COLOR,
-        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)]
-      ),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-        icon,
-        Expanded(
-          child: Text(
-            title ?? steps[currentIndex].label,
-            overflow: TextOverflow.ellipsis,
-            style: style.textCaptionWhite,
-          ),
-        ),
-        // Spacer(),
-        SizedBox(width: 12,),
-        hideSteps ? SizedBox() : Padding(
-          padding: EdgeInsets.only(right: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(steps.length, (index) {
-              double _scale = no == index + 1 ? 1.1 : 0.9;
-              Color _backgroundColor = no == index + 1 ? Colors.white : Colors.white30;
-              Color _textColor = no == index + 1 ? THEME_COLOR : THEME_COLOR;
-              return Transform.scale(
-                scale: _scale,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  icon: CircleAvatar(backgroundColor: _backgroundColor, child: Text("${index + 1}", style: TextStyle(fontWeight: FontWeight.bold, color: _textColor),),),
-                  onPressed: stepAction == null ? null : () => stepAction(index),
-                ),
-              );
-            }),
-          ),
-        ),
-        tool ?? SizedBox(),
-      ],),
-    );
-  }
-}
-
-class UiIconButton extends StatelessWidget {
-  UiIconButton(this.icon, {Key key, this.color, this.size, this.onPressed}) : super(key: key);
-  final Widget icon;
-  final double size;
-  final Color color;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: FlatButton(
-        splashColor: Colors.grey.withOpacity(0.2),
-        highlightColor: Colors.grey.withOpacity(0.2),
-        visualDensity: VisualDensity.compact,
-        child: icon,
-        color: color ?? Colors.transparent,
-        shape: CircleBorder(),
-        padding: EdgeInsets.zero,
-        onPressed: onPressed,
-      ),
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.selection.baseOffset == 0) return newValue;
+    double value = double.parse(newValue.text);
+    String newText = NumberFormat("###,###.###", context.locale.toString()).format(value);
+    return newValue.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length)
     );
   }
 }

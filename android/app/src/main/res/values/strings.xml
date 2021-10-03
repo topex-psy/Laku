@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Laku</string>
+    <string name="facebook_app_id">844479926196457</string>
+    <string name="fb_login_protocol_scheme">fb844479926196457</string>
 </resources>

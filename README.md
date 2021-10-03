@@ -2,7 +2,7 @@
 
 <img src="images/logo.png?raw=true" alt="Laku Logo" title="Laku Logo" width="200"/>
 
-Solusi praktis pasang iklan, cari iklan, dan jual barang ke orang-orang di sekitarmu.
+Solusi praktis pasang iklan, cari iklan, dan jual barang ke orang-orang di sekitarmu. #YakinLaku
 
 ## Kenapa Laku?
 
@@ -13,4 +13,4 @@ Semua pengguna aplikasi Laku yang berada di radius tertentu akan mendapatkan not
 Kunjungi & hubungi Laku di:
 
 - [Website](https://www.taufiknur.com/laku/)
-- [Facebook](https://www.facebook.com/lakuapp)
+- [Facebook](https://www.facebook.com/YakinLaku)

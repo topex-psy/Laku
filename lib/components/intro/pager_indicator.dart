@@ -6,11 +6,12 @@ import 'pages.dart';
 const BUBBLE_WIDHT = 55.0;
 
 class PagerIndicator extends StatelessWidget {
+  const PagerIndicator({
+    required this.viewModel,
+    Key? key,
+  }) : super(key: key);
   final PagerIndicatorViewModel viewModel;
 
-  PagerIndicator({
-    this.viewModel,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +56,7 @@ class PagerIndicator extends StatelessWidget {
 
     return Column(
       children: <Widget>[
-        Spacer(),
+        const Spacer(),
         Transform(
           transform: Matrix4.translationValues(translation / 2.0, 0.0, 0.0),
           child: Row(
@@ -63,7 +64,7 @@ class PagerIndicator extends StatelessWidget {
             children: bubbles,
           ),
         ),
-        SizedBox(height: 20,)
+        const SizedBox(height: 20,)
       ],
     );
   }
@@ -84,13 +85,15 @@ class PagerIndicatorViewModel {
 }
 
 class PageBubble extends StatelessWidget {
+  const PageBubble({
+    required this.viewModel,
+    Key? key,
+  }) : super(key: key);
   final PageBubbleViewModel viewModel;
-
-  PageBubble({this.viewModel});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: BUBBLE_WIDHT,
       height: BUBBLE_WIDHT + 10.0,
       child: Center(
@@ -100,11 +103,11 @@ class PageBubble extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: viewModel.isHollow
-                ? Color(0x88FFFFFF).withAlpha(0x88 * viewModel.activePercent.round())
-                : Color(0x88FFFFFF),
+                ? const Color(0x88FFFFFF).withAlpha(0x88 * viewModel.activePercent.round())
+                : const Color(0x88FFFFFF),
             border: Border.all(
               color: viewModel.isHollow
-                  ? Color(0x88FFFFFF).withAlpha((0x88 * (1.0 - viewModel.activePercent)).round())
+                  ? const Color(0x88FFFFFF).withAlpha((0x88 * (1.0 - viewModel.activePercent)).round())
                   : Colors.transparent,
               width: 3.0,
             ),
