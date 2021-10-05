@@ -7,11 +7,13 @@ import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:laku/plugins/image_viewer.dart';
+import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:theme_provider/theme_provider.dart';
 import '../plugins/datetime_picker_formfield.dart';
+import '../plugins/image_viewer.dart';
 import 'constants.dart';
+import 'curves.dart';
 import 'models.dart';
 import 'variables.dart';
 
@@ -31,6 +33,7 @@ enum MyInputType {
   CURRENCY,
   PIN,
   QTY,
+  SEARCH,
 }
 
 enum MyButtonSize {
@@ -116,6 +119,7 @@ class MyButton extends StatelessWidget {
     this.border,
     this.radius,
     this.fullWidth = false,
+    this.iconRight = false,
     this.icon,
     this.size,
     this.onPressed,
@@ -130,6 +134,7 @@ class MyButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool fullWidth;
+  final bool iconRight;
   final IconData? icon;
   final MyButtonSize? size;
   final bool disabled;
@@ -156,6 +161,12 @@ class MyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var buttonChilds = [
+      icon == null ? const SizedBox() : Icon(icon, color: Colors.white),
+      icon == null || text.isEmpty ? const SizedBox() : const SizedBox(width: 8),
+      Text(text),
+    ];
+    if (iconRight) buttonChilds = buttonChilds.reversed.toList();
     return SizedBox(
       width: fullWidth ? double.infinity : null,
       child: Opacity(
@@ -165,11 +176,7 @@ class MyButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
-            children: [
-              icon == null ? const SizedBox() : Icon(icon, color: Colors.white),
-              icon == null || text.isEmpty ? const SizedBox() : const SizedBox(width: 8),
-              Text(text),
-            ],
+            children: buttonChilds,
           ),
           style: ButtonStyle(
             foregroundColor: MaterialStateProperty.all(textColor ?? Colors.white),
@@ -217,6 +224,7 @@ class MyInputField extends StatefulWidget {
     this.maxLength,
     this.showLabel = true,
     this.readOnly = false,
+    this.isClearable = false,
     this.browseIcon,
     this.onBrowse,
     this.onSubmitted,
@@ -234,6 +242,7 @@ class MyInputField extends StatefulWidget {
   final int? maxLength;
   final bool showLabel;
   final bool readOnly;
+  final bool isClearable;
   final IconData? browseIcon;
   final VoidCallback? onBrowse;
   final void Function(String)? onSubmitted;
@@ -297,6 +306,11 @@ class _MyInputFieldState extends State<MyInputField> {
     if (widget.inputType == MyInputType.PASSWORD) {
       return IconButton(icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility), iconSize: 24, color: Colors.grey, onPressed: () {
         setState(() { _viewText = !_viewText; });
+      },);
+    }
+    if (widget.isClearable) {
+      return IconButton(icon: const Icon(Icons.close), iconSize: 24, color: Colors.grey, onPressed: () {
+        widget.controller?.text = "";
       },);
     }
     return null;
@@ -843,6 +857,7 @@ class MyAvatar extends StatelessWidget {
     Key? key,
     this.heroTag,
     this.onPressed,
+    this.onTapEdit,
     this.strokeWidth = 4,
     this.elevation = 1,
     this.size = 50.0,
@@ -851,6 +866,7 @@ class MyAvatar extends StatelessWidget {
   final dynamic image;
   final String? heroTag;
   final VoidCallback? onPressed;
+  final VoidCallback? onTapEdit;
   final double strokeWidth;
   final double elevation;
   final double size;
@@ -887,7 +903,7 @@ class MyAvatar extends StatelessWidget {
       )
     );
 
-    return Card(
+    final cardWidget = Card(
       elevation: elevation,
       color: Colors.white,
       clipBehavior: Clip.antiAlias,
@@ -899,6 +915,14 @@ class MyAvatar extends StatelessWidget {
           child: clipWidget,
         ),
       ),
+    );
+
+    return onTapEdit == null ? cardWidget : Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        cardWidget,
+        IconButton(icon: const Icon(Icons.add_a_photo), onPressed: onTapEdit,)
+      ],
     );
   }
 }
@@ -972,13 +996,14 @@ class MyPlaceholder extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset(content.image!, width: 200),
+        // Image.asset(content.image ?? 'assets/images/onboarding/2.png', width: MediaQuery.of(context).size.width * .69),
+        Image.asset(content.image ?? 'assets/images/onboarding/2.png', width: 200),
         Text(content.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
         const SizedBox(height: 12,),
         Text(content.description!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey,),),
         onRetry == null ? const SizedBox() : Padding(
           padding: const EdgeInsets.only(top: 30.0),
-          child: MyButton(retryLabel ?? 'action_retry'.tr(), onPressed: onRetry),
+          child: MyButton(retryLabel ?? tr('action_retry'), onPressed: onRetry),
         ),
       ]
     );
@@ -996,8 +1021,8 @@ class MyMenuList extends StatelessWidget {
     this.isLocked = false,
     this.separatorColor,
     required this.menu,
-    required this.onPressed,
   }): super(key: key);
+
   final double menuPaddingVertical;
   final double menuPaddingHorizontal;
   final bool isFirst;
@@ -1006,13 +1031,9 @@ class MyMenuList extends StatelessWidget {
   final bool isLocked;
   final Color? separatorColor;
   final MenuModel menu;
-  final void Function(MenuModel) onPressed;
 
   @override
   Widget build(BuildContext context) {
-    // final _textTheme = ThemeProvider.themeOf(context).data.textTheme;
-    // final fontSize = _textTheme.bodyText1.fontSize;
-    // final color = _textTheme.bodyText1.color;
     return Container(
       decoration: BoxDecoration(
         color: isActive ? APP_UI_COLOR_MAIN.withOpacity(0.3) : Colors.transparent,
@@ -1021,7 +1042,7 @@ class MyMenuList extends StatelessWidget {
         )
       ),
       width: double.infinity,
-      child: InkWell(onTap: isLocked ? null : () => onPressed(menu), child: Padding(
+      child: InkWell(onTap: isLocked ? null : menu.onPressed, child: Padding(
         padding: EdgeInsets.symmetric(vertical: menuPaddingVertical, horizontal: menuPaddingHorizontal),
         child: Row(children: <Widget>[
           Icon(menu.icon, color: isLocked ? Colors.grey : Colors.blueGrey, size: 20,),
@@ -1030,6 +1051,27 @@ class MyMenuList extends StatelessWidget {
           isLocked ? const Icon(Icons.lock, color: APP_UI_COLOR_MAIN, size: 20,) : const SizedBox(),
         ],),
       )),
+    );
+  }
+}
+
+class MyTooltip extends StatelessWidget {
+  const MyTooltip({Key? key, required this.label, this.color = Colors.red}) : super(key: key);
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: ShapeDecoration(
+        color: color,
+        shape: const TooltipShapeBorder(arrowArc: 0.5),
+        shadows: const [BoxShadow(color: Colors.black26, blurRadius: 4.0, offset: Offset(2, 2))],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(label, style: const TextStyle(color: Colors.white)),
+      ),
     );
   }
 }
@@ -1182,6 +1224,230 @@ class MyCurrencyInputFormatter extends TextInputFormatter {
     return newValue.copyWith(
       text: newText,
       selection: TextSelection.collapsed(offset: newText.length)
+    );
+  }
+}
+
+class MyFabCircular extends StatelessWidget {
+  const MyFabCircular(this.icon, this.listActions, this.onAction, {Key? key, this.getOffset, this.getSize}) : super(key: key);
+  final IconData icon;
+  final List<MenuModel> listActions;
+  final void Function(String) onAction;
+  final Offset Function(int)? getOffset;
+  final double Function(int)? getSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return FabCircularMenu(
+      fabOpenIcon: Icon(icon, color: Colors.white,),
+      fabCloseIcon: const Icon(Icons.close, color: Colors.white,),
+      fabOpenColor: Colors.teal[300],
+      fabCloseColor: APP_UI_COLOR_MAIN,
+      ringColor: APP_UI_COLOR_MAIN.withOpacity(.8),
+      ringWidth: 120,
+      ringDiameter: 300,
+      children: listActions.asMap().map((i, action) {
+        return MapEntry(i, Transform.translate(
+          offset: getOffset == null ? const Offset(0, 0) : getOffset!(i),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: <Widget>[
+              Material(
+                shape: const CircleBorder(),
+                color: Colors.transparent,
+                clipBehavior: Clip.antiAlias,
+                child: IconButton(
+                  splashColor: action.color,
+                  padding: const EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 12),
+                  icon: Icon(action.icon),
+                  iconSize: getSize == null ? 24.0 : getSize!(i),
+                  color: Colors.white,
+                  tooltip: action.label,
+                  onPressed: () {
+                    onAction(action.value);
+                  }
+                ),
+              ),
+              IgnorePointer(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Text(action.label, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 12),),
+                ),
+              )
+            ],
+          ),
+        ));
+      }).values.toList(),
+    );
+  }
+}
+
+class MySearchBar extends StatefulWidget {
+  const MySearchBar({
+    Key? key,
+    this.tool,
+    this.height,
+    this.backgroundColor,
+    this.actionColor,
+    this.searchController,
+    this.searchFocusNode,
+    this.searchPlaceholder = "Search data ...",
+    this.dataType,
+    this.filterValues = const {},
+    this.onFilter,
+  }) : super(key: key);
+  
+  final TextEditingController? searchController;
+  final FocusNode? searchFocusNode;
+  final String searchPlaceholder;
+  final Widget? tool;
+  final double? height;
+  final Color? backgroundColor;
+  final Color? actionColor;
+  final String? dataType;
+  final Map<String, dynamic> filterValues;
+  final void Function(Map<String, dynamic>)? onFilter;
+
+  @override
+  _MySearchBarState createState() => _MySearchBarState();
+}
+
+class _MySearchBarState extends State<MySearchBar> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: widget.height ?? (APP_UI_INPUT_HEIGHT + 32),
+      child: Material(
+        color: widget.backgroundColor ?? APP_UI_COLOR_LIGHT,
+        elevation: 0,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 15, top: 15),
+                child: MyInputField(
+                  label: widget.searchPlaceholder,
+                  key: ValueKey(widget.searchPlaceholder),
+                  isClearable: true,
+                  showLabel: false,
+                  icon: LineIcons.search,
+                  inputType: MyInputType.SEARCH,
+                  controller: widget.searchController,
+                  focusNode: widget.searchFocusNode,
+                ),
+              ),
+            ),
+            widget.onFilter == null ? const SizedBox() : Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.sort),
+                color: widget.actionColor ?? Colors.grey[850]!,
+                tooltip: tr('prompt_sort'),
+                onPressed: () async {
+                  final filter = await h!.showDialog(
+                    MySearchFilter(
+                      dataType: widget.dataType,
+                      initialValues: widget.filterValues,
+                    ),
+                    showCloseButton: false
+                  );
+                  if (filter != null) widget.onFilter!(filter);
+                },
+              ),
+            ),
+            widget.tool ?? const SizedBox(),
+            const SizedBox(width: 8,),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MySearchFilter extends StatefulWidget {
+  const MySearchFilter({Key? key, this.dataType, this.initialValues = const {}}) : super(key: key);
+  final String? dataType;
+  final Map<String, dynamic> initialValues;
+
+  @override
+  _MySearchFilterState createState() => _MySearchFilterState();
+}
+
+class _MySearchFilterState extends State<MySearchFilter> {
+  late bool _isCanDeliver;
+
+  @override
+  void initState() {
+    _isCanDeliver = widget.initialValues['isCanDeliver'] ?? false;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        widget.dataType == 'listing' ? Row(
+          children: <Widget>[
+            const Expanded(child: Text("Melayani antar")),
+            Switch(
+              activeTrackColor: APP_UI_COLOR_MAIN,
+              activeColor: APP_UI_COLOR_LIGHT,
+              value: _isCanDeliver,
+              onChanged: (value) {
+                setState(() {
+                  _isCanDeliver = value;
+                });
+              },
+            ),
+          ],
+        ) : const SizedBox(),
+        const Divider(),
+        MyButton(
+          "Terapkan",
+          size: MyButtonSize.MEDIUM,
+          color: Colors.green,
+          icon: Icons.check_circle_outline,
+          iconRight: true,
+          onPressed: () => Navigator.of(context).pop({
+            'isCanDeliver': _isCanDeliver,
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class MySection extends StatelessWidget {
+  const MySection({Key? key, required this.children, this.title, this.titleSpacing, this.tool}) : super(key: key);
+  final List<Widget> children;
+  final String? title;
+  final double? titleSpacing;
+  final Widget? tool;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Container(
+        width: double.infinity,
+        color: Colors.white,
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          title == null && tool == null ? const SizedBox() : Padding(
+            padding: EdgeInsets.only(bottom: titleSpacing ?? 12.0),
+            child: Row(children: <Widget>[
+              Expanded(child: title == null ? const SizedBox() : Text(title!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),),),
+              tool == null ? const SizedBox() : Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: tool,
+              ),
+            ],),
+          ),
+          ...children
+        ],),
+      ),
     );
   }
 }

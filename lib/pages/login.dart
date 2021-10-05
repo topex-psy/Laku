@@ -8,11 +8,13 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import '../utils/models.dart';
+import '../utils/providers.dart';
 import '../utils/variables.dart';
 import '../utils/widgets.dart';
 
@@ -30,6 +32,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final _errorText = <String, String>{};
   var _isLoading = true;
+
+  UserModel? _userData;
 
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) {
@@ -57,15 +61,20 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     final userData = {"email": _emailController.text};
-    final checkResult = await ApiProvider().api('user/check', method: "post", data: userData, withLog: true);
-    final isUserExist = checkResult.isSuccess;
-    if (!isUserExist) {
+    final userResult = await ApiProvider(context).api('user/check', method: "post", data: userData, withLog: true);
+    if (!userResult.isSuccess) {
       await Navigator.pushNamed(context, ROUTE_REGISTER, arguments: userData);
       reInitContext(context);
       setState(() {
         _isLoading = false;
       });
     } else {
+      print("user result: ${userResult.data.first}");
+      _userData = UserModel.fromJson(userResult.data.first);
+      print("user data: $_userData");
+      // setState(() {
+      //   _isLoading = false;
+      // });
       _loginPIN();
     }
   }
@@ -74,26 +83,52 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
-    final loginResult = await ApiProvider().api('user/login', method: "post", data: data, withLog: true);
-    if (loginResult.isSuccess) {
-      Map<String, dynamic> loginData = loginResult.data.first;
 
-      // store user data
-      session = SessionModel.fromJson(loginData);
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('login_user_id', session!.id);
-      await prefs.setString('login_email', session!.email);
-      print("user session: $session");
-
-      // redirect
-      await Navigator.pushNamed(context, ROUTE_DASHBOARD);
-      reInitContext(context);
-      setState(() {
-        _isLoading = false;
-      });
-    } else {
-      _loginFail("login failed: ${loginResult.message}");
+    // firebase login
+    if (data.containsKey('email') && data.containsKey('password')) {
+      User? firebaseUser;
+      try {
+        final firebaseAuth = await FirebaseAuth.instance.signInWithEmailAndPassword(email: data['email']!, password: data['password']!);
+        firebaseUser = firebaseAuth.user;
+      } on FirebaseAuthException catch(e) {
+        // Unhandled Exception: [firebase_auth/wrong-password] The password is invalid or the user does not have a password.
+        print("firebase error: $e");
+      } catch(e) {
+        print("other error: $e");
+      }
+      if (firebaseUser == null) {
+        h!.showCallbackDialog("PIN yang kamu masukkan salah!", title: "Login Gagal", type: MyCallbackType.error);
+        setState(() {
+          _isLoading = false;
+        });
+      } else {
+        _loginSuccess();
+      }
     }
+  }
+
+  _loginSuccess() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // store user data
+    session = SessionModel.fromUserModel(_userData!);
+    Provider.of<SettingsProvider>(context, listen: false).setSettings(
+      lastLatitude: _userData!.lastLatitude,
+      lastLongitude: _userData!.lastLatitude,
+    );
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('login_user_id', session!.id);
+    await prefs.setString('login_email', session!.email);
+    print("user session: $session");
+
+    // redirect
+    await Navigator.pushNamed(context, ROUTE_DASHBOARD);
+    reInitContext(context);
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   _loginFail([String? devNote]) {
@@ -157,10 +192,7 @@ class _LoginPageState extends State<LoginPage> {
             "\n isEmailVerified  = ${firebaseUser.emailVerified}"
             "\n providerData     = ${firebaseUser.providerData}"
           );
-          _loginSubmit({
-            "email": _emailController.text,
-            "fid": firebaseUser.uid,
-          });
+          _loginSuccess();
         }
       } on FirebaseAuthException catch(e) {
         if (e.code == "account-exists-with-different-credential") {
@@ -171,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
             title: "Email Sudah Terdaftar",
             type: MyCallbackType.info
           ).then((_) {
-            _loginPIN();
+            _login();
           });
         } else {
           _loginFail("FirebaseAuthException error: $e");

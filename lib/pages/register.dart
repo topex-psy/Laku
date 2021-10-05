@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:local_auth/local_auth.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
@@ -33,6 +33,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
   final _scrollController = ScrollController();
   final _passwordFocus = FocusNode();
   final _errorText = <String, String>{};
+
   var _isLoading = false;
   var _loadingText = "";
   var _loadingProgress = 0.0;
@@ -40,21 +41,28 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
   var _gender = genderOptions.first;
   var _confirmPassword = "";
   var _enableFingerprint = false;
-  String? _userPic;
+
+  dynamic _userPic;
+  Position? _position;
   late String _method;
 
-  _dismissError([String? tag]) {
-    setState(() {
-      if (tag == null) {
-        _errorText.removeWhere((key, value) => true);
-      } else if (_errorText.containsKey(tag)) {
+  _dismissError(String tag) {
+    if (_errorText.containsKey(tag)) {
+      setState(() {
         _errorText.remove(tag);
-      }
+      });
+    }
+  }
+
+  _browsePicture(ImageSource source) async {
+    var resultList = await u!.takePicture(source, maxSelect: 1);
+    setState(() {
+      _userPic = resultList.first;
     });
   }
 
   _register() async {
-    _dismissError();
+    _errorText.clear();
     if (_step < 1) {
       setState(() {
         if (_nameController.text.isEmpty) {
@@ -108,13 +116,16 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
         if (await localAuth.canCheckBiometrics) {
           List<BiometricType> availableBiometrics = await localAuth.getAvailableBiometrics();
           if (availableBiometrics.contains(BiometricType.fingerprint)) {
-            _enableFingerprint = await h!.showConfirmDialog("Ingin mengaktifkan login dengan sidik jari?", title: "Aktivasi Fingerprint") ?? false;
-            print("enableFingerprint: $_enableFingerprint");
+            _enableFingerprint = await h!.showConfirmDialog(
+              "Ingin mengaktifkan login dengan sidik jari?",
+              title: "Aktivasi Fingerprint",
+              rejectText: "Lewati",
+            ) ?? false;
             if (_enableFingerprint) {
               _enableFingerprint = await localAuth.authenticate(localizedReason: 'Coba tempelkan sidik jarimu untuk melanjutkan');
               await h!.showCallbackDialog(
                 "Aktivasi login dengan sidik jari ${_enableFingerprint ? "berhasil" : "gagal"}."
-                "${_enableFingerprint ? "" : " Silakan coba lagi nanti melalui menu Pengaturan."}",
+                "${_enableFingerprint ? "" : " Kamu bisa coba lagi nanti di menu Pengaturan."}",
                 type: _enableFingerprint ? MyCallbackType.success : MyCallbackType.error,
                 title: "Aktivasi Fingerprint",
               );
@@ -127,22 +138,33 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     }
 
     setState(() {
+      _loadingText = "Mengompresi foto";
+      _loadingProgress = 0.0;
+    });
+
+    // compress image
+    final compressedImage = await a.compressImage(_userPic);
+
+    setState(() {
       _loadingText = "Menyimpan data";
       _loadingProgress = 0.0;
     });
 
     // post user ke db
-    final registerPostData = {
-      "name": _nameController.text,
-      "password": _passwordController.text,
-      "email": _emailController.text,
-      "gender": _gender.value,
-      "dob": _dobController.text.split("/").reversed.join("-"),
-      "image": _userPic,
-      "is_fingerprint": _enableFingerprint,
-      "is_facebook": _method == "facebook",
-    };
-    final registerResult = await ApiProvider().api('user', method: "post", data: registerPostData, withLog: true, onSendProgress: (sent, total) {
+    final registerPostData = RegisterModel(
+      name: _nameController.text,
+      password: _passwordController.text,
+      email: _emailController.text,
+      gender: _gender.value,
+      dob: _dobController.text,
+      lastLatitude: _position!.latitude,
+      lastLongitude: _position!.longitude,
+      image: compressedImage,
+      isFingerPrint: _enableFingerprint,
+      isFacebook: _method == "facebook",
+    ).toJson();
+    
+    final registerResult = await ApiProvider(context).api('user', method: "post", data: registerPostData, withLog: true, onSendProgress: (sent, total) {
       final progress = sent / total;
       final percent = progress * 100;
       if (percent.toInt() % 10 == 0) {
@@ -191,8 +213,15 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     _passwordController.addListener(() { if (_passwordController.text.isNotEmpty) _dismissError("password"); });
     _emailController.addListener(() { if (_emailController.text.isNotEmpty) _dismissError("email"); });
     super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      print("locale: ${context.locale.toString()}");
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      final Position? position = await l.checkGPS();
+      if (position is Position) {
+        setState(() {
+          _position = position;
+        });
+      } else {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     });
   }
 
@@ -288,18 +317,9 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                                         final ImageSource source = menu.value;
                                         return MyMenuList(
                                           isLast: source == ImageSource.camera,
-                                          menu: MenuModel(menu.label, source, icon: menu.icon),
-                                          onPressed: (menu) async {
-                                            var resultList = await u!.takePicture(menu.value, maxSelect: 1);
-                                            var entity = resultList.first;
-                                            var originBytes = await entity.originBytes;
-                                            if (originBytes != null) {
-                                              var base64 = base64Encode(originBytes);
-                                              setState(() {
-                                                _userPic = base64;
-                                              });
-                                            }
-                                          },
+                                          menu: MenuModel(menu.label, source, icon: menu.icon, onPressed: () {
+                                            _browsePicture(source);
+                                          }),
                                         );
                                       }).toList(),
                                     ),

@@ -1,11 +1,54 @@
 {
   "action_retry": "Retry",
   "action_continue": "Continue",
-  "action_create_listing": "Create Listing",
+  "action_create": {
+    "listing": "Create Listing",
+    "broadcast": "Broadcast"
+  },
   "action_browse": {
     "camera": "Camera",
     "gallery": "Select from Gallery"
   },
-  "gender_male": "Male",
-  "gender_female": "Female"
+  "current_location": "Your Location",
+  "gender": {
+    "male": "Laki-Laki",
+    "female": "Perempuan"
+  },
+  "menu_bottom": {
+    "home": "Home",
+    "browse": "Browse",
+    "broadcast": "Broadcast",
+    "profile": "Profile"
+  },
+  "notif": {
+    "inbox": "Inbox",
+    "listing": {
+      "one": "Listing",
+      "many": "Listings"
+    },
+    "listing_favorites": {
+      "one": "Favorite Listing",
+      "many": "Favorite Listings"
+    },
+    "listing_posted": {
+      "one": "Posted Listing",
+      "many": "Posted Listings"
+    },
+    "broadcast_active": {
+      "one": "Active Broadcast",
+      "many": "Active Broadcasts"
+    },
+    "seeker": {
+      "one": "Seeker",
+      "many": "Seekers"
+    },
+    "user": {
+      "one": "User",
+      "many": "Users"
+    }
+  },
+  "select": {
+    "other": "Other",
+    "all": "All"
+  }
 }

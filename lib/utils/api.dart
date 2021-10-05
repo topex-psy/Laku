@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'constants.dart';
 import 'variables.dart';
 
 class ApiProvider {
+  ApiProvider(this.context);
 
+  final BuildContext context;
   final baseOptions = BaseOptions(
     baseUrl: isDebugMode ? "http://192.168.1.68/laku/api" : APP_URL_API,
     connectTimeout: 60000,
@@ -22,6 +26,7 @@ class ApiProvider {
     void Function(int, int)? onSendProgress,
     bool withLog = false,
   }) async {
+    getParams = {...getParams, "lang": context.locale.toString()};
     print("${method.toUpperCase()} $url $getParams");
     try {
       var response = method.toLowerCase() == 'post'
@@ -59,20 +64,23 @@ class ApiProvider {
 class ApiModel {
   ApiModel({
     this.data = const [],
-    this.message = '',
     this.isSuccess = false,
+    this.message = '',
+    this.totalAll = 0,
   });
 
   final List<Map<String, dynamic>> data;
-  final String message;
   final bool isSuccess;
+  final String message;
+  final int totalAll;
 
   ApiModel.fromJson(Map<String, dynamic>? responseBody)
   : isSuccess = responseBody != null && responseBody["success"],
     data = responseBody != null && responseBody["success"]
-      ? List.from(responseBody.containsKey("rows") ? responseBody['rows'] : [responseBody]).map((res) => Map<String, dynamic>.from(res)).toList()
+      ? List.from(responseBody.containsKey("rows") ? responseBody["rows"] : [responseBody]).map((res) => Map<String, dynamic>.from(res)).toList()
       : [],
-    message = responseBody != null ? responseBody['message'] : "null response";
+    message = responseBody != null ? responseBody["message"] : "null response",
+    totalAll = responseBody != null && responseBody.containsKey("total_all") ? responseBody["total_all"] : 0;
 
   @override
   String toString() => "ApiModel"

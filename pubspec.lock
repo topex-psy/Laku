@@ -190,6 +190,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.5.6"
+  debounce_throttle:
+    dependency: "direct main"
+    description:
+      name: debounce_throttle
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
   dio:
     dependency: "direct main"
     description:
@@ -211,6 +218,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.2"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.3"
+  expandable:
+    dependency: "direct main"
+    description:
+      name: expandable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.0.1"
   extended_image:
     dependency: transitive
     description:
@@ -225,6 +246,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.0"
+  fab_circular_menu:
+    dependency: "direct main"
+    description:
+      name: fab_circular_menu
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   fake_async:
     dependency: transitive
     description:
@@ -337,6 +365,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
+  fl_chart:
+    dependency: "direct main"
+    description:
+      name: fl_chart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.40.0"
+  flash:
+    dependency: "direct main"
+    description:
+      name: flash
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.3"
+  flip_card:
+    dependency: "direct main"
+    description:
+      name: flip_card
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -466,6 +515,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.1.0"
+  flutter_staggered_grid_view:
+    dependency: "direct main"
+    description:
+      name: flutter_staggered_grid_view
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.0"
   flutter_svg:
     dependency: transitive
     description:
@@ -473,6 +529,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.22.0"
+  flutter_swiper_plus:
+    dependency: "direct main"
+    description:
+      name: flutter_swiper_plus
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.4"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -483,6 +546,20 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  geocoding:
+    dependency: "direct main"
+    description:
+      name: geocoding
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.1"
+  geocoding_platform_interface:
+    dependency: transitive
+    description:
+      name: geocoding_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.1"
   geolocator:
     dependency: "direct main"
     description:
@@ -518,6 +595,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.6"
+  google_maps_flutter:
+    dependency: "direct main"
+    description:
+      name: google_maps_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.11"
+  google_maps_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: google_maps_flutter_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.3"
+  google_nav_bar:
+    dependency: "direct main"
+    description:
+      name: google_nav_bar
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.0.5"
   html:
     dependency: transitive
     description:
@@ -791,6 +889,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  preload_page_view:
+    dependency: "direct main"
+    description:
+      name: preload_page_view
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.6"
   process:
     dependency: transitive
     description:
@@ -882,6 +987,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.2"
+  simple_observable:
+    dependency: transitive
+    description:
+      name: simple_observable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -992,6 +1104,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.5.0"
+  timeago:
+    dependency: "direct main"
+    description:
+      name: timeago
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.1.0"
   timezone:
     dependency: transitive
     description:

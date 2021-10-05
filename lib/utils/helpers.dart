@@ -5,18 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:flash/flash.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:line_icons/line_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:theme_provider/theme_provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import '../plugins/toast.dart';
+import 'api.dart';
 import 'constants.dart';
 import 'models.dart';
+import 'providers.dart';
 import 'variables.dart';
 import 'widgets.dart';
 
@@ -38,6 +45,49 @@ class UIHelper {
   UIHelper(this.context);
 
   BuildContext get currentContext => context;
+
+    /// fungsi untuk menampilkan notifikasi flashbar
+  Future<dynamic> showFlashBar(String title, String message, {Widget? icon, int? duration, bool showDismiss = true, String? actionLabel, VoidCallback? action}) {
+    return showFlash(
+      context: context,
+      duration: Duration(milliseconds: duration??4000),
+      persistent: true,
+      builder: (_, controller) {
+        return Flash(
+          controller: controller,
+          backgroundColor: Colors.white,
+          brightness: Brightness.light,
+          boxShadows: [BoxShadow(color: Colors.grey[800]!, blurRadius: 8.0)],
+          barrierBlur: 3.0,
+          barrierColor: Colors.black38,
+          barrierDismissible: true,
+          behavior: FlashBehavior.fixed,
+          position: FlashPosition.top,
+          child: FlashBar(
+            title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+            content: Text(message, style: const TextStyle(fontSize: 15)),
+            icon: icon,
+            showProgressIndicator: false,
+            primaryAction: showDismiss ? FlatButton(
+              child: Text(actionLabel ?? 'TUTUP', style: const TextStyle(color: APP_UI_COLOR_MAIN)),
+              onPressed: () {
+                controller.dismiss();
+                if (action != null) action();
+              },
+            ) : null,
+          ),
+        );
+      },
+    );
+  }
+
+  /// fungsi untuk menampilkan notifikasi flashbar sukses
+  showFlashbarSuccess(String title, String message, {int? duration = 5000, IconData? icon, Color? iconColor}) {
+    showFlashBar(title, message, duration: duration, showDismiss: false, icon: Padding(
+      padding: const EdgeInsets.only(left: 15, right: 8),
+      child: Icon(icon ?? LineIcons.checkCircle, color: iconColor ?? Colors.green, size: 40,),
+    ));
+  }
 
   /// fungsi untuk menampilkan pesan singkat di bawah layar
   showSnackbar(String message, {String actionText = "OK", VoidCallback? action}) {
@@ -114,14 +164,14 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan popup dialog konfirmasi
-  Future<bool?> showConfirmDialog(String message, {String? title}) async {
+  Future<bool?> showConfirmDialog(String message, {String? title, String? approveText, String? rejectText, Color? rejectColor}) async {
     return await showDialog(
       Text(message, style: const TextStyle(fontSize: 16),),
       title: title,
       buttonSize: MyButtonSize.SMALL,
       buttons: [
-        MenuModel("Ya", true, onPressed: () => Navigator.of(context).pop(true)),
-        MenuModel("Tidak", false, onPressed: () => Navigator.of(context).pop(false)),
+        MenuModel(approveText ?? "Ya", true, onPressed: () => Navigator.of(context).pop(true)),
+        MenuModel(rejectText ?? "Tidak", false, color: rejectColor ?? Colors.grey[600], onPressed: () => Navigator.of(context).pop(false)),
       ],
       showCloseButton: false,
     );
@@ -173,8 +223,8 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan notifikasi toast
-  showToast(String message, {int duration = Toast.DEFAULT_DURATION}) {
-    Toast.show(message, context, duration: duration);
+  showToast(String message, {int duration = MyToast.DEFAULT_DURATION}) {
+    MyToast.show(message, context, duration: duration);
   }
 
   /// fungsi untuk menampilkan loading
@@ -213,6 +263,10 @@ class UIHelper {
     );
   }
 
+  closeDrawer() {
+    if (screenScaffoldKey.currentState?.isEndDrawerOpen ?? false) Navigator.of(context).pop();
+  }
+
   /// pilih warna berdasarkan tema yang aktif
   bool isLightMode() => ThemeProvider.themeOf(context).id == APP_UI_THEME_LIGHT;
   Color pickColor(Color light, Color dark) => isLightMode() ? light : dark;
@@ -238,10 +292,25 @@ class FormatHelper {
     if (date == null) return '';
     return DateFormat(format).format(date);
   }
-  // String formatTimeago(DateTime date) => timeago.format(date, locale: localeString());
+  String formatTimeago(DateTime date) => timeago.format(date, locale: localeString());
   String formatJson(dynamic data) => const JsonEncoder.withIndent('  ').convert(data is String ? json.decode(data) : data);
   String formatNumber(num nominal) => NumberFormat("###,###.###", localeString()).format(nominal.toDouble());
   String formatPrice(dynamic nominal, {String symbol = 'Rp '}) => NumberFormat.currency(locale: localeString(), symbol: symbol).format(double.tryParse(nominal.toString()) ?? 0);
+  String formatPriceAbbr(dynamic nominal, {String symbol = 'Rp ', bool singkat = false}) {
+    var nom = nominal;
+    var suf = '';
+    if (singkat) {
+      if (nom > 999999999999) {
+        nom /= 1000000;
+        suf = 'JT';
+      } else if (nom > 999999999) {
+        nom /= 1000;
+        suf = 'K';
+      }
+    }
+    var res = NumberFormat.currency(locale: localeString(), symbol: symbol, decimalDigits: 0).format(nom);
+    return "$res$suf";
+  }
   String formatPercentage(num nominal, num total, {int decimal = 1}) => "${percentage(nominal, total).toStringAsFixed(decimal)}%";
   String formatDistance(double meter) {
     if (meter > 999) return "${roundNumber(meter / 1000)} km";
@@ -374,10 +443,9 @@ class UserHelper {
             final ImageSource source = menu.value;
             return MyMenuList(
               isLast: source == ImageSource.camera,
-              menu: MenuModel(menu.label, source, icon: menu.icon),
-              onPressed: (menu) {
-                Navigator.of(context).pop(menu.value);
-              },
+              menu: MenuModel(menu.label, source, icon: menu.icon, onPressed: () {
+                Navigator.of(context).pop(source);
+              }),
             );
           }).toList(),
         ),
@@ -432,8 +500,47 @@ class UserHelper {
     );
   }
 
-  Future<void> forgotPassword() async {
+  Future<void> firebaseUpdateProfile({String? name, String? image}) async {
+    // final user = await FirebaseAuth.instance.currentUser();
+    // final info = UserUpdateInfo();
+    // if (name != null) info.displayName = name;
+    // if (image != null) info.photoUrl = image;
+    // return user?.updateProfile(info);
+  }
 
+  Future<void> firebaseUpdatePhoneNumber(AuthCredential credential) async {
+    // final user = await FirebaseAuth.instance.currentUser();
+    // return user?.updatePhoneNumberCredential(credential);
+  }
+
+  Future<void> firebaseUpdateEmail(String email) async {
+    // final user = await FirebaseAuth.instance.currentUser();
+    // return user?.updateEmail(email);
+  }
+
+  Future<void> forgotPassword() async {
+    // TODO forgot password
+  }
+
+  navigatePage(int page) {
+    h!.closeDrawer();
+    screenPageController.animateToPage(page, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+  }
+
+  openProfile() => navigatePage(TAB_PROFILE);
+
+  Future<bool> loadNotif() async {
+    final notifResult = await ApiProvider(context).api("user/notif", method: "get", withLog: true, getParams: { 'id': session!.id.toString() });
+    if (notifResult.isSuccess) {
+      Provider.of<SettingsProvider>(context, listen: false).setSettings(
+        notif: NotifModel.fromJson(notifResult.data.first)
+      );
+    }
+    return notifResult.isSuccess;
+  }
+
+  openMyListings() {
+    // TODO go to my listings
   }
 
   logout() async {

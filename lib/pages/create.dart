@@ -52,7 +52,7 @@ class _CreatePageState extends State<CreatePage> {
   }
 
   Future<ApiModel> _uploadImages(List<Map<String, dynamic>> data) async {
-    ApiModel? uploadResult = await ApiProvider().api(
+    ApiModel? uploadResult = await ApiProvider(context).api(
       'upload',
       method: "post",
       getParams: {"type": "data"},

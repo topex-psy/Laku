@@ -1,11 +1,36 @@
 {
   "action_retry": "Coba Lagi",
   "action_continue": "Lanjutkan",
-  "action_create_listing": "Pasang Iklan",
+  "action_create": {
+    "listing": "Pasang Iklan",
+    "broadcast": "Broadcast"
+  },
   "action_browse": {
     "camera": "Kamera",
     "gallery": "Pilih dari Galeri"
   },
-  "gender_male": "Laki-Laki",
-  "gender_female": "Perempuan"
+  "current_location": "Lokasi Anda",
+  "gender": {
+    "male": "Male",
+    "female": "Female"
+  },
+  "menu_bottom": {
+    "home": "Beranda",
+    "browse": "Temukan",
+    "broadcast": "Broadcast",
+    "profile": "Profil"
+  },
+  "notif": {
+    "inbox": "Pesan Masuk",
+    "listing": "Iklan",
+    "listing_favorites": "Iklan Favorit",
+    "listing_posted": "Iklan Terpasang",
+    "broadcast_active": "Broadcast Aktif",
+    "seeker": "Pencari",
+    "user": "Pengguna"
+  },
+  "select": {
+    "other": "Lain-Lain",
+    "all": "Semua"
+  }
 }

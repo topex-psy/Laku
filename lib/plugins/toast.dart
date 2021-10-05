@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import '../utils/constants.dart';
 
-class Toast {
+class MyToast {
   static const DEFAULT_SHOWUP_DURATION = 300;
   static const DEFAULT_DURATION = 2000;
   static const BOTTOM = 0;
@@ -108,7 +108,7 @@ class _ToastWidgetState extends State<ToastWidget> with TickerProviderStateMixin
 
   @override
   void initState() {
-    _animationController = AnimationController(duration: const Duration(milliseconds: Toast.DEFAULT_SHOWUP_DURATION), vsync: this);
+    _animationController = AnimationController(duration: const Duration(milliseconds: MyToast.DEFAULT_SHOWUP_DURATION), vsync: this);
     _animation = Tween(begin: 1.0, end: 0.0).animate(CurvedAnimation(
       parent: _animationController!,
       curve: Curves.easeOutBack
@@ -131,10 +131,10 @@ class _ToastWidgetState extends State<ToastWidget> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: widget.gravity == Toast.TOP ? MediaQuery.of(context).viewInsets.top + 50 : null,
-      bottom: widget.gravity == Toast.BOTTOM ? MediaQuery.of(context).viewInsets.bottom + 50 : null,
+      top: widget.gravity == MyToast.TOP ? MediaQuery.of(context).viewInsets.top + 50 : null,
+      bottom: widget.gravity == MyToast.BOTTOM ? MediaQuery.of(context).viewInsets.bottom + 50 : null,
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: Toast.DEFAULT_SHOWUP_DURATION),
+        duration: const Duration(milliseconds: MyToast.DEFAULT_SHOWUP_DURATION),
         opacity: _opacity,
         child: AnimatedBuilder(
           animation: _animationController!,

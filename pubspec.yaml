@@ -59,7 +59,11 @@ dependencies:
   wechat_camera_picker: ^2.4.2
   pull_to_refresh: ^2.0.0
   cached_network_image: ^3.1.0
+  debounce_throttle: ^2.0.0
   geolocator: ^7.6.2
+  geocoding: ^2.0.1
+  google_maps_flutter: ^2.0.11
+  timeago: ^3.1.0
 
   # system
   package_info_plus: ^1.0.6
@@ -73,9 +77,18 @@ dependencies:
   wakelock: ^0.5.6
 
   # ui
-  theme_provider: ^0.5.0
+  expandable: ^5.0.1
+  fab_circular_menu: ^1.0.2
+  fl_chart: ^0.40.0
+  flash: ^2.0.3
+  flip_card: ^0.5.0
   flutter_rounded_date_picker: ^2.0.2
   flutter_spinkit: ^5.1.0
+  flutter_staggered_grid_view: ^0.4.0
+  flutter_swiper_plus: ^2.0.4
+  google_nav_bar: ^5.0.5
+  preload_page_view: ^0.1.6
+  theme_provider: ^0.5.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.9.2

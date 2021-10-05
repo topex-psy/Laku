@@ -12,8 +12,10 @@ import 'pages/login.dart';
 import 'pages/register.dart';
 import 'pages/dashboard.dart';
 import 'pages/create.dart';
+import 'pages/listing.dart';
+import 'pages/map.dart';
 import 'utils/constants.dart';
-import 'utils/provider.dart';
+import 'utils/providers.dart';
 import 'utils/variables.dart';
 
 // handle notifikasi background
@@ -97,7 +99,7 @@ class _MyAppState extends State<MyApp> {
     // pake multiprovider untuk state management
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => PengirimanState()),
+        ChangeNotifierProvider(create: (context) => SettingsProvider()),
       ],
       // menyediakan tema custom yang dapat dipilih secara runtime
       child: ThemeProvider(
@@ -143,6 +145,8 @@ class _MyAppState extends State<MyApp> {
               case ROUTE_REGISTER: page = RegisterPage(analytics, args); break;
               case ROUTE_DASHBOARD: page = DashboardPage(analytics, args); break;
               case ROUTE_CREATE: page = CreatePage(analytics, args); break;
+              case ROUTE_LISTING: page = ListingPage(analytics, args); break;
+              case ROUTE_MAP: page = MapPage(analytics, args); break;
             }
             // return PageTransition(
             //   type: PageTransitionType.fade,

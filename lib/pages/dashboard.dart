@@ -9,12 +9,21 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:launch_review/launch_review.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:preload_page_view/preload_page_view.dart';
+import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
+import 'dashboard/home.dart';
+import 'dashboard/browse.dart';
+import 'dashboard/broadcast.dart';
+import 'dashboard/profile.dart';
+import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/models.dart';
+import '../utils/providers.dart';
 import '../utils/variables.dart';
 import '../utils/widgets.dart';
 
@@ -39,11 +48,31 @@ class _DashboardPageState extends State<DashboardPage> {
   StreamSubscription<ServiceStatus>? _listenerGPSStatus;
   String? _loadingText;
   String? _version;
+  bool? _isLocationGranted;
 
+  var _pageIndex = 0;
   var _isLoading = false;
   var _isConnected = true;
   var _isGPSActive = true;
   var _isWillExit = false;
+  var _isReady = false;
+
+  final _listActions = [
+    MenuModel(tr('action_create.listing'), 'listing', icon: LineIcons.camera, color: Colors.blue),
+    MenuModel(tr('action_create.broadcast'), 'broadcast', icon: LineIcons.bullhorn, color: Colors.yellow),
+  ];
+
+  _openPage(int index) {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _pageIndex = index;
+    });
+    int page = (screenPageController.page ?? 0).round();
+    if (page != index) {
+      print("page move: $page -> $index");
+      u!.navigatePage(index);
+    }
+  }
 
   _listenConnection() {
     _listenerConnection = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
@@ -112,26 +141,58 @@ class _DashboardPageState extends State<DashboardPage> {
 
   _listenPosition() {
     _listenerPosition = Geolocator.getPositionStream(
-      desiredAccuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 5, // update tiap 5 meter
+      desiredAccuracy: LocationAccuracy.high,
+      distanceFilter: 3, // update tiap 3 meter
       intervalDuration: const Duration(milliseconds: LISTEN_POSITION_INTERVAL),
-    ).listen((Position? position) {
+    ).listen((Position? position) async {
       if (position != null) {
         print("current position: $position");
-        _getAllData();
+        Provider.of<SettingsProvider>(context, listen: false).setSettings(
+          lastLatitude: position.latitude,
+          lastLongitude: position.longitude
+        );
+        final putLocationResult = await ApiProvider(context).api("user", method: "put", withLog: true, data: {
+          'id': session!.id,
+          'last_latitude': position.latitude,
+          'last_longitude': position.longitude,
+        });
+        if (putLocationResult.isSuccess) {
+          if (!_isReady) {
+            setState(() {
+              _isReady = true;
+            });
+          }
+          u!.loadNotif();
+        }
       } else {
         print("cannot get current position");
       }
     });
   }
 
-  _getAllData() {
-    // TODO get listing data
+  _checkLocationPermission() async {
+    setState(() {
+      _isLocationGranted = null;
+    });
+    final Position? position = await l.checkGPS();
+    setState(() {
+      _isLocationGranted = position is Position;
+    });
+    if (_isLocationGranted!) {
+      _runListeners();
+    }
   }
 
-  _create() async {
+  _runListeners() {
+    _listenGPSStatus();
+    _listenPosition();
+    _listenNotification();
+    _listenConnection();
+  }
+
+  _create(String what) async {
     final resultList = await u?.browsePicture(maximum: SETUP_MAX_LISTING_IMAGES) ?? [];
-    if (mounted && resultList.isNotEmpty) {
+    if (resultList.isNotEmpty) {
       // TODO send resultList to create page
       final createResult = await Navigator.pushNamed(context, ROUTE_CREATE);
       print("createResult: $createResult");
@@ -146,16 +207,24 @@ class _DashboardPageState extends State<DashboardPage> {
     const QuickActions quickActions = QuickActions();
     quickActions.initialize((shortcutType) {
       switch (shortcutType) {
-        case 'action_create':
-          _create();
+        case 'action_create_listing':
+          _create('listing');
+          break;
+        case 'action_create_broadcast':
+          _create('broadcast');
           break;
       }
     });
     quickActions.setShortcutItems(<ShortcutItem>[
       ShortcutItem(
-        type: 'action_create',
-        localizedTitle: tr('action_create_listing'),
+        type: 'action_create_listing',
+        localizedTitle: tr('action_create.listing'),
         icon: 'ic_webcam',
+      ),
+      ShortcutItem(
+        type: 'action_create_broadcast',
+        localizedTitle: tr('action_create.broadcast'),
+        icon: 'ic_notepad',
       ),
     ]);
 
@@ -166,15 +235,7 @@ class _DashboardPageState extends State<DashboardPage> {
       });
 
       // check position permission
-      final Position? position = await l.checkGPS();
-      if (position is Position) {
-        _listenGPSStatus();
-        _listenPosition();
-        _listenNotification();
-        _listenConnection();
-      } else {
-        u?.logout();
-      }
+      _checkLocationPermission();
     });
   }
 
@@ -188,6 +249,25 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLocationGranted == null) return const MyLoader();
+
+    // permission lokasi belum diizinkan
+    if (!_isLocationGranted!) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(40.0),
+          child: MyPlaceholder(
+            content: ContentModel(
+              title: "Izin Dibutuhkan",
+              description: "Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.",
+            ),
+            retryLabel: "Izinkan",
+            onRetry: _checkLocationPermission,
+          ),
+        ),
+      );
+    }
+
     Widget noConnection(String type) {
       return Center(
         child: SingleChildScrollView(
@@ -230,9 +310,20 @@ class _DashboardPageState extends State<DashboardPage> {
     // gps tidak aktif
     if (!_isGPSActive) return noConnection("gps");
 
+    final _listPages = <PageModel>[
+      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == TAB_HOME,),),
+      PageModel(title: tr('menu_bottom.browse'), icon: LineIcons.search, content: BrowsePage(isOpen: _pageIndex == TAB_BROWSE,),), // favorit, featured ad, last viewed
+      PageModel(title: tr('menu_bottom.broadcast'), icon: LineIcons.bullhorn, content: BroadcastPage(isOpen: _pageIndex == TAB_BROADCAST,),),
+      PageModel(title: tr('menu_bottom.profile'), icon: LineIcons.user, content: ProfilePage(isOpen: _pageIndex == TAB_PROFILE,),),
+    ];
+
     return WillPopScope(
       onWillPop: () async {
         if (screenScaffoldKey.currentState?.isEndDrawerOpen ?? false) return true;
+        if ((screenPageController.page ?? 0).round() > 0) {
+          _openPage(0);
+          return false;
+        }
         if (_isWillExit) {
           SystemChannels.platform.invokeMethod<bool>('SystemNavigator.pop');
           return true;
@@ -272,18 +363,14 @@ class _DashboardPageState extends State<DashboardPage> {
                       // ProfileCard(avatarSize: 50,),
                       // SizedBox(height: 20,),
                       DashboardNavMenu(
-                        onPressed: (menu) async {
-                          print("menu pressed: ${menu.value}");
-                          Navigator.of(context).pop();
-                          switch (menu.value) {
-                            case "feedback":
-                              LaunchReview.launch();
-                              break;
-                            case "logout":
-                              u?.logout();
-                              break;
-                          }
-                        },
+                        menus: [
+                          MenuModel("Feedback", "feedback", icon: LineIcons.comments, onPressed: () {
+                            LaunchReview.launch();
+                          }),
+                          MenuModel("Keluar", "logout", icon: LineIcons.alternateSignOut, onPressed: () {
+                            u?.logout();
+                          }),
+                        ],
                       ),
                       const SizedBox(height: 40,),
                       Padding(
@@ -311,10 +398,71 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(children: [
-
-            ],),
+          child: PreloadPageView.builder(
+            preloadPagesCount: 2,
+            controller: screenPageController,
+            itemCount: _listPages.length,
+            itemBuilder: (context, index) => _listPages[index].content,
+            onPageChanged: _openPage,
+          ),
+        ),
+        bottomNavigationBar: Stack(
+          alignment: Alignment.topCenter,
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(blurRadius: 20, color: Colors.grey[800]!.withOpacity(0.5))]
+              ),
+              padding: const EdgeInsets.all(8.0),
+              child: GNav(
+                gap: 8,
+                iconSize: 24,
+                activeColor: Colors.white,
+                color: Colors.blueGrey,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
+                duration: const Duration(milliseconds: 500),
+                tabBackgroundColor: APP_UI_COLOR_ACCENT,
+                tabs: _listPages.map((page) => GButton(icon: page.icon, text: page.title)).toList(),
+                selectedIndex: _pageIndex,
+                onTabChange: (index) => _openPage(index),
+              ),
+            ),
+            // Transform.translate(
+            //   offset: const Offset(35, -45),
+            //   child: AnimatedOpacity(
+            //     opacity: _isPopNotif ? 1 : 0,
+            //     duration: const Duration(milliseconds: 1000),
+            //     child: const MyTooltip(label: "2 Baru",),
+            //   ),
+            // ),
+          ],
+        ),
+        floatingActionButton: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 1000),
+          switchInCurve: Curves.easeOutBack,
+          switchOutCurve: Curves.linear,
+          // transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            final  offsetAnimation = Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0)).animate(animation);
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
+          child: _pageIndex > 0 ? const SizedBox() : MyFabCircular(
+            LineIcons.plus,
+            _listActions,
+            _create,
+            getSize: (i) => 48.0 - 6 * i,
+            getOffset: (i) {
+              double x = 0.0, y = 0.0;
+              if (i == 1) {
+                x = -25;
+                y = 8;
+              }
+              return Offset(x, y);
+            },
           ),
         ),
       ),
@@ -323,26 +471,21 @@ class _DashboardPageState extends State<DashboardPage> {
 }
 
 class DashboardNavMenu extends StatelessWidget {
-  const DashboardNavMenu({ required this.onPressed, this.active, Key? key }) : super(key: key);
-  final void Function(MenuModel) onPressed;
+  const DashboardNavMenu({ required this.menus, this.active, Key? key }) : super(key: key);
+  final List<MenuModel> menus;
   final int? active;
 
   @override
   Widget build(BuildContext context) {
-    final _menu = <MenuModel>[
-      MenuModel("Feedback", "feedback", icon: LineIcons.comments),
-      MenuModel("Keluar", "logout", icon: LineIcons.alternateSignOut),
-    ];
     return Column(
-      children: _menu.asMap().map((index, menu) {
+      children: menus.asMap().map((index, menu) {
         return MapEntry(index, MyMenuList(
           isFirst: index == 0,
-          isLast: index == _menu.length - 1,
+          isLast: index == menus.length - 1,
           isActive: index == active,
           menu: menu,
           menuPaddingHorizontal: 24,
           menuPaddingVertical: 20,
-          onPressed: onPressed,
         ));
       }).values.toList(),
     );

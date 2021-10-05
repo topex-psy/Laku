@@ -15,6 +15,9 @@ const APP_FACEBOOK_ID    = "844479926196457";
 
 const APP_UI_BORDER_COLOR  = Colors.grey;
 const APP_UI_BORDER_RADIUS = 50.0;
+const APP_UI_CARD_ELEVATION = 4.0;
+const APP_UI_CARD_RADIUS = 8.0;
+const APP_UI_INPUT_HEIGHT = 50.0;
 
 // colors from: https://maketintsandshades.com/#009688
 const APP_UI_COLOR_MAIN    = Color(0xFF009688);
@@ -48,6 +51,8 @@ const ROUTE_REGISTER   = '/Register';
 const ROUTE_DASHBOARD  = '/Dashboard';
 const ROUTE_PROFILE    = '/Profile';
 const ROUTE_CREATE     = '/Create';
+const ROUTE_LISTING    = '/Listing';
+const ROUTE_MAP        = '/Map';
 
 const DEBUG_USER = "topexgames@yahoo.com";
 const DEBUG_TOUR = true;
@@ -63,3 +68,8 @@ const SETUP_MAX_LENGTH_PIN = 6;
 const SETUP_MAX_LENGTH_CURRENCY = 15;
 const SETUP_MAX_USER_AGE = 100;
 const SETUP_MIN_USER_AGE = 13;
+
+const TAB_HOME = 0;
+const TAB_BROWSE = 1;
+const TAB_BROADCAST = 2;
+const TAB_PROFILE = 3;
