@@ -16,6 +16,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
+import 'package:theme_provider/theme_provider.dart';
 import 'dashboard/home.dart';
 import 'dashboard/browse.dart';
 import 'dashboard/broadcast.dart';
@@ -27,6 +28,7 @@ import '../utils/providers.dart';
 import '../utils/variables.dart';
 import '../utils/widgets.dart';
 
+const MENU_DRAWER_BACKGROUND = Colors.transparent;
 const MENU_DRAWER_PADDING = 20.0;
 const MENU_DRAWER_RADIUS = 20.0;
 const MENU_DRAWER_WIDTH = 0.8;
@@ -355,15 +357,18 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Drawer(
                 semanticLabel: "Side menu",
                 child: Container(
-                  // color: MENU_DRAWER_BACKGROUND,
+                  color: MENU_DRAWER_BACKGROUND,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      // TODO konten sidebar
+                      // TODO header sidebar
                       // ProfileCard(avatarSize: 50,),
                       // SizedBox(height: 20,),
                       DashboardNavMenu(
                         menus: [
+                          MenuModel("Mode Gelap: ${ThemeProvider.themeOf(context).id == APP_UI_THEME_LIGHT ? 'Off' : 'Aktif'}", "change_theme", icon: LineIcons.moon, onPressed: () {
+                            ThemeProvider.controllerOf(context).nextTheme();
+                          }),
                           MenuModel("Feedback", "feedback", icon: LineIcons.comments, onPressed: () {
                             LaunchReview.launch();
                           }),
@@ -411,18 +416,19 @@ class _DashboardPageState extends State<DashboardPage> {
           children: <Widget>[
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [BoxShadow(blurRadius: 20, color: Colors.grey[800]!.withOpacity(0.5))]
+                color: h!.backgroundColor(Colors.white),
+                boxShadow: [BoxShadow(blurRadius: 15, color: Colors.grey[800]!.withOpacity(0.3))]
               ),
               padding: const EdgeInsets.all(8.0),
               child: GNav(
                 gap: 8,
-                iconSize: 24,
+                iconSize: 30,
                 activeColor: Colors.white,
                 color: Colors.blueGrey,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
+                rippleColor: APP_UI_COLOR_MAIN.withOpacity(.2),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                 duration: const Duration(milliseconds: 500),
-                tabBackgroundColor: APP_UI_COLOR_ACCENT,
+                tabBackgroundColor: APP_UI_COLOR_MAIN,
                 tabs: _listPages.map((page) => GButton(icon: page.icon, text: page.title)).toList(),
                 selectedIndex: _pageIndex,
                 onTabChange: (index) => _openPage(index),
@@ -439,7 +445,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         floatingActionButton: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 1000),
+          duration: const Duration(milliseconds: 600),
           switchInCurve: Curves.easeOutBack,
           switchOutCurve: Curves.linear,
           // transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),

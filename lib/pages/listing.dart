@@ -12,7 +12,7 @@ import '../extensions/widget.dart';
 import '../plugins/image_gallery_viewer.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
-import '../utils/models.dart';
+import '../utils/models.dart' show MenuModel, ListingModel;
 import '../utils/widgets.dart';
 import '../utils/variables.dart';
 
@@ -484,11 +484,8 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    FlatButton(
-                      padding: EdgeInsets.zero,
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onPressed: () => _action('open_shop'),
+                    GestureDetector(
+                      onTap: () => _action('open_shop'),
                       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                         MyAvatar(_item.shop?.image ?? _item.owner.image, size: 48, strokeWidth: 0),
                         const SizedBox(width: 12),
@@ -499,10 +496,10 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                             spacing: 8,
                             runSpacing: 8,
                             children: <Widget>[
-                              _item.shop == null ? const SizedBox() : Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                              Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                                 const Icon(Icons.favorite_outline, size: 20, color: Colors.pink,),
                                 const SizedBox(width: 6,),
-                                Text("${f!.formatNumber(_item.shop!.favoriteCount)} favorit"),
+                                Text("${f!.formatNumber(_item.shop?.favoriteCount ?? _item.owner.favoriteCount!)} favorit"),
                               ],),
                               Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                                 const Icon(Icons.file_present_outlined, size: 20, color: Colors.grey,),
@@ -512,24 +509,20 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            children: <Widget>[
-                              const Icon(Icons.circle, size: 20, color: Colors.grey,),
-                              const SizedBox(width: 6,),
-                              Expanded(child: Text(f!.formatTimeago(_item.owner.lastActive), style: const TextStyle(fontSize: 12))),
-                            ],
-                          )
+                          Row(children: <Widget>[
+                            const Icon(Icons.circle, size: 20, color: Colors.grey,),
+                            const SizedBox(width: 6,),
+                            Expanded(child: Text(f!.formatTimeago(_item.owner.lastActive), style: const TextStyle(fontSize: 12))),
+                          ],),
                         ],),),
                         const SizedBox(width: 8),
-                        _item.isMine
-                        ? IconButton(
+                        _item.isMine ? IconButton(
                           padding: EdgeInsets.zero,
                           icon: const Icon(Icons.edit),
                           color: Colors.grey,
                           tooltip: "Edit",
                           onPressed: () => _action('edit_shop'),
-                        )
-                        : SizedBox(
+                        ) : SizedBox(
                           width: 40,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,

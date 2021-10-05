@@ -73,7 +73,7 @@ class _ImageGalleryViewerState extends State<ImageGalleryViewer> {
                 );
               },
               itemCount: widget.galleryItems.length,
-              loadingBuilder: (context, event) => widget.loadingChild ?? const CircularProgressIndicator(strokeWidth: 3, color: APP_UI_COLOR_MAIN,),
+              loadingBuilder: (context, event) => Center(child: widget.loadingChild ?? const SizedBox(width: 50, height: 50, child: CircularProgressIndicator(strokeWidth: 3, color: APP_UI_COLOR_MAIN,),)),
               backgroundDecoration: widget.backgroundDecoration,
               pageController: widget.pageController,
               onPageChanged: onPageChanged,

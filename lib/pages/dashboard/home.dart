@@ -223,6 +223,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           margin: 4,
           reservedSize: 40,
         ),
+        rightTitles: SideTitles(showTitles: false),
+        topTitles: SideTitles(showTitles: false),
       ),
       borderData: FlBorderData(
         show: true,
@@ -307,6 +309,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     Expanded(
                                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
                                         Text(tr('current_location'), style: const TextStyle(color: Colors.white)),
+                                        const SizedBox(height: 2,),
                                         Consumer<SettingsProvider>(
                                           builder: (context, settings, child) {
                                             if (settings.isGettingAddress || settings.address == null) {
@@ -322,12 +325,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 reInitContext(context);
                                               },
                                               child: SizedBox(
-                                                height: 46.0,
+                                                height: 45.0,
                                                 child: RichText(text: TextSpan(
                                                   style: Theme.of(context).textTheme.bodyText1,
                                                   children: <TextSpan>[
                                                     TextSpan(text: '${settings.address!.subAdministrativeArea},\n', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
-                                                    TextSpan(text: settings.address!.country, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),)
+                                                    TextSpan(text: settings.address!.country, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),)
                                                   ],
                                                 ),),
                                               ),
@@ -358,12 +361,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                             Expanded(child: LayoutBuilder(
                               builder: (context, constraints) {
-                                return constraints.maxHeight < 56 ? const SizedBox() : Container(
+                                return constraints.maxHeight < 90 ? const SizedBox() : Container(
                                   padding: const EdgeInsets.only(top: 10),
                                   width: double.infinity,
                                   height: constraints.maxHeight,
                                   child: Opacity(
-                                    opacity: min(1, (constraints.maxHeight - 56) / 100),
+                                    opacity: min(1, (constraints.maxHeight - 90) / 100),
                                     child: LineChart(
                                       _getLineChartData(),
                                       swapAnimationDuration: const Duration(milliseconds: 500),

@@ -1,4 +1,5 @@
 {
+  "action_apply": "Apply",
   "action_retry": "Retry",
   "action_continue": "Continue",
   "action_create": {
@@ -9,7 +10,14 @@
     "camera": "Camera",
     "gallery": "Select from Gallery"
   },
-  "current_location": "Your Location",
+  "action_filter": "Filter",
+  "action_sort": "Sort",
+  "placeholder": {
+    "search": "Search data ...",
+    "search_favorites": "Search favorites ...",
+    "search_listing": "Search listings ..."
+  },
+  "current_location": "You're currently at:",
   "gender": {
     "male": "Laki-Laki",
     "female": "Perempuan"

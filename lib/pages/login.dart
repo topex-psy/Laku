@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
-import '../utils/models.dart';
+import '../utils/models.dart' show UserModel, SessionModel;
 import '../utils/providers.dart';
 import '../utils/variables.dart';
 import '../utils/widgets.dart';
@@ -72,9 +72,6 @@ class _LoginPageState extends State<LoginPage> {
       print("user result: ${userResult.data.first}");
       _userData = UserModel.fromJson(userResult.data.first);
       print("user data: $_userData");
-      // setState(() {
-      //   _isLoading = false;
-      // });
       _loginPIN();
     }
   }
@@ -288,9 +285,9 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.all(30),
                   child: Column(children: [
                     const MyAppLogo(type: MyLogoType.inverted, size: 200.0),
-                    const Text(APP_TAGLINE, textAlign: TextAlign.center, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500)),
+                    const Text(APP_TAGLINE, textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 40,),
-                    const Text("Yuk, langsung aja!", textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
+                    const Text("Yuk, langsung aja!", textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
                     const SizedBox(height: 40,),
                     MyInputField(label: 'Email', inputType: MyInputType.EMAIL, size: MyButtonSize.LARGE, inputAction: TextInputAction.go, onSubmitted: (email) => _login(), controller: _emailController, error: _errorText["email"],),
                     const SizedBox(height: 24,),

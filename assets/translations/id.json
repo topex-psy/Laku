@@ -1,4 +1,5 @@
 {
+  "action_apply": "Terapkan",
   "action_retry": "Coba Lagi",
   "action_continue": "Lanjutkan",
   "action_create": {
@@ -9,7 +10,14 @@
     "camera": "Kamera",
     "gallery": "Pilih dari Galeri"
   },
-  "current_location": "Lokasi Anda",
+  "action_filter": "Filter",
+  "action_sort": "Urutkan",
+  "placeholder": {
+    "search": "Cari data ...",
+    "search_favorites": "Cari favorit ...",
+    "search_listing": "Cari iklan ..."
+  },
+  "current_location": "Kamu berada di:",
   "gender": {
     "male": "Male",
     "female": "Female"

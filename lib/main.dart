@@ -76,7 +76,7 @@ class _MyAppState extends State<MyApp> {
     ThemeData lightTheme = ThemeData(
       primarySwatch: APP_UI_COLOR,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: const Color(0XFFF8F2FA),
+      scaffoldBackgroundColor: APP_UI_BACKGROUND_LIGHT,
       fontFamily: APP_UI_FONT_MAIN,
       textTheme: textTheme,
     )..textTheme.apply(
@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> {
     ThemeData darkTheme = ThemeData(
       primarySwatch: APP_UI_COLOR,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0XFF262224),
+      scaffoldBackgroundColor: APP_UI_BACKGROUND_DARK,
       fontFamily: APP_UI_FONT_MAIN,
       textTheme: textTheme,
     )..textTheme.apply(

@@ -221,6 +221,7 @@ class MyInputField extends StatefulWidget {
     this.inputAction = TextInputAction.done,
     this.size = MyButtonSize.MEDIUM,
     this.icon,
+    this.color,
     this.maxLength,
     this.showLabel = true,
     this.readOnly = false,
@@ -239,6 +240,7 @@ class MyInputField extends StatefulWidget {
   final TextInputAction? inputAction;
   final MyButtonSize size;
   final IconData? icon;
+  final Color? color;
   final int? maxLength;
   final bool showLabel;
   final bool readOnly;
@@ -309,6 +311,7 @@ class _MyInputFieldState extends State<MyInputField> {
       },);
     }
     if (widget.isClearable) {
+      if (widget.controller?.text.isEmpty ?? false) return const SizedBox();
       return IconButton(icon: const Icon(Icons.close), iconSize: 24, color: Colors.grey, onPressed: () {
         widget.controller?.text = "";
       },);
@@ -318,11 +321,11 @@ class _MyInputFieldState extends State<MyInputField> {
 
   EdgeInsetsGeometry get padding {
     switch (widget.size) {
-      case MyButtonSize.SMALLEST: return const EdgeInsets.symmetric(horizontal: 14, vertical: 8.0);
-      case MyButtonSize.SMALLER: return const EdgeInsets.symmetric(horizontal: 16, vertical: 10.0);
-      case MyButtonSize.SMALL: return const EdgeInsets.symmetric(horizontal: 18, vertical: 12.0);
-      case MyButtonSize.MEDIUM: return const EdgeInsets.symmetric(horizontal: 20, vertical: 14.0);
-      case MyButtonSize.LARGE: return const EdgeInsets.symmetric(horizontal: 24, vertical: 16.0);
+      case MyButtonSize.SMALLEST: return const EdgeInsets.symmetric(horizontal: 14, vertical: 6.0);
+      case MyButtonSize.SMALLER: return const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0);
+      case MyButtonSize.SMALL: return const EdgeInsets.symmetric(horizontal: 18, vertical: 10.0);
+      case MyButtonSize.MEDIUM: return const EdgeInsets.symmetric(horizontal: 20, vertical: 12.0);
+      case MyButtonSize.LARGE: return const EdgeInsets.symmetric(horizontal: 24, vertical: 14.0);
     }
   }
 
@@ -340,8 +343,8 @@ class _MyInputFieldState extends State<MyInputField> {
     return OutlineInputBorder(
       borderRadius: const BorderRadius.all(Radius.circular(APP_UI_BORDER_RADIUS),),
       borderSide: BorderSide(
-        color: {"focus": APP_UI_COLOR_MAIN, "error": APP_UI_COLOR_DANGER}[type] ?? APP_UI_BORDER_COLOR,
-        width: 1,
+        color: {"focus": APP_UI_COLOR[600], "error": APP_UI_COLOR_DANGER}[type] ?? APP_UI_BORDER_COLOR,
+        width: {"focus": 2.0}[type] ?? 1.0,
       ),
       gapPadding: 0
     );
@@ -362,6 +365,7 @@ class _MyInputFieldState extends State<MyInputField> {
       errorBorder: inputBorder(type: "error"),
       focusedBorder: inputBorder(type: "focus"),
       focusedErrorBorder: inputBorder(type: "error"),
+      labelStyle: TextStyle(color: h!.pickColor(APP_UI_COLOR[700], APP_UI_COLOR[400])),
       labelText: widget.showLabel ? widget.label : null,
       prefix: prefix,
       prefixIcon: widget.icon == null ? null : Icon(widget.icon, color: Colors.grey,),
@@ -373,7 +377,7 @@ class _MyInputFieldState extends State<MyInputField> {
       hintMaxLines: widget.inputType == MyInputType.NOTE ? null : 1,
       hintStyle: const TextStyle(color: Colors.grey),
       filled: true,
-      fillColor: widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white,
+      fillColor: widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white.withOpacity(.2)),
       isDense: true,
     );
   }
@@ -414,7 +418,7 @@ class _MyInputFieldState extends State<MyInputField> {
     return TextStyle(
       fontSize: fontSize,
       fontWeight: FontWeight.w600,
-      color: Colors.black,
+      color: h!.textColor(),
     );
   }
 
@@ -422,24 +426,24 @@ class _MyInputFieldState extends State<MyInputField> {
 
     if (isDateInput) {
       final datePickerStyle = MaterialRoundedDatePickerStyle(
-        backgroundHeader: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // header
         backgroundActionBar: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // footer
+        backgroundHeader: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // header
         backgroundHeaderMonth: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[850]!),
-        textStyleDayButton: TextStyle(fontSize: 18, color: h!.textColor()), // header tanggal
-        textStyleYearButton: const TextStyle(fontSize: 45, color: Colors.white), // header tahun
-        textStyleDayHeader: TextStyle(fontSize: 11, color: h!.textColor().withOpacity(0.54)), // M S S R K J S
-        textStyleCurrentDayOnCalendar: TextStyle(fontSize: 16, color: h!.pickColor(APP_UI_COLOR_MAIN, APP_UI_COLOR[300]!)),
-        textStyleDayOnCalendar: TextStyle(fontSize: 16, color: h!.textColor()),
-        textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, color: h!.bgColor(), fontWeight: FontWeight.bold),
-        textStyleMonthYearHeader: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold), // Februari 2020
-        paddingDatePicker: EdgeInsets.zero,
-        paddingMonthHeader: const EdgeInsets.all(14),
-        paddingActionBar: EdgeInsets.zero,
         colorArrowNext: Colors.white,
         colorArrowPrevious: Colors.white,
+        paddingActionBar: EdgeInsets.zero,
+        paddingDatePicker: EdgeInsets.zero,
+        paddingMonthHeader: const EdgeInsets.all(14),
         textStyleButtonAction: const TextStyle(fontSize: 14, color: Colors.white),
         textStyleButtonPositive: const TextStyle(fontSize: 14, color: Colors.white),
         textStyleButtonNegative: const TextStyle(fontSize: 14, color: Colors.white),
+        textStyleCurrentDayOnCalendar: TextStyle(fontSize: 16, color: h!.pickColor(APP_UI_COLOR_MAIN, APP_UI_COLOR[300]!)),
+        textStyleDayButton: TextStyle(fontSize: 18, color: h!.textColor()), // header tanggal
+        textStyleDayHeader: TextStyle(fontSize: 11, color: h!.textColor().withOpacity(0.54)), // M S S R K J S
+        textStyleDayOnCalendar: TextStyle(fontSize: 16, color: h!.textColor()),
+        textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, color: h!.backgroundColor(), fontWeight: FontWeight.bold),
+        textStyleMonthYearHeader: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold), // Februari 2020
+        textStyleYearButton: const TextStyle(fontSize: 45, color: Colors.white), // header tahun
       );
 
       final yearPickerStyle = MaterialRoundedYearPickerStyle(
@@ -470,10 +474,12 @@ class _MyInputFieldState extends State<MyInputField> {
             firstDate: min,
             lastDate: max,
             borderRadius: 16, //APP_UI_BORDER_RADIUS,
-            locale: APP_LOCALE,
+            locale: context.locale,
             initialDatePickerMode: widget.inputType == MyInputType.BIRTHDATE ? DatePickerMode.year : DatePickerMode.day,
             theme: ThemeProvider.themeOf(context).data,
-            customWeekDays: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+            customWeekDays: context.locale.languageCode == "id"
+              ? ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
+              : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
             onTapDay: (dateTime, available) => available,
             styleDatePicker: datePickerStyle,
             styleYearPicker: yearPickerStyle
@@ -768,8 +774,10 @@ class _MyInputSelectState extends State<MyInputSelect> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 const SizedBox(width: 4,),
-                widget.icon == null ? const SizedBox() : Icon(widget.icon, size: 19.5, color: Colors.grey,),
-                widget.icon == null ? const SizedBox() : const SizedBox(width: 14,),
+                widget.icon == null ? const SizedBox() : Padding(
+                  padding: const EdgeInsets.only(right: 14.0),
+                  child: Icon(widget.icon, size: 19.5, color: Colors.grey,),
+                ),
                 DropdownButtonHideUnderline(
                   child: DropdownButton<MenuModel>(
                     isDense: true,
@@ -953,8 +961,8 @@ class MyLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     String caption = "";
 
-    if (message != null) caption += "$message ...";
-    if (progress != null && progress! > 0) caption += "${(progress! * 100).toStringAsFixed(1)}%";
+    if (message != null && message!.isNotEmpty) caption += "$message ...";
+    if (progress != null && progress! > 0) caption += f!.formatPercentage(progress!, 1);
 
     return IgnorePointer(
       ignoring: !isLoading,
@@ -963,7 +971,7 @@ class MyLoader extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         child: Container(
           width: double.infinity,
-          color: Colors.white,
+          color: h!.backgroundColor(),
           child: isLoading ? Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -996,11 +1004,11 @@ class MyPlaceholder extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Image.asset(content.image ?? 'assets/images/onboarding/2.png', width: MediaQuery.of(context).size.width * .69),
-        Image.asset(content.image ?? 'assets/images/onboarding/2.png', width: 200),
-        Text(content.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
+        Image.asset(content.image ?? 'assets/images/onboarding/2.png', width: MediaQuery.of(context).size.width * .69),
+        const SizedBox(height: 30,),
+        Text(content.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),),
         const SizedBox(height: 12,),
-        Text(content.description!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey,),),
+        Text(content.description!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, color: Colors.grey,),),
         onRetry == null ? const SizedBox() : Padding(
           padding: const EdgeInsets.only(top: 30.0),
           child: MyButton(retryLabel ?? tr('action_retry'), onPressed: onRetry),
@@ -1083,7 +1091,9 @@ class MyFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
       Html(
-        data: 'Menggunakan aplikasi ini berarti menyetujui <a href="$APP_URL_TERMS"><strong>Syarat & Aturan</strong></a> dan <a href="$APP_URL_PRIVACY"><strong>Kebijakan Privasi</strong></a>.',
+        data: context.locale.languageCode == "id"
+          ? 'Menggunakan aplikasi ini berarti menyetujui <a href="$APP_URL_TERMS"><strong>Syarat & Aturan</strong></a> dan <a href="$APP_URL_PRIVACY"><strong>Kebijakan Privasi</strong></a>.'
+          : 'Using this application means agreeing to the <a href="$APP_URL_TERMS"><strong>Terms of Use</strong></a> and <a href="$APP_URL_PRIVACY"><strong>Privacy Policy</strong></a>.',
         style: {
           "body": Style(
             margin: EdgeInsets.zero,
@@ -1291,7 +1301,7 @@ class MySearchBar extends StatefulWidget {
     this.actionColor,
     this.searchController,
     this.searchFocusNode,
-    this.searchPlaceholder = "Search data ...",
+    this.searchPlaceholder,
     this.dataType,
     this.filterValues = const {},
     this.onFilter,
@@ -1299,7 +1309,7 @@ class MySearchBar extends StatefulWidget {
   
   final TextEditingController? searchController;
   final FocusNode? searchFocusNode;
-  final String searchPlaceholder;
+  final String? searchPlaceholder;
   final Widget? tool;
   final double? height;
   final Color? backgroundColor;
@@ -1316,7 +1326,7 @@ class _MySearchBarState extends State<MySearchBar> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: widget.height ?? (APP_UI_INPUT_HEIGHT + 32),
+      height: widget.height ?? (APP_UI_INPUT_HEIGHT + 20),
       child: Material(
         color: widget.backgroundColor ?? APP_UI_COLOR_LIGHT,
         elevation: 0,
@@ -1325,10 +1335,12 @@ class _MySearchBarState extends State<MySearchBar> {
           children: <Widget>[
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(left: 15, top: 15),
+                padding: const EdgeInsets.only(left: 15, top: 10),
                 child: MyInputField(
-                  label: widget.searchPlaceholder,
+                  color: h!.backgroundColor(Colors.white),
+                  label: widget.searchPlaceholder ?? tr("placeholder.search"),
                   key: ValueKey(widget.searchPlaceholder),
+                  size: MyButtonSize.SMALL,
                   isClearable: true,
                   showLabel: false,
                   icon: LineIcons.search,
@@ -1344,7 +1356,7 @@ class _MySearchBarState extends State<MySearchBar> {
                 padding: EdgeInsets.zero,
                 icon: const Icon(Icons.sort),
                 color: widget.actionColor ?? Colors.grey[850]!,
-                tooltip: tr('prompt_sort'),
+                tooltip: tr('action_filter'),
                 onPressed: () async {
                   final filter = await h!.showDialog(
                     MySearchFilter(
@@ -1405,11 +1417,9 @@ class _MySearchFilterState extends State<MySearchFilter> {
         ) : const SizedBox(),
         const Divider(),
         MyButton(
-          "Terapkan",
-          size: MyButtonSize.MEDIUM,
-          color: Colors.green,
-          icon: Icons.check_circle_outline,
-          iconRight: true,
+          tr("action_apply"),
+          size: MyButtonSize.SMALL,
+          icon: Icons.check,
           onPressed: () => Navigator.of(context).pop({
             'isCanDeliver': _isCanDeliver,
           }),

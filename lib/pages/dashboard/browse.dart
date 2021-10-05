@@ -268,7 +268,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final toolbarHeight = APP_UI_INPUT_HEIGHT + 32;
+    const toolbarHeight = APP_UI_INPUT_HEIGHT + 20;
     return SafeArea(
       child: Stack(
         alignment: Alignment.topCenter,
@@ -281,7 +281,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
 
           StaggeredGridView.countBuilder(
             controller: _scrollController,
-            padding: EdgeInsets.only(left: 15, right: 15, bottom: 15, top: toolbarHeight),
+            padding: const EdgeInsets.only(left: 15, right: 15, bottom: 15, top: toolbarHeight),
             crossAxisCount: ITEM_PER_ROW, // TODO responsive based on resolution
             itemCount: _listItemFiltered.length + 1, // add loader
             itemBuilder: (context, index) {
@@ -319,7 +319,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
                     return MySearchBar(
                       searchController: _searchController,
                       searchFocusNode: _searchFocusNode,
-                      searchPlaceholder: tr(settings.isViewFavorites ? 'prompt_search_favorites' : 'prompt_search_listing'),
+                      searchPlaceholder: tr(settings.isViewFavorites ? 'placeholder.search_favorites' : 'placeholder.search_listing'),
                       height: toolbarHeight,
                       dataType: 'listing',
                       filterValues: _filterValues,

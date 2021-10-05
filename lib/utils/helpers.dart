@@ -55,8 +55,8 @@ class UIHelper {
       builder: (_, controller) {
         return Flash(
           controller: controller,
-          backgroundColor: Colors.white,
-          brightness: Brightness.light,
+          backgroundColor: h!.backgroundColor(),
+          brightness: ThemeProvider.themeOf(context).data.brightness,
           boxShadows: [BoxShadow(color: Colors.grey[800]!, blurRadius: 8.0)],
           barrierBlur: 3.0,
           barrierColor: Colors.black38,
@@ -137,14 +137,15 @@ class UIHelper {
       transitionBuilder: (context, a1, a2, widget) {
         final _curvedValue = Curves.easeInOutBack.transform(a1.value);
         return Theme(
-          data: Theme.of(context),
+          // data: Theme.of(context),
+          data: ThemeProvider.themeOf(context).data,
           child: Transform(
             transform: Matrix4.identity()..scale(1.0, 0.5 + _curvedValue / 2, 1.0),
             child: Opacity(
               opacity: a1.value,
               child: SafeArea(
                 child: AlertDialog(
-                  backgroundColor: Colors.white,
+                  backgroundColor: h!.backgroundColor(),
                   shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
                   title: title == null ? const SizedBox() : Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18.0),),
                   titlePadding: title == null ? const EdgeInsets.only(top: 24) : const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 12),
@@ -269,9 +270,10 @@ class UIHelper {
 
   /// pilih warna berdasarkan tema yang aktif
   bool isLightMode() => ThemeProvider.themeOf(context).id == APP_UI_THEME_LIGHT;
-  Color pickColor(Color light, Color dark) => isLightMode() ? light : dark;
-  Color textColor([Color? defaultColor]) => pickColor(defaultColor ?? Colors.black, Colors.white);
-  Color bgColor() => pickColor(Colors.white, Colors.black);
+  bool isDarkMode() => ThemeProvider.themeOf(context).id == APP_UI_THEME_DARK;
+  Color? pickColor(Color? light, Color? dark) => isLightMode() ? light : dark;
+  Color backgroundColor([Color? lightColor]) => pickColor(lightColor ?? APP_UI_BACKGROUND_LIGHT, APP_UI_BACKGROUND_DARK)!;
+  Color textColor([Color? lightColor]) => pickColor(lightColor ?? Colors.black, Colors.white)!;
 }
 
 class FormatHelper {

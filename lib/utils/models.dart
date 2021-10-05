@@ -149,8 +149,10 @@ class UserModel {
     required this.image,
     required this.listingCount,
     required this.shopCount,
+    required this.favoriteCount,
     required this.isMine,
     required this.isNear,
+    required this.isFavorite,
     required this.lastActive,
     required this.lastLatitude,
     required this.lastLongitude,
@@ -166,8 +168,10 @@ class UserModel {
   final String image;
   final int? listingCount;
   final int? shopCount;
+  final int? favoriteCount;
   final bool? isMine;
   final bool? isNear;
+  final bool? isFavorite;
   final DateTime lastActive;
   final double lastLatitude;
   final double lastLongitude;
@@ -183,8 +187,10 @@ class UserModel {
     image = row['image'],
     listingCount = int.tryParse(row['listing_count']??""),
     shopCount = int.tryParse(row['shop_count']??""),
+    favoriteCount = int.tryParse(row['favorite_count']??""),
     isMine = row['is_mine'],
     isNear = row['is_near'],
+    isFavorite = row['is_favorite'],
     lastActive = DateTime.parse(row['last_active']),
     lastLatitude = double.parse(row['last_latitude']),
     lastLongitude = double.parse(row['last_longitude']),

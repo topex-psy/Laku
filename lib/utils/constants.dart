@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 const APP_NAME           = "Laku";
 const APP_DESCRIPTION    = "Aplikasi super praktis buat ngiklan apa aja ke sekitarmu.";
-const APP_TAGLINE        = "Jepret aja biar laku";
+const APP_TAGLINE        = "Yakin laku pake Yaku";
 const APP_COPYRIGHT      = "TaufikNur Production";
 const APP_LOCALE         = Locale('id', 'ID');
 const APP_LOCALE_SUPPORT = [Locale('id', 'ID'), Locale('en', 'US')];
@@ -17,7 +17,7 @@ const APP_UI_BORDER_COLOR  = Colors.grey;
 const APP_UI_BORDER_RADIUS = 50.0;
 const APP_UI_CARD_ELEVATION = 4.0;
 const APP_UI_CARD_RADIUS = 8.0;
-const APP_UI_INPUT_HEIGHT = 50.0;
+const APP_UI_INPUT_HEIGHT = 48.0;
 
 // colors from: https://maketintsandshades.com/#009688
 const APP_UI_COLOR_MAIN    = Color(0xFF009688);
@@ -40,8 +40,10 @@ const APP_UI_COLOR = MaterialColor(0xFFDC143C, <int, Color>{
   800: Color(0xFF003C36),
   900: Color(0xFF001E1B),
 },);
-const APP_UI_FONT_MAIN      = 'Lato';
-const APP_UI_FONT_SECONDARY = 'Quicksand';
+const APP_UI_FONT_MAIN      = "Lato";
+const APP_UI_FONT_SECONDARY = "Quicksand";
+const APP_UI_BACKGROUND_LIGHT = Color(0xFFF2FAF9);
+const APP_UI_BACKGROUND_DARK  = Color(0xFF262224);
 const APP_UI_THEME_LIGHT    = "theme_light";
 const APP_UI_THEME_DARK     = "theme_dark";
 
