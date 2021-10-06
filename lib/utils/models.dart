@@ -28,11 +28,11 @@ class RegisterModel {
     required this.email,
     required this.gender,
     required this.dob,
-    required this.lastLatitude,
-    required this.lastLongitude,
-    required this.image,
     required this.isFingerPrint,
     required this.isFacebook,
+    this.lastLatitude,
+    this.lastLongitude,
+    this.image,
   });
 
   final String name;
@@ -40,8 +40,8 @@ class RegisterModel {
   final String email;
   final String gender;
   final String dob;
-  final double lastLatitude;
-  final double lastLongitude;
+  final double? lastLatitude;
+  final double? lastLongitude;
   final String? image;
   final bool isFingerPrint;
   final bool isFacebook;

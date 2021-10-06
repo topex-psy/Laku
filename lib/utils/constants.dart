@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-const APP_NAME           = "Laku";
+const APP_NAME           = "Yaku";
 const APP_DESCRIPTION    = "Aplikasi super praktis buat ngiklan apa aja ke sekitarmu.";
 const APP_TAGLINE        = "Yakin laku pake Yaku";
 const APP_COPYRIGHT      = "TaufikNur Production";
 const APP_LOCALE         = Locale('id', 'ID');
 const APP_LOCALE_SUPPORT = [Locale('id', 'ID'), Locale('en', 'US')];
 const APP_PHONE_CODE     = '+62';
-const APP_URL_HOST       = "https://www.taufiknur.com/laku";
+const APP_URL_HOST       = "https://www.taufiknur.com/yaku";
 const APP_URL_PRIVACY    = "$APP_URL_HOST/privacy";
 const APP_URL_TERMS      = "$APP_URL_HOST/terms";
 const APP_URL_API        = "$APP_URL_HOST/api";

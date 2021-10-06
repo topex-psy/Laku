@@ -15,7 +15,7 @@ class SettingsProvider with ChangeNotifier {
   NotifModel? _notif;
 
   SettingsProvider() {
-    _isGettingAddress = false;
+    _isGettingAddress = true;
     _isUploadListing = false;
     _isViewFavorites = false;
     // loadPreferences();

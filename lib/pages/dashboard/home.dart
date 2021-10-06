@@ -1,11 +1,9 @@
-// import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -28,8 +26,15 @@ enum UserNotifType {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, this.isOpen = false}) : super(key: key);
+  const HomePage({
+    Key? key,
+    this.isOpen = false,
+    this.isReady = false,
+    // required this.onGetAllData
+  }) : super(key: key);
   final bool isOpen;
+  final bool isReady;
+  // final VoidCallback onGetAllData;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -55,10 +60,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _spinController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
-    );
+    )..forward();
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      _getCurrentAddress();
+      _getAllData();
     });
   }
 
@@ -71,49 +76,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  _getCurrentAddress() async {
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    settings.setSettings(isGettingAddress: true);
-    _spinController.forward();
-
-    print("... GETTING MY ADDRESS");
-
-    var address = settings.address;
-    List<Placemark> addresses = await placemarkFromCoordinates(settings.lastLatitude!, settings.lastLongitude!);
-    if (addresses.isNotEmpty) {
-      address = addresses.first;
-      print(
-        "... GET ADDRESS result"
-        "\n name: ${address.name}"
-        "\n address: ${address.street}"
-        "\n streetName: ${address.thoroughfare}"
-        "\n streetNo: ${address.subThoroughfare}"
-        "\n kelurahan: ${address.subLocality}"
-        "\n kecamatan: ${address.locality}"
-        "\n city: ${address.subAdministrativeArea}"
-        "\n zip: ${address.postalCode}"
-        "\n province: ${address.administrativeArea}"
-        "\n countryName: ${address.country}"
-        "\n countryCode: ${address.isoCountryCode}"
-      );
-    }
-    _spinController.reset();
-    settings.setSettings(address: address, isGettingAddress: false);
-  }
-
   _getAllData() async {
-    if (!mounted) return;
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    if (settings.isGettingAddress || settings.lastLatitude == null || settings.lastLongitude == null) {
-      return;
-    }
-    _getCurrentAddress();
+    if (!mounted || !widget.isReady) return;
+    _spinController.forward();
+    // await widget.onGetAllData();
     await u!.loadNotif();
+    _spinController.reset();
     if (mounted && _isLoading) {
       setState(() {
-        _isLoading = false;
-      });
+      _isLoading = false;
+    });
     }
+
+    // final settings = Provider.of<SettingsProvider>(context, listen: false);
+    // if (settings.lastLatitude == null || settings.lastLongitude == null) {
+    //   return;
+    // }
+    // await u!.loadNotif();
+    // if (mounted && _isLoading) {
+    //   setState(() {
+    //     _isLoading = false;
+    //   });
+    // }
   }
 
   List<LineChartBarData> _getLineChartBarData() {
@@ -315,7 +299,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             if (settings.isGettingAddress || settings.address == null) {
                                               return const SizedBox(
                                                 width: 50.0,
-                                                height: 46.0,
+                                                height: 45.0,
                                                 child: SpinKitThreeBounce(color: Colors.white, size: 30.0,),
                                               );
                                             }
@@ -442,7 +426,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   //   ),
                                   // ),
 
-                                  Center(child: Text('prompt_current_items'.tr(), textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                                  Center(child: Text('current_items'.tr(), textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
                                   const SizedBox(height: 12,),
                                   const CardList(UserNotifType.listingPosted),
                                   const CardList(UserNotifType.broadcastActive),
@@ -543,7 +527,7 @@ class _CardBoxState extends State<CardBox> {
           icon: LineIcons.binoculars,
           color: Colors.orange,
           onPressed: () {
-            // TODO list iklan WTB near
+            // TODO list iklan WTB near (card swiper)
           },
         );
         break;
@@ -587,7 +571,7 @@ class _CardBoxState extends State<CardBox> {
                   Text(menu.label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),),
                   const SizedBox(height: 14,),
                   Row(children: <Widget>[
-                    Expanded(child: Text('prompt_more'.tr(), style: const TextStyle(fontSize: 12, color: Colors.white70),)),
+                    Expanded(child: Text('action_more'.tr(), style: const TextStyle(fontSize: 12, color: Colors.white70),)),
                     const SizedBox(width: 8,),
                     const Icon(LineIcons.chevronCircleRight, color: Colors.white70, size: 15,)
                   ],)
@@ -616,13 +600,6 @@ class _CardListState extends State<CardList> {
     late MenuModel menu;
     int? total;
 
-    // int notif;
-    // VoidCallback action;
-    // String buttonLabel, label;
-    // IconData buttonIcon;
-    // double buttonWidth;
-    // Color buttonColor = Colors.teal[300]!;
-
     switch (widget.notif) {
       case UserNotifType.listingFavorites:
         total = settings.notif?.listingFavorites;
@@ -633,7 +610,6 @@ class _CardListState extends State<CardList> {
           icon: LineIcons.shoppingCart,
           color: Colors.pink[300]!,
           additionalValue: "Cek",
-          size: 90,
           onPressed: () {
             settings.setSettings(isViewFavorites: true);
             u!.navigatePage(TAB_BROWSE);
@@ -649,7 +625,6 @@ class _CardListState extends State<CardList> {
           icon: total == 0 ? LineIcons.plusCircle : LineIcons.dropbox,
           color: Colors.pink[300]!,
           additionalValue: total == 0 ? "Buat" : "Kelola",
-          size: total == 0 ? 98 : 110,
           onPressed: () {
             u!.openMyListings();
           },
@@ -664,7 +639,6 @@ class _CardListState extends State<CardList> {
           icon: LineIcons.binoculars,
           color: Colors.pink[300]!,
           additionalValue: "Lihat",
-          size: 100,
           onPressed: () {
             // TODO buka kelola pencarian
           },
@@ -680,7 +654,6 @@ class _CardListState extends State<CardList> {
           icon: LineIcons.inbox,
           color: Colors.orange[300]!,
           additionalValue: "Cek",
-          size: 90,
           onPressed: () {
             // TODO buka kelola pesan
           },
@@ -701,16 +674,13 @@ class _CardListState extends State<CardList> {
           Text(f!.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
           const SizedBox(width: 8,),
           Expanded(child: Text(menu.label)),
-          SizedBox(
-            width: menu.size,
-            child: MyButton(
-              menu.additionalValue,
-              color: menu.color,
-              // textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
-              icon: menu.icon,
-              iconRight: true,
-              onPressed: menu.onPressed,
-            ),
+          MyButton(
+            menu.additionalValue,
+            size: MyButtonSize.SMALLER,
+            color: menu.color,
+            icon: menu.icon,
+            iconRight: true,
+            onPressed: menu.onPressed,
           ),
         ],),
       ),

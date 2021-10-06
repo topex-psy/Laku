@@ -27,7 +27,6 @@ import 'providers.dart';
 import 'variables.dart';
 import 'widgets.dart';
 
-const ENABLE_GALLERY_UPLOAD = true;
 const MAX_IMAGE_UPLOAD = 10;
 enum MyCallbackType {
   success,
@@ -423,6 +422,7 @@ class UserHelper {
     int? maximum,
     List<AssetEntity> selectedList = const [],
     List<String> uploadedList = const [],
+    bool withGallery = true,
   }) async {
     final maxSelect = maximum ?? MAX_IMAGE_UPLOAD;
     final numImages = selectedList.length;
@@ -438,7 +438,7 @@ class UserHelper {
 
     ImageSource? source = ImageSource.camera;
 
-    if (ENABLE_GALLERY_UPLOAD) {
+    if (withGallery) {
       source = await h!.showDialog(
         Column(
           children: pickImageOptions.map((menu) {
@@ -493,16 +493,17 @@ class UserHelper {
   Future<String?> promptPIN({String? title, bool showForgot = true, bool showUsePassword = true}) async {
     return await h!.showDialog(
       MyInputPIN(
-        title: title ?? "Masukkan PIN",
+        title: title ?? 'placeholder.pin'.tr(),
         showForgot: showForgot,
         showUsePassword: showUsePassword,
       ),
-      closeButtonText: "Batal",
+      closeButtonText: 'action_cancel'.tr(),
       isDismissible: false,
     );
   }
 
   Future<void> firebaseUpdateProfile({String? name, String? image}) async {
+    // TODO firebase update profile
     // final user = await FirebaseAuth.instance.currentUser();
     // final info = UserUpdateInfo();
     // if (name != null) info.displayName = name;
@@ -511,11 +512,13 @@ class UserHelper {
   }
 
   Future<void> firebaseUpdatePhoneNumber(AuthCredential credential) async {
+    // TODO firebase update phone
     // final user = await FirebaseAuth.instance.currentUser();
     // return user?.updatePhoneNumberCredential(credential);
   }
 
   Future<void> firebaseUpdateEmail(String email) async {
+    // TODO firebase update email
     // final user = await FirebaseAuth.instance.currentUser();
     // return user?.updateEmail(email);
   }
@@ -532,7 +535,7 @@ class UserHelper {
   openProfile() => navigatePage(TAB_PROFILE);
 
   Future<bool> loadNotif() async {
-    final notifResult = await ApiProvider(context).api("user/notif", method: "get", withLog: true, getParams: { 'id': session!.id.toString() });
+    final notifResult = await ApiProvider(context).api("user/notif", method: "get", withLog: true, getParams: { 'uid': session!.id.toString() });
     if (notifResult.isSuccess) {
       Provider.of<SettingsProvider>(context, listen: false).setSettings(
         notif: NotifModel.fromJson(notifResult.data.first)

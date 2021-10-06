@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
     <application
-        android:label="Laku"
+        android:label="Yaku"
         android:icon="@mipmap/launcher_icon">
 
         <meta-data

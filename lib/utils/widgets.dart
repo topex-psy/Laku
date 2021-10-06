@@ -377,7 +377,8 @@ class _MyInputFieldState extends State<MyInputField> {
       hintMaxLines: widget.inputType == MyInputType.NOTE ? null : 1,
       hintStyle: const TextStyle(color: Colors.grey),
       filled: true,
-      fillColor: widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white.withOpacity(.2)),
+      // fillColor: widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white.withOpacity(.2)),
+      fillColor: widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : h!.backgroundColor(Colors.white)),
       isDense: true,
     );
   }
@@ -550,12 +551,28 @@ class _MyInputPINState extends State<MyInputPIN> {
   var _usePassword = false;
   var _isSendingRecoveryEmail = false;
   var _pressKey = 0;
+  String? _passwordError;
 
   final TextEditingController textController = TextEditingController();
   final FocusNode textFocus = FocusNode();
 
+  _submitPassword(String password) {
+    if (textController.text.isEmpty) {
+      setState(() {
+        _passwordError = "Masukkan kata sandi";
+      });
+    } else {
+      Navigator.of(context).pop(password);
+    }
+  }
+
   @override
   void initState() {
+    textController.addListener(() {
+      setState(() {
+        _passwordError = null;
+      });
+    });
     super.initState();
   }
 
@@ -608,13 +625,21 @@ class _MyInputPINState extends State<MyInputPIN> {
         widget.showForgot
         ? Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child: _isSendingRecoveryEmail ? const MyMiniLoader() : GestureDetector(
-            child: const Chip(label: Text("Lupa?", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),),),
-            onTap: () async {
-              setState(() { _isSendingRecoveryEmail = true; });
-              await u!.forgotPassword();
-              setState(() { _isSendingRecoveryEmail = false; });
-            },
+          child: _isSendingRecoveryEmail ? const MyMiniLoader() : Material(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.grey[300],
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                child: Text('action_forgot'.tr(), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),),
+              ),
+              onTap: () async {
+                setState(() { _isSendingRecoveryEmail = true; });
+                await u!.forgotPassword();
+                setState(() { _isSendingRecoveryEmail = false; });
+              },
+            ),
           ),
         )
         : const SizedBox(),
@@ -624,19 +649,27 @@ class _MyInputPINState extends State<MyInputPIN> {
         children: _usePassword ? <Widget>[
           const SizedBox(height: 20,),
           MyInputField(
-            label: "Kata sandi",
+            label: 'placeholder.password'.tr(),
             inputType: MyInputType.PASSWORD,
             controller: textController,
             focusNode: textFocus,
-            onSubmitted: (val) => Navigator.of(context).pop(val)
+            onSubmitted: (password) {
+              _submitPassword(password);
+            },
+            error: _passwordError,
           ),
           const SizedBox(height: 12.0,),
-          MyButton("Masuk", fullWidth: true, onPressed: () => Navigator.of(context).pop(textController.text),),
+          MyButton('action_login'.tr(), fullWidth: true, onPressed: () {
+            _submitPassword(textController.text);
+          },),
           const SizedBox(height: 20,),
           GestureDetector(
-            child: const Text("Gunakan PIN", style: TextStyle(color: APP_UI_COLOR_MAIN, fontSize: 15, fontWeight: FontWeight.w600),),
+            child: Text('action_use_pin'.tr(), style: const TextStyle(color: APP_UI_COLOR_MAIN, fontSize: 15, fontWeight: FontWeight.w600),),
             onTap: () {
-              setState(() { _usePassword = false; });
+              setState(() {
+                _passwordError = null;
+                _usePassword = false;
+              });
               textController.text = '';
             },
           ),
@@ -681,10 +714,11 @@ class _MyInputPINState extends State<MyInputPIN> {
           widget.showUsePassword ? Padding(
             padding: const EdgeInsets.only(top: 20.0),
             child: GestureDetector(
-              child: const Text("Gunakan kata sandi", style: TextStyle(color: APP_UI_COLOR_MAIN, fontSize: 15, fontWeight: FontWeight.w600),),
+              child: Text("action_use_password".tr(), style: const TextStyle(color: APP_UI_COLOR_MAIN, fontSize: 15, fontWeight: FontWeight.w600),),
               onTap: () {
                 setState(() { _usePassword = true; });
                 textController.text = '';
+                textFocus.requestFocus();
               },
             ),
           ) : const SizedBox(),
@@ -1337,7 +1371,7 @@ class _MySearchBarState extends State<MySearchBar> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 15, top: 10),
                 child: MyInputField(
-                  color: h!.backgroundColor(Colors.white),
+                  // color: h!.backgroundColor(Colors.white),
                   label: widget.searchPlaceholder ?? tr("placeholder.search"),
                   key: ValueKey(widget.searchPlaceholder),
                   size: MyButtonSize.SMALL,

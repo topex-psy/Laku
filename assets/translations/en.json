@@ -1,5 +1,6 @@
 {
   "action_apply": "Apply",
+  "action_cancel": "Cancel",
   "action_retry": "Retry",
   "action_continue": "Continue",
   "action_create": {
@@ -10,18 +11,28 @@
     "camera": "Camera",
     "gallery": "Select from Gallery"
   },
+  "action_login": "Login",
+  "action_login_facebook": "Login with Facebook",
   "action_filter": "Filter",
   "action_sort": "Sort",
+  "action_more": "More",
+  "action_use_password": "Gunakan password",
+  "action_use_pin": "Use PIN",
+  "action_forgot": "Forgot?",
   "placeholder": {
+    "password": "Password",
+    "pin": "Input PIN",
     "search": "Search data ...",
     "search_favorites": "Search favorites ...",
     "search_listing": "Search listings ..."
   },
   "current_location": "You're currently at:",
+  "current_items": "You have:",
   "gender": {
     "male": "Laki-Laki",
     "female": "Perempuan"
   },
+  "menu_favorites": "Favorites",
   "menu_bottom": {
     "home": "Home",
     "browse": "Browse",

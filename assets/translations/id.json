@@ -1,5 +1,6 @@
 {
   "action_apply": "Terapkan",
+  "action_cancel": "Batal",
   "action_retry": "Coba Lagi",
   "action_continue": "Lanjutkan",
   "action_create": {
@@ -10,18 +11,28 @@
     "camera": "Kamera",
     "gallery": "Pilih dari Galeri"
   },
+  "action_login": "Masuk",
+  "action_login_facebook": "Login dengan Facebook",
   "action_filter": "Filter",
   "action_sort": "Urutkan",
+  "action_more": "Selebihnya",
+  "action_use_password": "Gunakan kata sandi",
+  "action_use_pin": "Gunakan PIN",
+  "action_forgot": "Lupa?",
   "placeholder": {
+    "password": "Kata sandi",
+    "pin": "Masukkan PIN",
     "search": "Cari data ...",
     "search_favorites": "Cari favorit ...",
     "search_listing": "Cari iklan ..."
   },
   "current_location": "Kamu berada di:",
+  "current_items": "Kamu punya:",
   "gender": {
     "male": "Male",
     "female": "Female"
   },
+  "menu_favorites": "Favorit",
   "menu_bottom": {
     "home": "Beranda",
     "browse": "Temukan",

@@ -6,7 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:local_auth/local_auth.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
@@ -43,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
   var _enableFingerprint = false;
 
   dynamic _userPic;
-  Position? _position;
+  // Position? _position;
   late String _method;
 
   _dismissError(String tag) {
@@ -157,8 +157,8 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
       email: _emailController.text,
       gender: _gender.value,
       dob: _dobController.text,
-      lastLatitude: _position!.latitude,
-      lastLongitude: _position!.longitude,
+      // lastLatitude: _position!.latitude,
+      // lastLongitude: _position!.longitude,
       image: compressedImage,
       isFingerPrint: _enableFingerprint,
       isFacebook: _method == "facebook",
@@ -214,14 +214,14 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     _emailController.addListener(() { if (_emailController.text.isNotEmpty) _dismissError("email"); });
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      final Position? position = await l.checkGPS();
-      if (position is Position) {
-        setState(() {
-          _position = position;
-        });
-      } else {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      }
+      // final Position? position = await l.checkGPS();
+      // if (position is Position) {
+      //   setState(() {
+      //     _position = position;
+      //   });
+      // } else {
+      //   Navigator.of(context).popUntil((route) => route.isFirst);
+      // }
     });
   }
 

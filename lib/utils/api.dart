@@ -12,7 +12,7 @@ class ApiProvider {
 
   final BuildContext context;
   final baseOptions = BaseOptions(
-    baseUrl: isDebugMode ? "http://192.168.1.68/laku/api" : APP_URL_API,
+    baseUrl: isDebugMode ? "http://192.168.1.68/yaku/api" : APP_URL_API,
     connectTimeout: 60000,
     receiveTimeout: 60000,
     sendTimeout: 60000,
@@ -79,7 +79,7 @@ class ApiModel {
     data = responseBody != null && responseBody["success"]
       ? List.from(responseBody.containsKey("rows") ? responseBody["rows"] : [responseBody]).map((res) => Map<String, dynamic>.from(res)).toList()
       : [],
-    message = responseBody != null ? responseBody["message"] : "null response",
+    message = responseBody != null ? (responseBody["message"] ?? "no-message") : "null-response",
     totalAll = responseBody != null && responseBody.containsKey("total_all") ? responseBody["total_all"] : 0;
 
   @override
