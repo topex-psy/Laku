@@ -18,6 +18,8 @@ import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
 import 'package:theme_provider/theme_provider.dart';
+import 'package:upgrader/upgrader.dart';
+import 'package:vibration/vibration.dart';
 import 'dashboard/home.dart';
 import 'dashboard/browse.dart';
 import 'dashboard/broadcast.dart';
@@ -232,6 +234,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   _runListeners() {
+    Vibration.vibrate(duration: 200, amplitude: 1);
     _listenGPSStatus();
     _listenPosition();
     _listenNotification();
@@ -239,11 +242,13 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   _create(String what) async {
-    final resultList = await u?.browsePicture(maximum: SETUP_MAX_LISTING_IMAGES) ?? [];
+    final resultList = await u?.browsePicture(maximum: profile!.tier.maxListingPic) ?? [];
     if (resultList.isNotEmpty) {
-      // TODO send resultList to create page
-      final createResult = await Navigator.pushNamed(context, ROUTE_CREATE);
+      final createResult = await Navigator.pushNamed(context, ROUTE_CREATE, arguments: {
+        "selectedAssets": resultList,
+      });
       print("createResult: $createResult");
+      reInitContext(context);
     }
   }
 
@@ -276,14 +281,13 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     ]);
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      setState(() {
-        _version = packageInfo.version;
-      });
-
-      // check position permission
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
       _checkLocationPermission();
+      PackageInfo.fromPlatform().then((packageInfo) {
+        setState(() {
+          _version = packageInfo.version;
+        });
+      });
     });
   }
 
@@ -407,9 +411,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      // TODO header sidebar
-                      // ProfileCard(avatarSize: 50,),
-                      // SizedBox(height: 20,),
+                      const MyProfileCard(avatarSize: 50,),
+                      const SizedBox(height: 20,),
                       DashboardNavMenu(
                         menus: [
                           MenuModel("Mode Gelap: ${ThemeProvider.themeOf(context).id == APP_UI_THEME_LIGHT ? 'Off' : 'Aktif'}", "change_theme", icon: LineIcons.moon, onPressed: () {
@@ -435,7 +438,17 @@ class _DashboardPageState extends State<DashboardPage> {
                               children: [
                                 const Text(APP_NAME, style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500)),
                                 const SizedBox(height: 4,),
-                                Text(_version == null ? "" : "Ver $_version", style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
+                                UpgradeAlert(
+                                  child: Text(_version == null ? "Memeriksa update ..." : "Ver $_version", style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
+                                  debugAlwaysUpgrade: true,
+                                  // debugDisplayOnce: true,
+                                  dialogStyle: UpgradeDialogStyle.material,
+                                  canDismissDialog: false,
+                                  shouldPopScope: () => true,
+                                  showIgnore: false,
+                                  // countryCode: context.locale.countryCode,
+                                  // messages: UpgraderMessages(code: context.locale.languageCode),
+                                ),
                               ],
                             )),
                           ],

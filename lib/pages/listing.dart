@@ -32,8 +32,8 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _listActions = <MenuModel>[
     MenuModel("Edit", 'edit', icon: Icons.edit_attributes_outlined, color: Colors.blue),
-    MenuModel("Set Kosong", 'kosong', icon: Icons.close, color: Colors.yellow),
-    MenuModel("Hapus", 'hapus', icon: Icons.delete_outline, color: Colors.red),
+    MenuModel("Nonaktifkan", 'deactivate', icon: Icons.close, color: Colors.yellow),
+    MenuModel("Hapus", 'delete', icon: Icons.delete_outline, color: Colors.red),
   ];
   final _refreshController = RefreshController(initialRefresh: false);
 
@@ -86,24 +86,27 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
         }
         break;
       case 'edit':
-        // TODO edit listing
-        // final pasang = await a.openListingForm(edit: _item) as Map;
-        // if (pasang != null && pasang.containsKey('isSubmit')) {
-        //   _updateData();
-        // }
+        final editResult = await Navigator.pushNamed(context, ROUTE_CREATE, arguments: {
+          "item": _item,
+        }) as Map?;
+        print("editResult: $editResult");
+        reInitContext(context);
+        if (editResult?.containsKey('isSubmit') ?? false) {
+          _updateData();
+        }
         break;
       case 'edit_shop':
         break;
       case 'open_shop':
         break;
-      case 'hapus':
-        if (await h!.showConfirmDialog("Apakah Anda yakin ingin menghapus iklan ini?", title: "Hapus Iklan") ?? false) {
+      case 'delete':
+        if (await h!.showConfirmDialog('action_confirm'.tr(), title: 'action_delete_listing'.tr()) ?? false) {
           // TODO hapus iklan
         }
         break;
-      case 'kosong':
-        if (await h!.showConfirmDialog("Apakah Anda yakin stok produk ini telah habis?", title: "Set Kosong") ?? false) {
-          // TODO set kosong
+      case 'deactivate':
+        if (await h!.showConfirmDialog('action_confirm'.tr(), title: 'action_deacivate'.tr()) ?? false) {
+          // TODO nonaktif
         }
         break;
       case 'chat':

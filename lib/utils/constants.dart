@@ -26,6 +26,7 @@ const APP_UI_COLOR_SUCCESS = Color(0xFF08D159);
 const APP_UI_COLOR_WARNING = Color(0xFFDECB21);
 const APP_UI_COLOR_DANGER  = Color(0xFFFF1744);
 const APP_UI_COLOR_INFO    = Color(0xFF21A5DE);
+const APP_UI_COLOR_PRIMARY = Color(0xFF2176DE);
 const APP_UI_COLOR_SECONDARY = Color(0xFFD6D6D6);
 const APP_UI_COLOR_LIGHT   = Color(0xFFF1F3F1);
 const APP_UI_COLOR = MaterialColor(0xFFDC143C, <int, Color>{
@@ -40,10 +41,11 @@ const APP_UI_COLOR = MaterialColor(0xFFDC143C, <int, Color>{
   800: Color(0xFF003C36),
   900: Color(0xFF001E1B),
 },);
-const APP_UI_FONT_MAIN      = "Lato";
-const APP_UI_FONT_SECONDARY = "Quicksand";
+
 const APP_UI_BACKGROUND_LIGHT = Color(0xFFF2FAF9);
 const APP_UI_BACKGROUND_DARK  = Color(0xFF262224);
+const APP_UI_FONT_MAIN      = "Quicksand";
+const APP_UI_FONT_SECONDARY = "Lato";
 const APP_UI_THEME_LIGHT    = "theme_light";
 const APP_UI_THEME_DARK     = "theme_dark";
 
@@ -65,7 +67,6 @@ const DEFAULT_NONE_PIC_ASSET = "assets/images/none.png";
 
 const SETUP_IMAGE_COMPRESS_QUALITY = 75;
 const SETUP_IMAGE_COMPRESS_RESIZE = 1000;
-const SETUP_MAX_LISTING_IMAGES = 5;
 const SETUP_MAX_LENGTH_PIN = 6;
 const SETUP_MAX_LENGTH_CURRENCY = 15;
 const SETUP_MAX_USER_AGE = 100;

@@ -8,6 +8,7 @@ import 'models.dart';
 
 bool isDebugMode = false;
 SessionModel? session;
+UserModel? profile;
 UIHelper? h;
 UserHelper? u;
 FormatHelper? f;

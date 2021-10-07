@@ -33,8 +33,6 @@ class _LoginPageState extends State<LoginPage> {
   final _errorText = <String, String>{};
   var _isLoading = true;
 
-  UserModel? _userData;
-
   _dismissError(String tag) {
     if (_errorText.containsKey(tag)) {
       setState(() {
@@ -70,8 +68,8 @@ class _LoginPageState extends State<LoginPage> {
       });
     } else {
       print("user result: ${userResult.data.first}");
-      _userData = UserModel.fromJson(userResult.data.first);
-      print("user data: $_userData");
+      profile = UserModel.fromJson(userResult.data.first);
+      print("user data: $profile");
       _loginPIN();
     }
   }
@@ -110,10 +108,10 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     // store user data
-    session = SessionModel.fromUserModel(_userData!);
+    session = SessionModel.fromUserModel(profile!);
     Provider.of<SettingsProvider>(context, listen: false).setSettings(
-      lastLatitude: _userData!.lastLatitude,
-      lastLongitude: _userData!.lastLatitude,
+      lastLatitude: profile!.lastLatitude,
+      lastLongitude: profile!.lastLatitude,
     );
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('login_user_id', session!.id);

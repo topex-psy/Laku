@@ -10,7 +10,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:theme_provider/theme_provider.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import '../plugins/datetime_picker_formfield.dart';
+import '../plugins/image_gallery_viewer.dart';
 import '../plugins/image_viewer.dart';
 import 'constants.dart';
 import 'curves.dart';
@@ -1491,6 +1494,216 @@ class MySection extends StatelessWidget {
           ),
           ...children
         ],),
+      ),
+    );
+  }
+}
+
+class MyImageUpload extends StatelessWidget {
+  const MyImageUpload({
+    this.imageList = const [],
+    this.imageEditList = const [],
+    this.placeholder,
+    required this.onDelete,
+    required this.maximum,
+    Key? key
+  }) : super(key: key);
+  final List<AssetEntity> imageList;
+  final List<String> imageEditList;
+  final String? placeholder;
+  final void Function(dynamic) onDelete;
+  final int maximum;
+
+  @override
+  Widget build(BuildContext context) {
+
+    List<Widget> _makeList(List images) {
+      final deleteButton = Container(
+        child: const Icon(Icons.close_rounded, color: Colors.black, size: 22,),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white
+        ),
+      );
+      final galleryItems = images.map((image) => ImageGalleryItem(src: image)).toList();
+      return images.asMap().map((index, asset) {
+        return MapEntry(index, Stack(
+          alignment: Alignment.topRight,
+          children: <Widget>[
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => ImageGalleryViewer(
+                    galleryItems: galleryItems,
+                    backgroundDecoration: const BoxDecoration(color: Colors.black,),
+                    initialIndex: index,
+                    scrollDirection: Axis.horizontal,
+                  ),
+                ));
+              },
+              child: asset is AssetEntity
+                ? Image(
+                  image: AssetEntityImageProvider(asset, isOriginal: false),
+                  width: 300,
+                  height: 300,
+                  fit: BoxFit.cover,
+                )
+                : Image.network(asset,
+                  width: 300,
+                  height: 300,
+                  fit: BoxFit.cover,
+                )
+            ),
+            GestureDetector(
+              onTap: () {
+                onDelete(asset);
+              },
+              child: deleteButton,
+            ),
+          ]
+        ));
+      }).values.toList();
+    }
+
+    var listImages = _makeList([...imageEditList, ...imageList]);
+    var gridCount = 3;
+    var gridHeight = (MediaQuery.of(context).size.width - 80) / gridCount;
+    var totalHeight = gridHeight * (listImages.length / gridCount).ceil();
+
+    return listImages.isEmpty ? Text(
+      placeholder ?? "Silakan unggah maksimal $maximum foto.",
+      style: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: Colors.grey,
+      )
+    ) : SizedBox(
+      height: totalHeight,
+      child: GridView.count(
+        mainAxisSpacing: 2.0,
+        crossAxisSpacing: 2.0,
+        // physics: listImages.length > gridCount ? AlwaysScrollableScrollPhysics() : NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
+        // scrollDirection: Axis.horizontal,
+        crossAxisCount: gridCount,
+        children: listImages,
+      ),
+    );
+  }
+}
+
+class MyWizard extends StatelessWidget {
+  const MyWizard({
+    required this.body,
+    required this.steps,
+    required this.step,
+    this.scrollController,
+    Key? key
+  }) : super(key: key);
+  final List<Widget> body;
+  final List<ContentModel> steps;
+  final int step;
+  final ScrollController? scrollController;
+
+  @override
+  Widget build(BuildContext context) {
+    final stepTotal = steps.length;
+    final stepIndicator = MyStepIndicator(count: stepTotal, step: step);
+    final stepContent = steps[step];
+
+    return NestedScrollView(
+      controller: scrollController,
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        return <Widget>[
+          SliverAppBar(
+            leading: Container(),
+            actions: <Widget>[
+              Container(),
+            ],
+            automaticallyImplyLeading: false,
+            backgroundColor: APP_UI_COLOR[100]!,
+            elevation: 0,
+            expandedHeight: 160,
+            floating: false,
+            pinned: true,
+            flexibleSpace: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final height = constraints.biggest.height;
+                return FlexibleSpaceBar(
+                  centerTitle: true,
+                  title: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: height > 60 ? 0.0 : 1.0,
+                    child: Opacity(
+                      opacity: height > 75 ? 0.0 : 1.0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          const SizedBox(width: 30,),
+                          Text(stepContent.title, style: TextStyle(color: Colors.grey[800], fontSize: 20, fontWeight: FontWeight.w600)),
+                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            child: MyStepIndicator(count: stepTotal, step: step, dotSize: 25),
+                          ),
+                          const SizedBox(width: 30,),
+                        ],
+                      ),
+                    ),
+                  ),
+                  background: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20,),
+                        stepIndicator,
+                        const SizedBox(height: 20,),
+                        Text(stepContent.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 10,),
+                        Text(stepContent.description!, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
+                      ],
+                    ),
+                  ),
+                );
+              }
+            ),
+          ),
+        ];
+      },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        child: body[step],
+      ),
+    );
+  }
+}
+
+class MyProfileCard extends StatelessWidget {
+  const MyProfileCard({ this.avatarSize, this.backgroundColor, Key? key }) : super(key: key);
+  final double? avatarSize;
+  final Color? backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: backgroundColor ?? h!.backgroundColor(),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          MyAvatar(
+            profile!.image,
+            size: avatarSize ?? 80,
+            strokeWidth: 4,
+            elevation: 0,
+          ),
+          const SizedBox(width: 12,),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(profile!.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: APP_UI_COLOR[600]),),
+            const SizedBox(height: 4,),
+            Text("No. SIM: ${profile!.email}", style: TextStyle(fontSize: 14, color: h!.textColor(),),),
+          ],))
+        ],
       ),
     );
   }

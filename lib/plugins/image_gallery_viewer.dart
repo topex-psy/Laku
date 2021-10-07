@@ -67,7 +67,7 @@ class _ImageGalleryViewerState extends State<ImageGalleryViewer> {
                 return PhotoViewGalleryPageOptions(
                   imageProvider: a.imageProvider(item.src),
                   initialScale: PhotoViewComputedScale.contained,
-                  minScale: PhotoViewComputedScale.contained * (0.5 + index / 10),
+                  minScale: PhotoViewComputedScale.contained * 0.5,
                   maxScale: PhotoViewComputedScale.covered * 1.1,
                   heroAttributes: item.heroTag == null ? null : PhotoViewHeroAttributes(tag: item.heroTag!),
                 );

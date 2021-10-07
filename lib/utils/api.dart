@@ -20,7 +20,7 @@ class ApiProvider {
 
   Future<ApiModel> api(String url, {
     String method = "get",
-    Map<String, String> getParams = const {},
+    Map<String, String?> getParams = const {},
     dynamic data,
     Options? options,
     void Function(int, int)? onSendProgress,

@@ -146,19 +146,19 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final putUserResult = await ApiProvider(context).api('user', method: 'put', withLog: true, data: postData);
     if (putUserResult.isSuccess) {
-      final updatedProfile = UserModel.fromJson(putUserResult.data.first);
+      profile = UserModel.fromJson(putUserResult.data.first);
 
       // update firebase profile
       u!.firebaseUpdateProfile(
-        name: updatedProfile.name,
-        image: _image == null ? null : updatedProfile.image
+        name: profile!.name,
+        image: _image == null ? null : profile!.image
       );
       if (isEmailChanged) u!.firebaseUpdateEmail(email);
       // TODO update phone in firebase
       // if (isPhoneChanged) u!.firebaseUpdatePhoneNumber(cred);
 
       setState(() {
-        _userData = updatedProfile;
+        _userData = profile;
         _isEdit = false;
         _isChanged = false;
         _image = null;

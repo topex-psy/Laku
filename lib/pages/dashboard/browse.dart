@@ -129,12 +129,11 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
     });
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     final listingParams = <String, String>{
-      'id': session!.id.toString(),
-      'mode': settings.isViewFavorites ? 'fav' : 'near',
+      'uid': session!.id.toString(),
       'limit': limit.toString(),
       'keyword': keyword,
     };
-    final listingResult = await ApiProvider(context).api('listing', method: "get", withLog: true, getParams: listingParams);
+    final listingResult = await ApiProvider(context).api('listing/${settings.isViewFavorites ? 'fav' : 'near'}', method: "get", withLog: true, getParams: listingParams);
     setState(() {
       _isGettingData = false;
     });

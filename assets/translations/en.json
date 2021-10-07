@@ -11,6 +11,9 @@
     "camera": "Camera",
     "gallery": "Select from Gallery"
   },
+  "action_confirm": "Are you sure you want to {} this {}?",
+  "action_deacivate": "Deactivate",
+  "action_delete_listing": "Delete Listing",
   "action_login": "Login",
   "action_login_facebook": "Login with Facebook",
   "action_filter": "Filter",
@@ -69,5 +72,8 @@
   "select": {
     "other": "Other",
     "all": "All"
+  },
+  "item": {
+    "listing": "Listing"
   }
 }

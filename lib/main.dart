@@ -59,17 +59,12 @@ class _MyAppState extends State<MyApp> {
     // cek apakah aplikasi berjalan dalam mode debug
     assert(isDebugMode = true);
 
-    // menggunakan tipografi material design 2018
-    TextTheme textTheme = const TextTheme(
-      headline5: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
-      headline6: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-      subtitle1: TextStyle(fontSize: 16.0, fontWeight: FontWeight.normal),
-      subtitle2: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w500),
-      bodyText1: TextStyle(fontSize: 15.0, height: 1.4),
-      bodyText2: TextStyle(fontSize: 14.0, height: 1.4),
-      button:    TextStyle(fontSize: 15.0, fontWeight: FontWeight.w500),
-      caption:   TextStyle(fontSize: 13.0, height: 1.4),
-      overline:  TextStyle(fontSize: 11.0, height: 1.4),
+    // menggunakan animasi transisi cupertino ios
+    PageTransitionsTheme pageTransitionsTheme = const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder()
+      }
     );
 
     // deklarasi tema terang
@@ -77,8 +72,8 @@ class _MyAppState extends State<MyApp> {
       primarySwatch: APP_UI_COLOR,
       brightness: Brightness.light,
       scaffoldBackgroundColor: APP_UI_BACKGROUND_LIGHT,
+      pageTransitionsTheme: pageTransitionsTheme,
       fontFamily: APP_UI_FONT_MAIN,
-      textTheme: textTheme,
     )..textTheme.apply(
       bodyColor: Colors.black,
       displayColor: Colors.black,
@@ -89,8 +84,8 @@ class _MyAppState extends State<MyApp> {
       primarySwatch: APP_UI_COLOR,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: APP_UI_BACKGROUND_DARK,
+      pageTransitionsTheme: pageTransitionsTheme,
       fontFamily: APP_UI_FONT_MAIN,
-      textTheme: textTheme,
     )..textTheme.apply(
       bodyColor: Colors.white,
       displayColor: Colors.white,
@@ -118,52 +113,40 @@ class _MyAppState extends State<MyApp> {
             data: darkTheme,
           ),
         ],
-        child: MaterialApp(
-          title: APP_NAME,
-          locale: context.locale,
-          supportedLocales: context.supportedLocales,
-          localizationsDelegates: context.localizationDelegates,
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            scaffoldBackgroundColor: Colors.white,
-            primarySwatch: APP_UI_COLOR,
-            fontFamily: APP_UI_FONT_MAIN,
-            pageTransitionsTheme: const PageTransitionsTheme(
-              builders: {
-                TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-                TargetPlatform.iOS: CupertinoPageTransitionsBuilder()
-              }
+        child: ThemeConsumer(
+          child: Builder(
+            builder: (themeContext) => MaterialApp(
+              title: APP_NAME,
+              locale: context.locale,
+              supportedLocales: context.supportedLocales,
+              localizationsDelegates: context.localizationDelegates,
+              debugShowCheckedModeBanner: false,
+              theme: ThemeProvider.themeOf(themeContext).data,
+              initialRoute: '/',
+              onGenerateRoute: (settings) {
+                final args = settings.arguments as Map<String, dynamic>? ?? {};
+                Widget page = const SplashPage();
+                switch (settings.name) {
+                  case ROUTE_INTRO: page = IntroPage(analytics, args); break;
+                  case ROUTE_LOGIN: page = LoginPage(analytics, args); break;
+                  case ROUTE_REGISTER: page = RegisterPage(analytics, args); break;
+                  case ROUTE_DASHBOARD: page = DashboardPage(analytics, args); break;
+                  case ROUTE_CREATE: page = CreatePage(analytics, args); break;
+                  case ROUTE_LISTING: page = ListingPage(analytics, args); break;
+                  case ROUTE_MAP: page = MapPage(analytics, args); break;
+                }
+                Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
+                return MaterialPageRoute(
+                  settings: settings,
+                  builder: (context) {
+                    reInitContext(context);
+                    return page;
+                  }
+                );
+              },
+              navigatorObservers: <NavigatorObserver>[observer],
             ),
           ),
-          initialRoute: '/',
-          onGenerateRoute: (settings) {
-            final args = settings.arguments as Map<String, dynamic>? ?? {};
-            Widget page = const SplashPage();
-            switch (settings.name) {
-              case ROUTE_INTRO: page = IntroPage(analytics, args); break;
-              case ROUTE_LOGIN: page = LoginPage(analytics, args); break;
-              case ROUTE_REGISTER: page = RegisterPage(analytics, args); break;
-              case ROUTE_DASHBOARD: page = DashboardPage(analytics, args); break;
-              case ROUTE_CREATE: page = CreatePage(analytics, args); break;
-              case ROUTE_LISTING: page = ListingPage(analytics, args); break;
-              case ROUTE_MAP: page = MapPage(analytics, args); break;
-            }
-            // return PageTransition(
-            //   type: PageTransitionType.fade,
-            //   duration: Duration(milliseconds: arguments['duration'] ?? 300),
-            //   settings: settings,
-            //   child: page ?? Login()
-            // );
-            Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
-            return MaterialPageRoute(
-              settings: settings,
-              builder: (context) {
-                reInitContext(context);
-                return page;
-              }
-            );
-          },
-          navigatorObservers: <NavigatorObserver>[observer],
         ),
       ),
     );

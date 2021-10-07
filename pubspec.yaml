@@ -74,8 +74,10 @@ dependencies:
   local_auth: ^1.1.8
   quick_actions: ^0.6.0+7
   soundpool: ^2.2.0
+  upgrader: ^3.6.0
   wakelock: ^0.5.6
-
+  vibration: ^1.7.4-nullsafety.0
+  
   # ui
   expandable: ^5.0.1
   fab_circular_menu: ^1.0.2

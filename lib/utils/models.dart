@@ -145,6 +145,7 @@ class UserModel {
     required this.email,
     required this.gender,
     required this.dob,
+    required this.tier,
     required this.phone,
     required this.image,
     required this.listingCount,
@@ -164,6 +165,7 @@ class UserModel {
   final String email;
   final String gender;
   final DateTime dob;
+  final UserTierModel tier;
   final String? phone;
   final String image;
   final int? listingCount;
@@ -183,6 +185,7 @@ class UserModel {
     email = row['email'],
     gender = row['gender'],
     dob = DateTime.parse(row['dob']),
+    tier = UserTierModel.fromJson(row['tier']),
     phone = row['phone'],
     image = row['image'],
     listingCount = int.tryParse(row['listing_count']??""),
@@ -197,7 +200,36 @@ class UserModel {
     createdAt = DateTime.parse(row['created_at']);
 
   @override
-  String toString() => "UserModel ($id/$name/$email/$gender/$dob)";
+  String toString() => "UserModel ($id/$name/${tier.title}/$email/$gender/$dob)";
+}
+
+class UserTierModel {
+  UserTierModel({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.maxShop,
+    required this.maxListingPic,
+    required this.maxListingDesc,
+  });
+
+  final int id;
+  final String title;
+  final String description;
+  final int maxShop;
+  final int maxListingPic;
+  final int maxListingDesc;
+
+  UserTierModel.fromJson(Map<String, dynamic> row)
+  : id = int.parse(row['id']),
+    title = row['title'],
+    description = row['description'],
+    maxShop = int.parse(row['max_shop']),
+    maxListingPic = int.parse(row['max_listing_pic']),
+    maxListingDesc = int.parse(row['max_listing_desc']);
+
+  @override
+  String toString() => "$id/$title/$maxShop/$maxListingPic";
 }
 
 class ListingModel {
@@ -216,12 +248,13 @@ class ListingModel {
     required this.latitude,
     required this.longitude,
     required this.distanceMeter,
+    required this.deliveryInfo,
     required this.isMine,
     required this.isNear,
     required this.isNew,
     required this.isForAdult,
     required this.isNegotiable,
-    required this.deliveryInfo,
+    required this.isActive,
     required this.isFavorite,
     required this.favoriteCount,
     required this.createdAt,
@@ -242,12 +275,13 @@ class ListingModel {
   final double latitude;
   final double longitude;
   final double distanceMeter;
+  final String? deliveryInfo;
   final bool isMine;
   final bool isNear;
   final bool isNew;
   final bool isForAdult;
   final bool isNegotiable;
-  final String? deliveryInfo;
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
   bool isFavorite;
@@ -283,6 +317,7 @@ class ListingModel {
     isNew = row['is_new']??true,
     isForAdult = row['is_for_adult']??false,
     isNegotiable = row['is_negotiable']??false,
+    isActive = row['is_active']??true,
     isFavorite = row['is_favorite'],
     favoriteCount = int.parse(row['favorite_count']),
     createdAt = DateTime.parse(row['created_at']),

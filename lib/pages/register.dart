@@ -291,7 +291,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                 Expanded(
                   child: Stack(
                     children: [
-                      HeaderRegister(
+                      MyWizard(
                         scrollController: _scrollController,
                         steps: [
                           ContentModel(title: "Data Diri", description: "Halo! Lengkapi data dirimu untuk dapat menggunakan aplikasi $APP_NAME."),
@@ -360,7 +360,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                               ...footerWidgets,
                             ],
                           ),
-                        ][_step],
+                        ],
                       ),
                       MyLoader(isLoading: _isLoading, message: _loadingText, progress: _loadingProgress,),
                     ],
@@ -370,93 +370,6 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class HeaderRegister extends StatelessWidget {
-  const HeaderRegister({
-    required this.body,
-    required this.steps,
-    required this.step,
-    this.scrollController,
-    Key? key
-  }) : super(key: key);
-  final Widget body;
-  final List<ContentModel> steps;
-  final int step;
-  final ScrollController? scrollController;
-
-  @override
-  Widget build(BuildContext context) {
-    final stepTotal = steps.length;
-    final stepIndicator = MyStepIndicator(count: stepTotal, step: step);
-    final stepContent = steps[step];
-
-    return NestedScrollView(
-      controller: scrollController,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            leading: Container(),
-            actions: <Widget>[
-              Container(),
-            ],
-            automaticallyImplyLeading: false,
-            backgroundColor: APP_UI_COLOR[100]!,
-            elevation: 0,
-            expandedHeight: 160,
-            floating: false,
-            pinned: true,
-            flexibleSpace: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                final height = constraints.biggest.height;
-                return FlexibleSpaceBar(
-                  centerTitle: true,
-                  title: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 300),
-                    opacity: height > 60 ? 0.0 : 1.0,
-                    child: Opacity(
-                      opacity: height > 75 ? 0.0 : 1.0,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          const SizedBox(width: 30,),
-                          Text(stepContent.title, style: TextStyle(color: Colors.grey[800], fontSize: 20, fontWeight: FontWeight.w600)),
-                          const Spacer(),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.4,
-                            child: MyStepIndicator(count: stepTotal, step: step, dotSize: 25),
-                          ),
-                          const SizedBox(width: 30,),
-                        ],
-                      ),
-                    ),
-                  ),
-                  background: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20,),
-                        stepIndicator,
-                        const SizedBox(height: 20,),
-                        Text(stepContent.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 10,),
-                        Text(stepContent.description!, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400)),
-                      ],
-                    ),
-                  ),
-                );
-              }
-            ),
-          ),
-        ];
-      },
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-        child: body,
       ),
     );
   }

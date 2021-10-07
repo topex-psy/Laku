@@ -11,6 +11,9 @@
     "camera": "Kamera",
     "gallery": "Pilih dari Galeri"
   },
+  "action_confirm": "Apakah kamu yakin ingin {} {} ini?",
+  "action_deacivate": "Nonaktifkan",
+  "action_delete_listing": "Hapus Iklan",
   "action_login": "Masuk",
   "action_login_facebook": "Login dengan Facebook",
   "action_filter": "Filter",
@@ -51,5 +54,8 @@
   "select": {
     "other": "Lain-Lain",
     "all": "Semua"
+  },
+  "item": {
+    "listing": "Iklan"
   }
 }

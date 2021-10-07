@@ -124,7 +124,7 @@ class UIHelper {
       );
     }
     List<Widget> actions = buttons?.map((button) {
-      return _makeButton(button.label, action: button.onPressed);
+      return _makeButton(button.label, color: button.color, action: button.onPressed);
     }).toList() ?? [];
 
     if (showCloseButton) actions.add(_makeButton(closeButtonText ?? "Tutup", color: closeButtonColor, action: closeDialog));
@@ -164,7 +164,7 @@ class UIHelper {
   }
 
   /// fungsi untuk menampilkan popup dialog konfirmasi
-  Future<bool?> showConfirmDialog(String message, {String? title, String? approveText, String? rejectText, Color? rejectColor}) async {
+  Future<dynamic> showConfirmDialog(String message, {String? title, String? approveText, String? rejectText, Color? rejectColor, List<MenuModel> additionalButtons = const []}) async {
     return await showDialog(
       Text(message, style: const TextStyle(fontSize: 16),),
       title: title,
@@ -172,6 +172,7 @@ class UIHelper {
       buttons: [
         MenuModel(approveText ?? "Ya", true, onPressed: () => Navigator.of(context).pop(true)),
         MenuModel(rejectText ?? "Tidak", false, color: rejectColor ?? Colors.grey[600], onPressed: () => Navigator.of(context).pop(false)),
+        ...additionalButtons,
       ],
       showCloseButton: false,
     );
@@ -368,6 +369,13 @@ class LocationHelper {
   Future<Position?> lastPosition() async {
     return await Geolocator.getLastKnownPosition();
   }
+  Future<Position?> pickPosition([Position? currentPosition]) async {
+    return await h!.showDialog(
+      Container(), // TODO google map
+      closeButtonText: 'action_cancel'.tr(),
+      isDismissible: false,
+    );
+  }
 }
 
 class AppHelper {
@@ -503,24 +511,19 @@ class UserHelper {
   }
 
   Future<void> firebaseUpdateProfile({String? name, String? image}) async {
-    // TODO firebase update profile
-    // final user = await FirebaseAuth.instance.currentUser();
-    // final info = UserUpdateInfo();
-    // if (name != null) info.displayName = name;
-    // if (image != null) info.photoUrl = image;
-    // return user?.updateProfile(info);
+    final user = FirebaseAuth.instance.currentUser;
+    if (name != null) await user?.updateDisplayName(name);
+    if (image != null) await user?.updatePhotoURL(image);
   }
 
-  Future<void> firebaseUpdatePhoneNumber(AuthCredential credential) async {
-    // TODO firebase update phone
-    // final user = await FirebaseAuth.instance.currentUser();
-    // return user?.updatePhoneNumberCredential(credential);
+  Future<void> firebaseUpdatePhoneNumber(PhoneAuthCredential credential) async {
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.updatePhoneNumber(credential);
   }
 
   Future<void> firebaseUpdateEmail(String email) async {
-    // TODO firebase update email
-    // final user = await FirebaseAuth.instance.currentUser();
-    // return user?.updateEmail(email);
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.updateEmail(email);
   }
 
   Future<void> forgotPassword() async {
