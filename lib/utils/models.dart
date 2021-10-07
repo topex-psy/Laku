@@ -175,8 +175,8 @@ class UserModel {
   final bool? isNear;
   final bool? isFavorite;
   final DateTime lastActive;
-  final double lastLatitude;
-  final double lastLongitude;
+  final double? lastLatitude;
+  final double? lastLongitude;
   final DateTime createdAt;
 
   UserModel.fromJson(Map<String, dynamic> row)
@@ -195,8 +195,8 @@ class UserModel {
     isNear = row['is_near'],
     isFavorite = row['is_favorite'],
     lastActive = DateTime.parse(row['last_active']),
-    lastLatitude = double.parse(row['last_latitude']),
-    lastLongitude = double.parse(row['last_longitude']),
+    lastLatitude = double.tryParse(row['last_latitude']),
+    lastLongitude = double.tryParse(row['last_longitude']),
     createdAt = DateTime.parse(row['created_at']);
 
   @override
@@ -223,7 +223,7 @@ class UserTierModel {
   UserTierModel.fromJson(Map<String, dynamic> row)
   : id = int.parse(row['id']),
     title = row['title'],
-    description = row['description'],
+    description = row['description'] ?? "",
     maxShop = int.parse(row['max_shop']),
     maxListingPic = int.parse(row['max_listing_pic']),
     maxListingDesc = int.parse(row['max_listing_desc']);

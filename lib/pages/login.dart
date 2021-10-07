@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
-import '../utils/models.dart' show UserModel, SessionModel;
+import '../utils/models.dart' show UserModel;
 import '../utils/providers.dart';
 import '../utils/variables.dart';
 import '../utils/widgets.dart';
@@ -108,18 +108,14 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     // store user data
-    session = SessionModel.fromUserModel(profile!);
+    u!.login();
     Provider.of<SettingsProvider>(context, listen: false).setSettings(
       lastLatitude: profile!.lastLatitude,
       lastLongitude: profile!.lastLatitude,
     );
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('login_user_id', session!.id);
-    await prefs.setString('login_email', session!.email);
-    print("user session: $session");
 
     // redirect
-    await Navigator.pushNamed(context, ROUTE_DASHBOARD);
+    await Navigator.pushNamed(context, ROUTE_DASHBOARD, arguments: {"fade": 1000});
     reInitContext(context);
     setState(() {
       _isLoading = false;

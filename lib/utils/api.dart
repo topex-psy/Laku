@@ -26,7 +26,7 @@ class ApiProvider {
     void Function(int, int)? onSendProgress,
     bool withLog = false,
   }) async {
-    getParams = {...getParams, "lang": context.locale.languageCode};
+    if (method.toLowerCase() == 'get') getParams = {...getParams, "lang": context.locale.languageCode, 'uid': session!.id.toString()};
     print("${method.toUpperCase()} $url $getParams");
     try {
       var response = method.toLowerCase() == 'post'

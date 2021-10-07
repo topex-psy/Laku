@@ -32,8 +32,8 @@
   "current_location": "You're currently at:",
   "current_items": "You have:",
   "gender": {
-    "male": "Laki-Laki",
-    "female": "Perempuan"
+    "male": "Male",
+    "female": "Female"
   },
   "menu_favorites": "Favorites",
   "menu_bottom": {

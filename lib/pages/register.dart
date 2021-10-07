@@ -175,6 +175,11 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     });
     log("REGISTER RESULT: $registerResult");
     if (registerResult.isSuccess) {
+      // store user data
+      profile = UserModel.fromJson(registerResult.data.first);
+      u!.login();
+
+      // go to dashboard
       Navigator.pushReplacementNamed(context, ROUTE_DASHBOARD, arguments: {"just_register": true});
     } else {
       _loginFail("login failed: ${registerResult.message}");
@@ -279,11 +284,11 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(width: 15,),
-                    IconButton(icon: const Icon(Icons.arrow_back), iconSize: 32, color: APP_UI_COLOR_MAIN, onPressed: () async {
+                    IconButton(icon: const Icon(Icons.chevron_left_rounded), iconSize: 32, color: APP_UI_COLOR_MAIN, onPressed: () async {
                       if (await _onWillPop()) Navigator.of(context).pop();
                     },),
                     const SizedBox(width: 12,),
-                    const Expanded(child: Text("Buat Akunmu", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900))),
+                    const Expanded(child: Text("Buat Akunmu", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
                     const SizedBox(width: 30,),
                   ],
                 ),

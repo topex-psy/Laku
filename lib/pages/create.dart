@@ -248,10 +248,7 @@ class _CreatePageState extends State<CreatePage> {
         _isLoadingShop = true;
       });
     }
-    final shopResult = await ApiProvider(context).api('shop/user', method: 'get', getParams: {
-      'uid': session!.id.toString(),
-      'id': session!.id.toString(),
-    });
+    final shopResult = await ApiProvider(context).api('shop/user', method: 'get', getParams: { 'id': session!.id.toString() });
     if (mounted) {
       setState(() {
         _listShop = shopResult.data.map((shop) => ShopModel.fromJson(shop)).toList();

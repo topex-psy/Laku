@@ -538,7 +538,8 @@ class UserHelper {
   openProfile() => navigatePage(TAB_PROFILE);
 
   Future<bool> loadNotif() async {
-    final notifResult = await ApiProvider(context).api("user/notif", method: "get", withLog: true, getParams: { 'uid': session!.id.toString() });
+    if (session?.id == null) return false;
+    final notifResult = await ApiProvider(context).api("user/notif", method: "get", withLog: true);
     if (notifResult.isSuccess) {
       Provider.of<SettingsProvider>(context, listen: false).setSettings(
         notif: NotifModel.fromJson(notifResult.data.first)
@@ -549,6 +550,14 @@ class UserHelper {
 
   openMyListings() {
     // TODO go to my listings
+  }
+
+  login() async {
+    session = SessionModel.fromUserModel(profile!);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('login_user_id', session!.id);
+    await prefs.setString('login_email', session!.email);
+    print("user session: $session");
   }
 
   logout() async {

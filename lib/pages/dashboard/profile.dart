@@ -122,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
     // }
 
     var postData = <String, String?>{
-      'uid': session!.id.toString(),
+      'id': session!.id.toString(),
       'namaLengkap': _nameController.text,
       'gender': _gender.value,
       'tanggalLahir': _tanggalLahir.toString().substring(0, 10),

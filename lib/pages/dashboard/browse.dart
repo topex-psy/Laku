@@ -129,7 +129,6 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
     });
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     final listingParams = <String, String>{
-      'uid': session!.id.toString(),
       'limit': limit.toString(),
       'keyword': keyword,
     };
@@ -166,7 +165,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
               tag: "listing_${item.id}_0",
               child: FadeInImage.assetNetwork(
                 placeholder: DEFAULT_NONE_PIC_ASSET,
-                image: item.images.first,
+                image: item.images.isNotEmpty ? item.images.first : DEFAULT_NONE_PIC_ASSET,
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,

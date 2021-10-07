@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -30,11 +32,11 @@ class HomePage extends StatefulWidget {
     Key? key,
     this.isOpen = false,
     this.isReady = false,
-    // required this.onGetAllData
+    required this.onUpdatePosition
   }) : super(key: key);
   final bool isOpen;
   final bool isReady;
-  // final VoidCallback onGetAllData;
+  final void Function(Position) onUpdatePosition;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -79,25 +81,58 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   _getAllData() async {
     if (!mounted || !widget.isReady) return;
     _spinController.forward();
-    // await widget.onGetAllData();
-    await u!.loadNotif();
-    _spinController.reset();
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    settings.setSettings(
+      isGettingAddress: true,
+    );
+    final position = await l.myPosition();
+    print("current position: $position");
+    widget.onUpdatePosition(position);
+
+    print("... GETTING MY ADDRESS (${position.latitude}, ${position.longitude})");
+    var address = settings.address;
+    // PlatformException (PlatformException(IO_ERROR, A network error occurred trying to lookup the supplied coordinates (latitude: -7.928526, longitude: 112.640717)., null, null))
+    try {
+      print("... GET ADDRESS");
+      final addresses = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (addresses.isNotEmpty) {
+        final addressTemp = addresses.first;
+        if (
+          (addressTemp.subAdministrativeArea ?? "").isNotEmpty &&
+          (addressTemp.country ?? "").isNotEmpty
+        ) {
+          address = addressTemp;
+        }
+        print(
+          "... GET ADDRESS result"
+          "\n name: ${addressTemp.name}"
+          "\n address: ${addressTemp.street}"
+          "\n streetName: ${addressTemp.thoroughfare}"
+          "\n streetNo: ${addressTemp.subThoroughfare}"
+          "\n kelurahan: ${addressTemp.subLocality}"
+          "\n kecamatan: ${addressTemp.locality}"
+          "\n city: ${addressTemp.subAdministrativeArea}"
+          "\n zip: ${addressTemp.postalCode}"
+          "\n province: ${addressTemp.administrativeArea}"
+          "\n countryName: ${addressTemp.country}"
+          "\n countryCode: ${addressTemp.isoCountryCode}"
+        );
+      } else {
+        print("... GET ADDRESS empty");
+      }
+      _spinController.reset();
+    } catch(e) {
+      print("... GET ADDRESS error: $e");
+    }
+    settings.setSettings(
+      isGettingAddress: false,
+      address: address,
+    );
     if (mounted && _isLoading) {
       setState(() {
-      _isLoading = false;
-    });
+        _isLoading = false;
+      });
     }
-
-    // final settings = Provider.of<SettingsProvider>(context, listen: false);
-    // if (settings.lastLatitude == null || settings.lastLongitude == null) {
-    //   return;
-    // }
-    // await u!.loadNotif();
-    // if (mounted && _isLoading) {
-    //   setState(() {
-    //     _isLoading = false;
-    //   });
-    // }
   }
 
   List<LineChartBarData> _getLineChartBarData() {
@@ -323,7 +358,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                         ),
                                       ],),
                                     ),
-                                    Material(
+                                    widget.isReady ? Material(
                                       color: Colors.transparent,
                                       shape: const CircleBorder(),
                                       clipBehavior: Clip.antiAlias,
@@ -337,7 +372,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           child: const Icon(LineIcons.syncIcon, color: Colors.white,),
                                         ),
                                       ),
-                                    ),
+                                    ) : const SizedBox(),
                                     const SizedBox(width: 10,),
                                   ],),
                                 );
@@ -350,7 +385,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   width: double.infinity,
                                   height: constraints.maxHeight,
                                   child: Opacity(
-                                    opacity: min(1, (constraints.maxHeight - 90) / 100),
+                                    opacity: min(1, (constraints.maxHeight - 80) / 100),
                                     child: LineChart(
                                       _getLineChartData(),
                                       swapAnimationDuration: const Duration(milliseconds: 500),
@@ -693,14 +728,14 @@ class UiMainHeader extends SliverPersistentHeaderDelegate {
   final Widget _widget;
 
   @override
-  double get minExtent => 104.0;
+  double get minExtent => 105.0;
   @override
-  double get maxExtent => 264.0;
+  double get maxExtent => 265.0;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 20),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: _widget,
     );
   }

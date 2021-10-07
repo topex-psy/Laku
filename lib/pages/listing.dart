@@ -42,8 +42,8 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
   var _titleOpacity = 0.0;
   late ListingModel _item;
 
-  _updateData() async {
-    final putListingResult = await ApiProvider(context).api('listing', method: "put", withLog: true, data: { 'uid': session!.id, 'id': _item.id });
+  _getAllData() async {
+    final putListingResult = await ApiProvider(context).api('listing', method: "get", withLog: true, getParams: { 'id': _item.id.toString() });
     if (putListingResult.isSuccess) {
       _refreshController.refreshCompleted();
       setState(() {
@@ -92,7 +92,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
         print("editResult: $editResult");
         reInitContext(context);
         if (editResult?.containsKey('isSubmit') ?? false) {
-          _updateData();
+          _getAllData();
         }
         break;
       case 'edit_shop':
@@ -257,7 +257,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
             enablePullUp: false,
             header: const WaterDropMaterialHeader(color: APP_UI_COLOR_MAIN, backgroundColor: Colors.white),
             controller: _refreshController,
-            onRefresh: _updateData,
+            onRefresh: _getAllData,
             child: SingleChildScrollView(child: Column(children: <Widget>[
               Container(
                 width: double.infinity,

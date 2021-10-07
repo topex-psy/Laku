@@ -147,77 +147,39 @@ class _DashboardPageState extends State<DashboardPage> {
   _listenPosition() {
     _listenerPosition = Geolocator.getPositionStream(
       desiredAccuracy: LocationAccuracy.high,
-      distanceFilter: 3, // update tiap 3 meter
+      distanceFilter: 2, // update tiap 2 meter
       intervalDuration: const Duration(milliseconds: LISTEN_POSITION_INTERVAL),
     ).listen((Position? position) async {
       if (position != null) {
         print("current position: $position");
-
-        final settings = Provider.of<SettingsProvider>(context, listen: false);
-        settings.setSettings(
-          lastLatitude: position.latitude,
-          lastLongitude: position.longitude,
-          isGettingAddress: true,
-        );
-
-        // _spinController.forward();
-
-        print("... GETTING MY ADDRESS (${position.latitude}, ${position.longitude})");
-        var address = settings.address;
-
-        late List<Placemark> addresses;
-        late ApiModel putLocationResult;
-
-        await Future.wait([
-          placemarkFromCoordinates(position.latitude, position.longitude).then((result) => addresses = result),
-          ApiProvider(context).api("user", method: "put", withLog: true, data: {
-            'id': session!.id,
-            'last_latitude': position.latitude,
-            'last_longitude': position.longitude,
-          }).then((result) => putLocationResult = result)
-        ]);
-
-        if (addresses.isNotEmpty) {
-          final addressTemp = addresses.first;
-          if (
-            (addressTemp.subAdministrativeArea ?? "").isNotEmpty &&
-            (addressTemp.country ?? "").isNotEmpty
-          ) {
-            address = addressTemp;
-          }
-          print(
-            "... GET ADDRESS result"
-            "\n name: ${addressTemp.name}"
-            "\n address: ${addressTemp.street}"
-            "\n streetName: ${addressTemp.thoroughfare}"
-            "\n streetNo: ${addressTemp.subThoroughfare}"
-            "\n kelurahan: ${addressTemp.subLocality}"
-            "\n kecamatan: ${addressTemp.locality}"
-            "\n city: ${addressTemp.subAdministrativeArea}"
-            "\n zip: ${addressTemp.postalCode}"
-            "\n province: ${addressTemp.administrativeArea}"
-            "\n countryName: ${addressTemp.country}"
-            "\n countryCode: ${addressTemp.isoCountryCode}"
-          );
-        }
-        // _spinController.reset();
-        settings.setSettings(
-          address: address,
-          isGettingAddress: false
-        );
-
-        if (putLocationResult.isSuccess) {
-          if (!_isReady) {
-            setState(() {
-              _isReady = true;
-            });
-          }
-          u!.loadNotif();
-        }
+        _updatePosition(position);
       } else {
         print("cannot get current position");
       }
     });
+  }
+
+  _updatePosition(Position position) async {
+    ApiProvider(context).api("user", method: "put", withLog: true, data: {
+      'id': session!.id,
+      'last_latitude': position.latitude,
+      'last_longitude': position.longitude,
+      'last_active': DateTime.now().toIso8601String(),
+    }).then((putLocationResult) {
+      if (putLocationResult.isSuccess) {
+        if (!_isReady) {
+          setState(() {
+            _isReady = true;
+          });
+        }
+        u!.loadNotif();
+      }
+    });
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    settings.setSettings(
+      lastLatitude: position.latitude,
+      lastLongitude: position.longitude,
+    );
   }
 
   _checkLocationPermission() async {
@@ -363,7 +325,7 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!_isGPSActive) return noConnection("gps");
 
     final _listPages = <PageModel>[
-      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == TAB_HOME, isReady: _isReady),),
+      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == TAB_HOME, isReady: _isReady, onUpdatePosition: _updatePosition),),
       PageModel(title: tr('menu_bottom.browse'), icon: LineIcons.search, content: BrowsePage(isOpen: _pageIndex == TAB_BROWSE,),), // favorit, featured ad, last viewed
       PageModel(title: tr('menu_bottom.broadcast'), icon: LineIcons.bullhorn, content: BroadcastPage(isOpen: _pageIndex == TAB_BROADCAST,),),
       PageModel(title: tr('menu_bottom.profile'), icon: LineIcons.user, content: ProfilePage(isOpen: _pageIndex == TAB_PROFILE,),),
@@ -440,14 +402,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const SizedBox(height: 4,),
                                 UpgradeAlert(
                                   child: Text(_version == null ? "Memeriksa update ..." : "Ver $_version", style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
-                                  debugAlwaysUpgrade: true,
-                                  // debugDisplayOnce: true,
+                                  // debugAlwaysUpgrade: true,
+                                  debugDisplayOnce: true,
                                   dialogStyle: UpgradeDialogStyle.material,
                                   canDismissDialog: false,
                                   shouldPopScope: () => true,
                                   showIgnore: false,
-                                  // countryCode: context.locale.countryCode,
-                                  // messages: UpgraderMessages(code: context.locale.languageCode),
+                                  countryCode: context.locale.countryCode,
+                                  messages: UpgraderMessages(code: context.locale.languageCode),
                                 ),
                               ],
                             )),

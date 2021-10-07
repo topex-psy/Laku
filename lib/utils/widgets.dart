@@ -342,12 +342,17 @@ class _MyInputFieldState extends State<MyInputField> {
     }
   }
 
+  Color get fillColor {
+    // return widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white.withOpacity(.2));
+    return widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : h!.backgroundColor(Colors.white));
+  }
+
   InputBorder inputBorder({String type = "normal"}) {
     return OutlineInputBorder(
       borderRadius: const BorderRadius.all(Radius.circular(APP_UI_BORDER_RADIUS),),
       borderSide: BorderSide(
         color: {"focus": APP_UI_COLOR[600], "error": APP_UI_COLOR_DANGER}[type] ?? APP_UI_BORDER_COLOR,
-        width: {"focus": 2.0}[type] ?? 1.0,
+        width: {"focus": 2.0}[type] ?? 0.0,
       ),
       gapPadding: 0
     );
@@ -379,9 +384,8 @@ class _MyInputFieldState extends State<MyInputField> {
       hintText: widget.label,
       hintMaxLines: widget.inputType == MyInputType.NOTE ? null : 1,
       hintStyle: const TextStyle(color: Colors.grey),
+      fillColor: fillColor,
       filled: true,
-      // fillColor: widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white.withOpacity(.2)),
-      fillColor: widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : h!.backgroundColor(Colors.white)),
       isDense: true,
     );
   }
@@ -533,7 +537,12 @@ class _MyInputFieldState extends State<MyInputField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        inputField,
+        Material(
+          borderRadius: const BorderRadius.all(Radius.circular(APP_UI_BORDER_RADIUS),),
+          elevation: 2.0,
+          shadowColor: Colors.grey.withOpacity(0.3),
+          child: inputField,
+        ),
         widget.error == null ? const SizedBox() : MyInputError(widget.error!),
       ],
     );
@@ -614,7 +623,7 @@ class _MyInputPINState extends State<MyInputPIN> {
                     if (textController.text.length == SETUP_MAX_LENGTH_PIN) Navigator.of(context).pop(textController.text);
                   }
                 },
-                child: Center(child: Text("$angka", style: const TextStyle(fontSize: 20),),),
+                child: Center(child: Text("$angka", style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 20),),),
               ),
             ),
           ),),
@@ -1701,7 +1710,7 @@ class MyProfileCard extends StatelessWidget {
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(profile!.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: APP_UI_COLOR[600]),),
             const SizedBox(height: 4,),
-            Text("No. SIM: ${profile!.email}", style: TextStyle(fontSize: 14, color: h!.textColor(),),),
+            Text(profile!.email, style: TextStyle(fontSize: 14, color: h!.textColor(),),),
           ],))
         ],
       ),
