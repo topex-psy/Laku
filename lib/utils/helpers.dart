@@ -552,12 +552,20 @@ class UserHelper {
     // TODO go to my listings
   }
 
-  login() async {
+  /// store user data to shared prefs and put last position to provider
+  Future login() async {
+    if (profile == null) return;
     session = SessionModel.fromUserModel(profile!);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('login_user_id', session!.id);
     await prefs.setString('login_email', session!.email);
     print("user session: $session");
+    if (profile!.lastLatitude != null && profile!.lastLongitude != null) {
+      Provider.of<SettingsProvider>(context, listen: false).setSettings(
+        lastLatitude: profile!.lastLatitude,
+        lastLongitude: profile!.lastLongitude,
+      );
+    }
   }
 
   logout() async {

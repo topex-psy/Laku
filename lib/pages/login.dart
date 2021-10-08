@@ -42,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   _login() async {
+    // form validation
     setState(() {
       if (_emailController.text.isEmpty) {
         _errorText["email"] = "Harap masukkan email Anda!";
@@ -54,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    // check user email in database
     FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
@@ -70,49 +72,48 @@ class _LoginPageState extends State<LoginPage> {
       print("user result: ${userResult.data.first}");
       profile = UserModel.fromJson(userResult.data.first);
       print("user data: $profile");
-      _loginPIN();
-    }
-  }
-
-  _loginSubmit(Map<String, String> data) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // firebase login
-    if (data.containsKey('email') && data.containsKey('password')) {
-      User? firebaseUser;
-      try {
-        final firebaseAuth = await FirebaseAuth.instance.signInWithEmailAndPassword(email: data['email']!, password: data['password']!);
-        firebaseUser = firebaseAuth.user;
-      } on FirebaseAuthException catch(e) {
-        // Unhandled Exception: [firebase_auth/wrong-password] The password is invalid or the user does not have a password.
-        print("firebase error: $e");
-      } catch(e) {
-        print("other error: $e");
-      }
-      if (firebaseUser == null) {
-        h!.showCallbackDialog("PIN yang kamu masukkan salah!", title: "Login Gagal", type: MyCallbackType.error);
-        setState(() {
-          _isLoading = false;
-        });
+      if (FirebaseAuth.instance.currentUser == null) {
+        // firebase login with email & password
+        final pin = await u!.promptPIN();
+        if (pin == null) {
+          setState(() {
+            _isLoading = false;
+          });
+        } else {
+          User? firebaseUser;
+          try {
+            final firebaseAuth = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text, password: pin);
+            firebaseUser = firebaseAuth.user;
+          } on FirebaseAuthException catch(e) {
+            // Unhandled Exception: [firebase_auth/wrong-password] The password is invalid or the user does not have a password.
+            print("firebase error: $e");
+          } catch(e) {
+            print("other error: $e");
+          }
+          if (firebaseUser == null) {
+            h!.showCallbackDialog("PIN yang kamu masukkan salah!", title: "Login Gagal", type: MyCallbackType.error);
+            setState(() {
+              _isLoading = false;
+            });
+          } else {
+            _loginSuccess();
+          }
+        }
       } else {
+        // user logged in
         _loginSuccess();
       }
     }
   }
 
+  /// store user data from profile & redirect to dashboard
   _loginSuccess() async {
     setState(() {
       _isLoading = true;
     });
 
     // store user data
-    u!.login();
-    Provider.of<SettingsProvider>(context, listen: false).setSettings(
-      lastLatitude: profile!.lastLatitude,
-      lastLongitude: profile!.lastLatitude,
-    );
+    await u!.login();
 
     // redirect
     await Navigator.pushNamed(context, ROUTE_DASHBOARD, arguments: {"fade": 1000});
@@ -130,20 +131,6 @@ class _LoginPageState extends State<LoginPage> {
     }
     h!.showCallbackDialog("Terjadi masalah saat login. Silakan coba lagi.", title: "Gagal Login", type: MyCallbackType.error, devNote: devNote);
     if (devNote != null) print(devNote);
-  }
-
-  _loginPIN() async {
-    final pin = await u!.promptPIN();
-    if (pin == null) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-    _loginSubmit({
-      "email": _emailController.text,
-      "password": pin,
-    });
   }
 
   _loginFacebook() async {
@@ -183,7 +170,8 @@ class _LoginPageState extends State<LoginPage> {
             "\n isEmailVerified  = ${firebaseUser.emailVerified}"
             "\n providerData     = ${firebaseUser.providerData}"
           );
-          _loginSuccess();
+          _emailController.text = firebaseUser.email!;
+          _login();
         }
       } on FirebaseAuthException catch(e) {
         if (e.code == "account-exists-with-different-credential") {

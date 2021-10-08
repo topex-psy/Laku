@@ -49,8 +49,8 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
 
   StreamSubscription<Position>? _listenerPosition;
-  StreamSubscription<ConnectivityResult>? _listenerConnection;
-  StreamSubscription<ServiceStatus>? _listenerGPSStatus;
+  // StreamSubscription<ConnectivityResult>? _listenerConnection;
+  // StreamSubscription<ServiceStatus>? _listenerGPSStatus;
   String? _loadingText;
   String? _version;
   bool? _isLocationGranted;
@@ -61,6 +61,10 @@ class _DashboardPageState extends State<DashboardPage> {
   var _isGPSActive = true;
   var _isWillExit = false;
   var _isReady = false;
+
+  double _lastLatitude = 0;
+  double _lastLongitude = 0;
+  Timer? _timer;
 
   final _listActions = [
     MenuModel(tr('action_create.listing'), 'listing', icon: LineIcons.camera, color: Colors.blue),
@@ -79,16 +83,23 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  _listenConnection() {
-    _listenerConnection = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      bool isConnected = result != ConnectivityResult.none;
-      if (_isConnected != isConnected) {
-        setState(() {
-          _isConnected = isConnected;
-        });
-      }
+  _runTimer() {
+    print("RUN TIMER!!!");
+    _timer = Timer.periodic(const Duration(milliseconds: LISTEN_POSITION_INTERVAL), (timer) {
+      _sendPosition();
     });
   }
+
+  // _listenConnection() {
+  //   _listenerConnection = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+  //     bool isConnected = result != ConnectivityResult.none;
+  //     if (_isConnected != isConnected) {
+  //       setState(() {
+  //         _isConnected = isConnected;
+  //       });
+  //     }
+  //   });
+  // }
 
   _listenNotification() async {
     // create high importance channel
@@ -96,7 +107,8 @@ class _DashboardPageState extends State<DashboardPage> {
       'high_importance_channel', // id
       'High Importance Notifications', // title
       'This channel is used for important notifications.', // description
-      importance: Importance.max,
+      // importance: Importance.max,
+      importance: Importance.high,
     );
     final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     await flutterLocalNotificationsPlugin
@@ -133,53 +145,68 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  _listenGPSStatus() {
-    _listenerGPSStatus = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
-      bool isGPSActive = status == ServiceStatus.enabled;
-      if (_isGPSActive != isGPSActive) {
-        setState(() {
-          _isGPSActive = isGPSActive;
-        });
-      }
-    });
-  }
+  // _listenGPSStatus() {
+  //   _listenerGPSStatus = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
+  //     bool isGPSActive = status == ServiceStatus.enabled;
+  //     if (_isGPSActive != isGPSActive) {
+  //       setState(() {
+  //         _isGPSActive = isGPSActive;
+  //       });
+  //     }
+  //   });
+  // }
 
   _listenPosition() {
     _listenerPosition = Geolocator.getPositionStream(
-      desiredAccuracy: LocationAccuracy.high,
+      desiredAccuracy: LocationAccuracy.medium,
       distanceFilter: 2, // update tiap 2 meter
       intervalDuration: const Duration(milliseconds: LISTEN_POSITION_INTERVAL),
     ).listen((Position? position) async {
       if (position != null) {
         print("current position: $position");
-        _updatePosition(position);
+        _lastLatitude = position.latitude;
+        _lastLongitude = position.longitude;
       } else {
         print("cannot get current position");
       }
     });
   }
 
-  _updatePosition(Position position) async {
-    ApiProvider(context).api("user", method: "put", withLog: true, data: {
-      'id': session!.id,
-      'last_latitude': position.latitude,
-      'last_longitude': position.longitude,
-      'last_active': DateTime.now().toIso8601String(),
-    }).then((putLocationResult) {
-      if (putLocationResult.isSuccess) {
-        if (!_isReady) {
-          setState(() {
-            _isReady = true;
-          });
-        }
-        u!.loadNotif();
-      }
-    });
+  _sendPosition([Position? position]) async {
+    final lastLatitude = position?.latitude ?? _lastLatitude;
+    final lastLongitude = position?.longitude ?? _lastLongitude;
+
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     settings.setSettings(
-      lastLatitude: position.latitude,
-      lastLongitude: position.longitude,
+      lastLatitude: lastLatitude,
+      lastLongitude: lastLongitude,
     );
+
+    var gpsEnabled = await Geolocator.isLocationServiceEnabled();
+    var connectivityResult = await Connectivity().checkConnectivity();
+    bool isConnected = connectivityResult != ConnectivityResult.none;
+    setState(() {
+      _isGPSActive = gpsEnabled;
+      _isConnected = isConnected;
+    });
+
+    if (isConnected) {
+      ApiProvider(context).api("user", method: "put", withLog: true, data: {
+        'id': session!.id,
+        'last_latitude': lastLatitude,
+        'last_longitude': lastLongitude,
+        'last_active': DateTime.now().toIso8601String(),
+      }).then((putLocationResult) {
+        if (putLocationResult.isSuccess) {
+          if (!_isReady) {
+            setState(() {
+              _isReady = true;
+            });
+          }
+          u!.loadNotif();
+        }
+      });
+    }
   }
 
   _checkLocationPermission() async {
@@ -191,16 +218,19 @@ class _DashboardPageState extends State<DashboardPage> {
       _isLocationGranted = position is Position;
     });
     if (_isLocationGranted!) {
+      _lastLatitude = position!.latitude;
+      _lastLongitude = position.longitude;
       _runListeners();
+      _runTimer();
     }
   }
 
   _runListeners() {
     Vibration.vibrate(duration: 200, amplitude: 1);
-    _listenGPSStatus();
+    // _listenGPSStatus();
     _listenPosition();
     _listenNotification();
-    _listenConnection();
+    // _listenConnection();
   }
 
   _create(String what) async {
@@ -256,8 +286,9 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void dispose() {
     _listenerPosition?.cancel();
-    _listenerConnection?.cancel();
-    _listenerGPSStatus?.cancel();
+    // _listenerConnection?.cancel();
+    // _listenerGPSStatus?.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -290,20 +321,31 @@ class _DashboardPageState extends State<DashboardPage> {
             retryLabel: type == "gps" ? "Pengaturan" : "Coba Lagi",
             onRetry: () async {
               if (type == "gps") await Geolocator.openLocationSettings();
-              _listenerConnection?.pause();
-              _listenerGPSStatus?.pause();
+              // _listenerConnection?.pause();
+              // _listenerGPSStatus?.pause();
               setState(() {
                 _isLoading = true;
                 _loadingText = "Mencari koneksi";
               });
-              Future.delayed(const Duration(milliseconds: 1000), () {
-                _listenerConnection?.resume();
-                _listenerGPSStatus?.resume();
-                setState(() {
-                  _isLoading = false;
-                  _loadingText = null;
-                });
+
+              var gpsEnabled = await Geolocator.isLocationServiceEnabled();
+              var connectivityResult = await (Connectivity().checkConnectivity());
+              bool isConnected = connectivityResult != ConnectivityResult.none;
+              setState(() {
+                _isGPSActive = gpsEnabled;
+                _isConnected = isConnected;
+                _isLoading = false;
+                _loadingText = null;
               });
+
+              // Future.delayed(const Duration(milliseconds: 1000), () {
+              //   _listenerConnection?.resume();
+              //   _listenerGPSStatus?.resume();
+              //   setState(() {
+              //     _isLoading = false;
+              //     _loadingText = null;
+              //   });
+              // });
             },
             content: ContentModel(
               title: type == "internet" ? "Gagal Terhubung!" : "GPS Tidak Aktif!",
@@ -325,7 +367,7 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!_isGPSActive) return noConnection("gps");
 
     final _listPages = <PageModel>[
-      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == TAB_HOME, isReady: _isReady, onUpdatePosition: _updatePosition),),
+      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == TAB_HOME, isReady: _isReady, onUpdatePosition: _sendPosition),),
       PageModel(title: tr('menu_bottom.browse'), icon: LineIcons.search, content: BrowsePage(isOpen: _pageIndex == TAB_BROWSE,),), // favorit, featured ad, last viewed
       PageModel(title: tr('menu_bottom.broadcast'), icon: LineIcons.bullhorn, content: BroadcastPage(isOpen: _pageIndex == TAB_BROADCAST,),),
       PageModel(title: tr('menu_bottom.profile'), icon: LineIcons.user, content: ProfilePage(isOpen: _pageIndex == TAB_PROFILE,),),

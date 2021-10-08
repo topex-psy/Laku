@@ -177,7 +177,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     if (registerResult.isSuccess) {
       // store user data
       profile = UserModel.fromJson(registerResult.data.first);
-      u!.login();
+      await u!.login();
 
       // go to dashboard
       Navigator.pushReplacementNamed(context, ROUTE_DASHBOARD, arguments: {"just_register": true});
