@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:easy_localization/easy_localization.dart';
-// import 'package:geolocator/geolocator.dart';
 import 'package:local_auth/local_auth.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
@@ -16,8 +14,7 @@ import '../utils/widgets.dart';
 import '../utils/variables.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage(this.analytics, this.args, {Key? key}) : super(key: key);
-  final FirebaseAnalytics analytics;
+  const RegisterPage(this.args, {Key? key}) : super(key: key);
   final Map<String, dynamic> args;
 
   @override
@@ -177,6 +174,8 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     if (registerResult.isSuccess) {
       // store user data
       profile = UserModel.fromJson(registerResult.data.first);
+      // await widget.analytics.setUserId(profile!.id.toString());
+      // await widget.analytics.setUserProperty(name: 'email', value: profile!.email);
       await u!.login();
 
       // go to dashboard

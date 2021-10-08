@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:line_icons/line_icons.dart';
@@ -16,8 +15,7 @@ const DEFAULT_RADIUS = 10000;
 const DEFAULT_ZOOM = 16.34;
 
 class MapPage extends StatefulWidget {
-  const MapPage(this.analytics, this.args, {Key? key}) : super(key: key);
-  final FirebaseAnalytics analytics;
+  const MapPage(this.args, {Key? key}) : super(key: key);
   final Map<String, dynamic> args;
 
   @override

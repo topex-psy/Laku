@@ -535,7 +535,7 @@ class _CardBoxState extends State<CardBox> {
           color: Colors.blue,
           onPressed: () {
             settings.setSettings(isViewFavorites: false);
-            u!.navigatePage(TAB_BROWSE);
+            u!.navigatePage(tabBrowse);
           },
         );
         break;
@@ -647,7 +647,7 @@ class _CardListState extends State<CardList> {
           additionalValue: "Cek",
           onPressed: () {
             settings.setSettings(isViewFavorites: true);
-            u!.navigatePage(TAB_BROWSE);
+            u!.navigatePage(tabBrowse);
           },
         );
         break;

@@ -533,9 +533,12 @@ class UserHelper {
   navigatePage(int page) {
     h!.closeDrawer();
     screenPageController.animateToPage(page, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+    firebaseAnalytics.setCurrentScreen(
+      screenName: screenNames[page],
+    );
   }
 
-  openProfile() => navigatePage(TAB_PROFILE);
+  openProfile() => navigatePage(tabProfile);
 
   Future<bool> loadNotif() async {
     if (session?.id == null) return false;
@@ -566,6 +569,8 @@ class UserHelper {
         lastLongitude: profile!.lastLongitude,
       );
     }
+    await firebaseAnalytics.setUserId(profile!.id.toString());
+    await firebaseAnalytics.setUserProperty(name: 'email', value: profile!.email);
   }
 
   logout() async {

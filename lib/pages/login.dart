@@ -6,21 +6,18 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import '../utils/models.dart' show UserModel;
-import '../utils/providers.dart';
 import '../utils/variables.dart';
 import '../utils/widgets.dart';
+// import 'dashboard.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage(this.analytics, this.args, {Key? key}) : super(key: key);
-  final FirebaseAnalytics analytics;
+  const LoginPage(this.args, {Key? key}) : super(key: key);
   final Map<String, dynamic> args;
 
   @override
@@ -113,10 +110,13 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     // store user data
+    // await widget.analytics.setUserId(profile!.id.toString());
+    // await widget.analytics.setUserProperty(name: 'email', value: profile!.email);
     await u!.login();
 
     // redirect
-    await Navigator.pushNamed(context, ROUTE_DASHBOARD, arguments: {"fade": 1000});
+    // await Navigator.push(context, PageRouteBuilder(pageBuilder: (_, __, ___) => const DashboardPage({ "justLogin": true })));
+    await Navigator.pushNamed(context, ROUTE_DASHBOARD, arguments: { "transition": "none", "justLogin": true });
     reInitContext(context);
     setState(() {
       _isLoading = false;

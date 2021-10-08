@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 
 import 'helpers.dart';
 import 'models.dart';
+
+late FirebaseAnalytics firebaseAnalytics;
+late FirebaseAnalyticsObserver firebaseObserver;
 
 bool isDebugMode = false;
 SessionModel? session;
@@ -17,6 +22,12 @@ final a = AppHelper();
 
 final screenPageController = PreloadPageController();
 final screenScaffoldKey = GlobalKey<ScaffoldState>();
+const screenNames = [ "home", "browse", "broadcast", "profile" ];
+const tabHome = 0;
+const tabBrowse = 1;
+const tabBroadcast = 2;
+const tabProfile = 3;
+
 void reInitContext(BuildContext context) {
   h = UIHelper(context);
   u = UserHelper(context);

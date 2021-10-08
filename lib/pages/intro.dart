@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
@@ -14,8 +13,7 @@ import '../components/intro/pages.dart';
 import '../utils/variables.dart';
 
 class IntroPage extends StatefulWidget {
-  const IntroPage(this.analytics, this.args, {Key? key}) : super(key: key);
-  final FirebaseAnalytics analytics;
+  const IntroPage(this.args, {Key? key}) : super(key: key);
   final Map<String, dynamic> args;
 
   @override

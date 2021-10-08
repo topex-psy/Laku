@@ -91,16 +91,8 @@ class _MyAppState extends State<MyApp> {
         loadThemeOnInit: true,
         defaultThemeId: APP_UI_THEME_LIGHT,
         themes: [
-          AppTheme(
-            id: APP_UI_THEME_LIGHT,
-            description: "Mode Terang",
-            data: lightTheme,
-          ),
-          AppTheme(
-            id: APP_UI_THEME_DARK,
-            description: "Mode Gelap",
-            data: darkTheme,
-          ),
+          AppTheme(id: APP_UI_THEME_LIGHT, description: "Mode Terang", data: lightTheme),
+          AppTheme(id: APP_UI_THEME_DARK, description: "Mode Gelap", data: darkTheme),
         ],
         child: ThemeConsumer(
           child: Builder(
@@ -116,21 +108,28 @@ class _MyAppState extends State<MyApp> {
                 final args = settings.arguments as Map<String, dynamic>? ?? {};
                 Widget page = const SplashPage();
                 switch (settings.name) {
-                  case ROUTE_INTRO: page = IntroPage(analytics, args); break;
-                  case ROUTE_LOGIN: page = LoginPage(analytics, args); break;
-                  case ROUTE_REGISTER: page = RegisterPage(analytics, args); break;
-                  case ROUTE_DASHBOARD: page = DashboardPage(analytics, args); break;
-                  case ROUTE_CREATE: page = CreatePage(analytics, args); break;
-                  case ROUTE_LISTING: page = ListingPage(analytics, args); break;
-                  case ROUTE_MAP: page = MapPage(analytics, args); break;
+                  case ROUTE_INTRO:     page = IntroPage(args); break;
+                  case ROUTE_LOGIN:     page = LoginPage(args); break;
+                  case ROUTE_REGISTER:  page = RegisterPage(args); break;
+                  case ROUTE_DASHBOARD: page = DashboardPage(args); break;
+                  case ROUTE_CREATE:    page = CreatePage(args); break;
+                  case ROUTE_LISTING:   page = ListingPage(args); break;
+                  case ROUTE_MAP:       page = MapPage(args); break;
                 }
                 Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
-                return MaterialPageRoute(
+                pageBuilder(context) {
+                  firebaseAnalytics = analytics;
+                  firebaseObserver = observer;
+                  reInitContext(context);
+                  return page;
+                }
+                // if (args['transition'] == "none") return PageRouteBuilder(settings: settings, pageBuilder: (context, _, __) => pageBuilder(context));
+                // return MaterialPageRoute(settings: settings, builder: pageBuilder);
+                return MyPageRoute(
                   settings: settings,
-                  builder: (context) {
-                    reInitContext(context);
-                    return page;
-                  }
+                  builder: pageBuilder,
+                  transition: args['transition'],
+                  duration: args['duration']
                 );
               },
               navigatorObservers: <NavigatorObserver>[observer],
@@ -139,5 +138,43 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+}
+
+class MyPageRoute<T> extends MaterialPageRoute<T> {
+  MyPageRoute({
+    required WidgetBuilder builder,
+    RouteSettings? settings,
+    bool maintainState = true,
+    bool fullscreenDialog = false,
+    this.transition,
+    this.duration,
+  }) : super(
+    builder: builder,
+    settings: settings,
+    maintainState: maintainState,
+    fullscreenDialog: fullscreenDialog
+  );
+
+  final String? transition;
+  final int? duration;
+
+  @override
+  Duration get transitionDuration => Duration(milliseconds: duration ?? 300);
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child
+  ) {
+    switch (transition) {
+      case "fade": return FadeTransition(opacity: animation, child: child);
+      case "none": return child;
+    }
+    final PageTransitionsTheme theme = Theme.of(context).pageTransitionsTheme;
+    return theme.buildTransitions<T>(this, context, animation, secondaryAnimation, child);
+    // return child;
   }
 }

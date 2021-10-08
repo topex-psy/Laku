@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -37,8 +36,7 @@ const MENU_DRAWER_WIDTH = 0.8;
 const LISTEN_POSITION_INTERVAL = 10000;
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage(this.analytics, this.args, {Key? key}) : super(key: key);
-  final FirebaseAnalytics analytics;
+  const DashboardPage(this.args, {Key? key}) : super(key: key);
   final Map<String, dynamic> args;
 
   @override
@@ -333,10 +331,10 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!_isGPSActive) return noConnection("gps");
 
     final _listPages = <PageModel>[
-      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == TAB_HOME, isReady: _isReady, onUpdatePosition: _sendPosition),),
-      PageModel(title: tr('menu_bottom.browse'), icon: LineIcons.search, content: BrowsePage(isOpen: _pageIndex == TAB_BROWSE,),), // favorit, featured ad, last viewed
-      PageModel(title: tr('menu_bottom.broadcast'), icon: LineIcons.bullhorn, content: BroadcastPage(isOpen: _pageIndex == TAB_BROADCAST,),),
-      PageModel(title: tr('menu_bottom.profile'), icon: LineIcons.user, content: ProfilePage(isOpen: _pageIndex == TAB_PROFILE,),),
+      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == tabHome, isReady: _isReady, onUpdatePosition: _sendPosition),),
+      PageModel(title: tr('menu_bottom.browse'), icon: LineIcons.search, content: BrowsePage(isOpen: _pageIndex == tabBrowse,),), // favorit, featured ad, last viewed
+      PageModel(title: tr('menu_bottom.broadcast'), icon: LineIcons.bullhorn, content: BroadcastPage(isOpen: _pageIndex == tabBroadcast,),),
+      PageModel(title: tr('menu_bottom.profile'), icon: LineIcons.user, content: ProfilePage(isOpen: _pageIndex == tabProfile,),),
     ];
 
     return WillPopScope(

@@ -1,30 +1,22 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:provider/provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import '../../../extensions/string.dart';
-import '../../../extensions/widget.dart';
-import '../../../plugins/image_gallery_viewer.dart';
 import '../../../utils/api.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/helpers.dart';
 import '../../../utils/models.dart';
-import '../../../utils/providers.dart';
 import '../../../utils/variables.dart';
 import '../../../utils/widgets.dart';
 
 class CreatePage extends StatefulWidget {
-  const CreatePage(this.analytics, this.args, {Key? key}) : super(key: key);
-  final FirebaseAnalytics analytics;
+  const CreatePage(this.args, {Key? key}) : super(key: key);
   final Map<String, dynamic> args;
 
   @override

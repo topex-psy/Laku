@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 // import 'package:carousel_pro/carousel_pro.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:expandable/expandable.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_swiper_plus/flutter_swiper_plus.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -19,8 +18,7 @@ import '../utils/variables.dart';
 const MAX_DESCRIPTION_LENGTH = 150;
 
 class ListingPage extends StatefulWidget {
-  const ListingPage(this.analytics, this.args, {Key? key}) : super(key: key);
-  final FirebaseAnalytics analytics;
+  const ListingPage(this.args, {Key? key}) : super(key: key);
   final Map<String, dynamic> args;
 
   @override
