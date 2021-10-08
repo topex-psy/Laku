@@ -8,7 +8,6 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:launch_review/launch_review.dart';
@@ -49,8 +48,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
 
   StreamSubscription<Position>? _listenerPosition;
-  // StreamSubscription<ConnectivityResult>? _listenerConnection;
-  // StreamSubscription<ServiceStatus>? _listenerGPSStatus;
   String? _loadingText;
   String? _version;
   bool? _isLocationGranted;
@@ -84,38 +81,36 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   _runTimer() {
+    Vibration.vibrate(duration: 200, amplitude: 1);
     print("RUN TIMER!!!");
     _timer = Timer.periodic(const Duration(milliseconds: LISTEN_POSITION_INTERVAL), (timer) {
       _sendPosition();
     });
   }
 
-  // _listenConnection() {
-  //   _listenerConnection = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-  //     bool isConnected = result != ConnectivityResult.none;
-  //     if (_isConnected != isConnected) {
-  //       setState(() {
-  //         _isConnected = isConnected;
-  //       });
-  //     }
-  //   });
-  // }
-
   _listenNotification() async {
+    // docs: https://firebase.flutter.dev/docs/messaging/notifications
     // create high importance channel
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    const channel = AndroidNotificationChannel(
       'high_importance_channel', // id
       'High Importance Notifications', // title
-      'This channel is used for important notifications.', // description
+      description: 'This channel is used for important notifications.', // description
       // importance: Importance.max,
       importance: Importance.high,
     );
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-    // notification handling
+    // notification handling ios
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true, // Required to display a heads up notification
+      badge: true,
+      sound: true,
+    );
+
+    // notification handling android
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('push notif got a message whilst in the foreground!');
       print('push notif data: ${message.data}');
@@ -135,7 +130,7 @@ class _DashboardPageState extends State<DashboardPage> {
             android: AndroidNotificationDetails(
               channel.id,
               channel.name,
-              channel.description,
+              channelDescription: channel.description,
               icon: android.smallIcon,
               // other properties...
             ),
@@ -144,17 +139,6 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     });
   }
-
-  // _listenGPSStatus() {
-  //   _listenerGPSStatus = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
-  //     bool isGPSActive = status == ServiceStatus.enabled;
-  //     if (_isGPSActive != isGPSActive) {
-  //       setState(() {
-  //         _isGPSActive = isGPSActive;
-  //       });
-  //     }
-  //   });
-  // }
 
   _listenPosition() {
     _listenerPosition = Geolocator.getPositionStream(
@@ -213,24 +197,17 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() {
       _isLocationGranted = null;
     });
-    final Position? position = await l.checkGPS();
+    final position = await l.checkGPS();
     setState(() {
       _isLocationGranted = position is Position;
     });
     if (_isLocationGranted!) {
       _lastLatitude = position!.latitude;
       _lastLongitude = position.longitude;
-      _runListeners();
+      _listenPosition();
+      _listenNotification();
       _runTimer();
     }
-  }
-
-  _runListeners() {
-    Vibration.vibrate(duration: 200, amplitude: 1);
-    // _listenGPSStatus();
-    _listenPosition();
-    _listenNotification();
-    // _listenConnection();
   }
 
   _create(String what) async {
@@ -246,6 +223,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   void initState() {
+    // PushNotificationsManager().init();
     super.initState();
 
     // launcher shortcuts
@@ -286,8 +264,6 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void dispose() {
     _listenerPosition?.cancel();
-    // _listenerConnection?.cancel();
-    // _listenerGPSStatus?.cancel();
     _timer?.cancel();
     super.dispose();
   }
@@ -321,8 +297,6 @@ class _DashboardPageState extends State<DashboardPage> {
             retryLabel: type == "gps" ? "Pengaturan" : "Coba Lagi",
             onRetry: () async {
               if (type == "gps") await Geolocator.openLocationSettings();
-              // _listenerConnection?.pause();
-              // _listenerGPSStatus?.pause();
               setState(() {
                 _isLoading = true;
                 _loadingText = "Mencari koneksi";
@@ -330,7 +304,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
               var gpsEnabled = await Geolocator.isLocationServiceEnabled();
               var connectivityResult = await (Connectivity().checkConnectivity());
-              bool isConnected = connectivityResult != ConnectivityResult.none;
+              var isConnected = connectivityResult != ConnectivityResult.none;
               setState(() {
                 _isGPSActive = gpsEnabled;
                 _isConnected = isConnected;
@@ -338,14 +312,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 _loadingText = null;
               });
 
-              // Future.delayed(const Duration(milliseconds: 1000), () {
-              //   _listenerConnection?.resume();
-              //   _listenerGPSStatus?.resume();
-              //   setState(() {
-              //     _isLoading = false;
-              //     _loadingText = null;
-              //   });
-              // });
             },
             content: ContentModel(
               title: type == "internet" ? "Gagal Terhubung!" : "GPS Tidak Aktif!",
