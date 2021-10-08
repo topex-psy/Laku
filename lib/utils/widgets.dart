@@ -11,7 +11,7 @@ import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:theme_provider/theme_provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+// import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import '../plugins/datetime_picker_formfield.dart';
 import '../plugins/image_gallery_viewer.dart';
 import '../plugins/image_viewer.dart';
@@ -344,7 +344,7 @@ class _MyInputFieldState extends State<MyInputField> {
 
   Color get fillColor {
     // return widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white.withOpacity(.2));
-    return widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : h!.backgroundColor(Colors.white));
+    return widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : h.backgroundColor(Colors.white));
   }
 
   InputBorder inputBorder({String type = "normal"}) {
@@ -373,7 +373,7 @@ class _MyInputFieldState extends State<MyInputField> {
       errorBorder: inputBorder(type: "error"),
       focusedBorder: inputBorder(type: "focus"),
       focusedErrorBorder: inputBorder(type: "error"),
-      labelStyle: TextStyle(color: h!.pickColor(APP_UI_COLOR[700], APP_UI_COLOR[400])),
+      labelStyle: TextStyle(color: h.pickColor(APP_UI_COLOR[700], APP_UI_COLOR[400])),
       labelText: widget.showLabel ? widget.label : null,
       prefix: prefix,
       prefixIcon: widget.icon == null ? null : Icon(widget.icon, color: Colors.grey,),
@@ -426,7 +426,7 @@ class _MyInputFieldState extends State<MyInputField> {
     return TextStyle(
       fontSize: fontSize,
       fontWeight: FontWeight.w600,
-      color: h!.textColor(),
+      color: h.textColor(),
     );
   }
 
@@ -434,9 +434,9 @@ class _MyInputFieldState extends State<MyInputField> {
 
     if (isDateInput) {
       final datePickerStyle = MaterialRoundedDatePickerStyle(
-        backgroundActionBar: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // footer
-        backgroundHeader: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // header
-        backgroundHeaderMonth: h!.pickColor(APP_UI_COLOR[400]!, Colors.grey[850]!),
+        backgroundActionBar: h.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // footer
+        backgroundHeader: h.pickColor(APP_UI_COLOR[400]!, Colors.grey[800]!), // header
+        backgroundHeaderMonth: h.pickColor(APP_UI_COLOR[400]!, Colors.grey[850]!),
         colorArrowNext: Colors.white,
         colorArrowPrevious: Colors.white,
         paddingActionBar: EdgeInsets.zero,
@@ -445,17 +445,17 @@ class _MyInputFieldState extends State<MyInputField> {
         textStyleButtonAction: const TextStyle(fontSize: 14, color: Colors.white),
         textStyleButtonPositive: const TextStyle(fontSize: 14, color: Colors.white),
         textStyleButtonNegative: const TextStyle(fontSize: 14, color: Colors.white),
-        textStyleCurrentDayOnCalendar: TextStyle(fontSize: 16, color: h!.pickColor(APP_UI_COLOR_MAIN, APP_UI_COLOR[300]!)),
-        textStyleDayButton: TextStyle(fontSize: 18, color: h!.textColor()), // header tanggal
-        textStyleDayHeader: TextStyle(fontSize: 11, color: h!.textColor().withOpacity(0.54)), // M S S R K J S
-        textStyleDayOnCalendar: TextStyle(fontSize: 16, color: h!.textColor()),
-        textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, color: h!.backgroundColor(), fontWeight: FontWeight.bold),
+        textStyleCurrentDayOnCalendar: TextStyle(fontSize: 16, color: h.pickColor(APP_UI_COLOR_MAIN, APP_UI_COLOR[300]!)),
+        textStyleDayButton: TextStyle(fontSize: 18, color: h.textColor()), // header tanggal
+        textStyleDayHeader: TextStyle(fontSize: 11, color: h.textColor().withOpacity(0.54)), // M S S R K J S
+        textStyleDayOnCalendar: TextStyle(fontSize: 16, color: h.textColor()),
+        textStyleDayOnCalendarSelected: TextStyle(fontSize: 17, color: h.backgroundColor(), fontWeight: FontWeight.bold),
         textStyleMonthYearHeader: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold), // Februari 2020
         textStyleYearButton: const TextStyle(fontSize: 45, color: Colors.white), // header tahun
       );
 
       final yearPickerStyle = MaterialRoundedYearPickerStyle(
-        textStyleYear: TextStyle(fontSize: 20, color: h!.textColor(Colors.grey[700])),
+        textStyleYear: TextStyle(fontSize: 20, color: h.textColor(Colors.grey[700])),
         textStyleYearSelected: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: APP_UI_COLOR_MAIN),
       );
 
@@ -648,7 +648,7 @@ class _MyInputPINState extends State<MyInputPIN> {
               ),
               onTap: () async {
                 setState(() { _isSendingRecoveryEmail = true; });
-                await u!.forgotPassword();
+                await u.forgotPassword();
                 setState(() { _isSendingRecoveryEmail = false; });
               },
             ),
@@ -932,8 +932,8 @@ class MyAvatar extends StatelessWidget {
     Widget imageWidget;
     if (image is Widget) {
       imageWidget = image;
-    } else if (cached && image is String) {
-      final fallbackImage = Image.asset(DEFAULT_USER_PIC_ASSET, width: size, height: size, fit: BoxFit.cover);
+    } else if (cached && image is String && f.isValidURL(image)) {
+      final fallbackImage = Image.asset(SETUP_IMAGE_NONE_USER, width: size, height: size, fit: BoxFit.cover);
       return image == null ? fallbackImage : CachedNetworkImage(
         imageUrl: Uri.encodeFull(image!),
         placeholder: (context, url) => SizedBox(width: size, height: size, child: const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: APP_UI_COLOR_MAIN))),
@@ -943,7 +943,7 @@ class MyAvatar extends StatelessWidget {
       );
     } else {
       imageWidget = Image(
-        image: a.imageProvider(image, fallbackAsset: DEFAULT_USER_PIC_ASSET),
+        image: a.imageProvider(image, fallbackAsset: SETUP_IMAGE_NONE_USER),
         width: size,
         height: size,
         fit: BoxFit.cover
@@ -1008,7 +1008,7 @@ class MyLoader extends StatelessWidget {
     String caption = "";
 
     if (message != null && message!.isNotEmpty) caption += "$message ...";
-    if (progress != null && progress! > 0) caption += f!.formatPercentage(progress!, 1);
+    if (progress != null && progress! > 0) caption += f.formatPercentage(progress!, 1);
 
     return IgnorePointer(
       ignoring: !isLoading,
@@ -1017,7 +1017,7 @@ class MyLoader extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         child: Container(
           width: double.infinity,
-          color: h!.backgroundColor(),
+          color: h.backgroundColor(),
           child: isLoading ? Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -1404,7 +1404,7 @@ class _MySearchBarState extends State<MySearchBar> {
                 color: widget.actionColor ?? Colors.grey[850]!,
                 tooltip: tr('action_filter'),
                 onPressed: () async {
-                  final filter = await h!.showDialog(
+                  final filter = await h.showDialog(
                     MySearchFilter(
                       dataType: widget.dataType,
                       initialValues: widget.filterValues,
@@ -1696,8 +1696,8 @@ class MyProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: backgroundColor ?? h!.backgroundColor(),
-      padding: const EdgeInsets.all(20),
+      color: backgroundColor ?? h.backgroundColor(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       child: Row(
         children: [
           MyAvatar(
@@ -1705,12 +1705,13 @@ class MyProfileCard extends StatelessWidget {
             size: avatarSize ?? 80,
             strokeWidth: 4,
             elevation: 0,
+            cached: true,
           ),
           const SizedBox(width: 12,),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(profile!.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: APP_UI_COLOR[600]),),
             const SizedBox(height: 4,),
-            Text(profile!.email, style: TextStyle(fontSize: 14, color: h!.textColor(),),),
+            Text(profile!.email, style: TextStyle(fontSize: 14, color: h.textColor(),),),
           ],))
         ],
       ),

@@ -74,7 +74,7 @@ class _DashboardPageState extends State<DashboardPage> {
     int page = (screenPageController.page ?? 0).round();
     if (page != index) {
       print("page move: $page -> $index");
-      u!.navigatePage(index);
+      u.navigatePage(index);
     }
   }
 
@@ -185,7 +185,7 @@ class _DashboardPageState extends State<DashboardPage> {
               _isReady = true;
             });
           }
-          u!.loadNotif();
+          u.loadNotif();
         }
       });
     }
@@ -209,7 +209,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   _create(String what) async {
-    final resultList = await u?.browsePicture(maximum: profile!.tier.maxListingPic) ?? [];
+    final resultList = await u.browsePicture(maximum: profile!.tier.maxListingPic) ?? [];
     if (resultList.isNotEmpty) {
       final createResult = await Navigator.pushNamed(context, ROUTE_CREATE, arguments: {
         "selectedAssets": resultList,
@@ -249,7 +249,8 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     ]);
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      if (session == null) return u.logout();
       _checkLocationPermission();
       PackageInfo.fromPlatform().then((packageInfo) {
         setState(() {
@@ -349,7 +350,7 @@ class _DashboardPageState extends State<DashboardPage> {
           return true;
         }
         _isWillExit = true;
-        h!.showToast("Tekan sekali lagi untuk menutup aplikasi.");
+        h.showToast("Tekan sekali lagi untuk menutup aplikasi.");
         Future.delayed(const Duration(milliseconds: 2000), () { _isWillExit = false; });
         return false;
       },
@@ -379,7 +380,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      const MyProfileCard(avatarSize: 50,),
+                      MyProfileCard(avatarSize: 50, backgroundColor: APP_UI_COLOR_MAIN.withOpacity(.2),),
+                      Divider(color: APP_UI_COLOR_MAIN.withOpacity(.3), height: 1,),
                       const SizedBox(height: 20,),
                       DashboardNavMenu(
                         menus: [
@@ -390,7 +392,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             LaunchReview.launch();
                           }),
                           MenuModel("Keluar", "logout", icon: LineIcons.alternateSignOut, onPressed: () {
-                            u?.logout();
+                            u.logout();
                           }),
                         ],
                       ),
@@ -409,7 +411,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 UpgradeAlert(
                                   child: Text(_version == null ? "Memeriksa update ..." : "Ver $_version", style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
                                   // debugAlwaysUpgrade: true,
-                                  debugDisplayOnce: true,
+                                  // debugDisplayOnce: true,
                                   dialogStyle: UpgradeDialogStyle.material,
                                   canDismissDialog: false,
                                   shouldPopScope: () => true,
@@ -443,7 +445,7 @@ class _DashboardPageState extends State<DashboardPage> {
           children: <Widget>[
             Container(
               decoration: BoxDecoration(
-                color: h!.backgroundColor(Colors.white),
+                color: h.backgroundColor(Colors.white),
                 boxShadow: [BoxShadow(blurRadius: 15, color: Colors.grey[800]!.withOpacity(0.3))]
               ),
               padding: const EdgeInsets.all(8.0),

@@ -52,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
   }
 
   _browsePicture(ImageSource source) async {
-    var resultList = await u!.takePicture(source, maxSelect: 1);
+    var resultList = await u.takePicture(source, maxSelect: 1);
     setState(() {
       _userPic = resultList.first;
     });
@@ -83,7 +83,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
       if (_passwordController.text.length < SETUP_MAX_LENGTH_PIN) {
         _errorText["password"] = "Isi PIN sebanyak $SETUP_MAX_LENGTH_PIN digit!";
       }
-      if (!f!.isValidEmail(_emailController.text)) {
+      if (!f.isValidEmail(_emailController.text)) {
         _errorText["email"] = "Isi alamat email valid!";
       }
     });
@@ -93,11 +93,11 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     }
 
     // konfirmasi pin baru
-    _confirmPassword = await u!.promptPIN(title: "Coba masukkan PIN sekali lagi!", showForgot: false, showUsePassword: false) ?? "";
+    _confirmPassword = await u.promptPIN(title: "Coba masukkan PIN sekali lagi!", showForgot: false, showUsePassword: false) ?? "";
     print("confirmPassword: $_confirmPassword");
     if (_confirmPassword.isEmpty) return;
     if (_confirmPassword != _passwordController.text) {
-      h!.showCallbackDialog("PIN dan konfirmasi PIN tidak sesuai!", type: MyCallbackType.warning);
+      h.showCallbackDialog("PIN dan konfirmasi PIN tidak sesuai!", type: MyCallbackType.warning);
       return;
     }
 
@@ -113,14 +113,14 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
         if (await localAuth.canCheckBiometrics) {
           List<BiometricType> availableBiometrics = await localAuth.getAvailableBiometrics();
           if (availableBiometrics.contains(BiometricType.fingerprint)) {
-            _enableFingerprint = await h!.showConfirmDialog(
+            _enableFingerprint = await h.showConfirmDialog(
               "Ingin mengaktifkan login dengan sidik jari?",
               title: "Aktivasi Fingerprint",
               rejectText: "Lewati",
             ) ?? false;
             if (_enableFingerprint) {
               _enableFingerprint = await localAuth.authenticate(localizedReason: 'Coba tempelkan sidik jarimu untuk melanjutkan');
-              await h!.showCallbackDialog(
+              await h.showCallbackDialog(
                 "Aktivasi login dengan sidik jari ${_enableFingerprint ? "berhasil" : "gagal"}."
                 "${_enableFingerprint ? "" : " Kamu bisa coba lagi nanti di menu Pengaturan."}",
                 type: _enableFingerprint ? MyCallbackType.success : MyCallbackType.error,
@@ -176,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
       profile = UserModel.fromJson(registerResult.data.first);
       // await widget.analytics.setUserId(profile!.id.toString());
       // await widget.analytics.setUserProperty(name: 'email', value: profile!.email);
-      await u!.login();
+      await u.login();
 
       // go to dashboard
       Navigator.pushReplacementNamed(context, ROUTE_DASHBOARD, arguments: {"just_register": true});
@@ -191,7 +191,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
         _isLoading = false;
       });
     }
-    h!.showCallbackDialog("Terjadi masalah saat mendaftar akun. Silakan coba lagi.", title: "Gagal Daftar", type: MyCallbackType.error, devNote: devNote);
+    h.showCallbackDialog("Terjadi masalah saat mendaftar akun. Silakan coba lagi.", title: "Gagal Daftar", type: MyCallbackType.error, devNote: devNote);
     if (devNote != null) print(devNote);
   }
 
@@ -203,7 +203,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
       _scrollController.jumpTo(0);
       return false;
     }
-    return await h!.showConfirmDialog("Apakah kamu yakin ingin batal membuat akun?", title: "Batal Daftar") ?? false;
+    return await h.showConfirmDialog("Apakah kamu yakin ingin batal membuat akun?", title: "Batal Daftar") ?? false;
   }
 
   @override
@@ -309,7 +309,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                               Row(
                                 children: [
                                   MyAvatar(
-                                    _userPic ?? DEFAULT_USER_PIC_ASSET,
+                                    _userPic ?? SETUP_IMAGE_NONE_USER,
                                     strokeWidth: 3,
                                     elevation: 0,
                                     size: 100.0,

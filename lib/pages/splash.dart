@@ -29,8 +29,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  _dismiss() {
-    Navigator.of(context).pushReplacementNamed(ROUTE_LOGIN, arguments: {'duration': 2000});
+  _dismiss() async {
+    await firebaseAnalytics.logAppOpen();
+    Navigator.of(context).pushReplacementNamed(ROUTE_LOGIN, arguments: {'transition': 'fade', 'duration': 1000});
   }
 
   @override

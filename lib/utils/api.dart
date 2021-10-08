@@ -36,8 +36,8 @@ class ApiProvider {
         : await Dio(baseOptions).get('/$url', queryParameters: getParams);
       Map<String, dynamic>? responseBody = response.data is String ? json.decode(response.data) : response.data;
       if (withLog) {
-        log("> data: ${f!.formatJson(data)}");
-        log("> response: ${f!.formatJson(responseBody)}");
+        log("> data: ${f.formatJson(data)}");
+        log("> response: ${f.formatJson(responseBody)}");
       }
       return ApiModel.fromJson(responseBody);
     } catch (e) {

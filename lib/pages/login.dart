@@ -38,12 +38,12 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  _login() async {
+  _login() {
     // form validation
     setState(() {
       if (_emailController.text.isEmpty) {
         _errorText["email"] = "Harap masukkan email Anda!";
-      } else if (!f!.isValidEmail(_emailController.text)) {
+      } else if (!f.isValidEmail(_emailController.text)) {
         _errorText["email"] = "Alamat email tidak valid!";
       }
     });
@@ -54,6 +54,10 @@ class _LoginPageState extends State<LoginPage> {
 
     // check user email in database
     FocusScope.of(context).unfocus();
+    _checkUserEmail();
+  }
+
+  _checkUserEmail() async {
     setState(() {
       _isLoading = true;
     });
@@ -71,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
       print("user data: $profile");
       if (FirebaseAuth.instance.currentUser == null) {
         // firebase login with email & password
-        final pin = await u!.promptPIN();
+        final pin = await u.promptPIN();
         if (pin == null) {
           setState(() {
             _isLoading = false;
@@ -88,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
             print("other error: $e");
           }
           if (firebaseUser == null) {
-            h!.showCallbackDialog("PIN yang kamu masukkan salah!", title: "Login Gagal", type: MyCallbackType.error);
+            h.showCallbackDialog("PIN yang kamu masukkan salah!", title: "Login Gagal", type: MyCallbackType.error);
             setState(() {
               _isLoading = false;
             });
@@ -112,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
     // store user data
     // await widget.analytics.setUserId(profile!.id.toString());
     // await widget.analytics.setUserProperty(name: 'email', value: profile!.email);
-    await u!.login();
+    await u.login();
 
     // redirect
     // await Navigator.push(context, PageRouteBuilder(pageBuilder: (_, __, ___) => const DashboardPage({ "justLogin": true })));
@@ -129,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = false;
       });
     }
-    h!.showCallbackDialog("Terjadi masalah saat login. Silakan coba lagi.", title: "Gagal Login", type: MyCallbackType.error, devNote: devNote);
+    h.showCallbackDialog("Terjadi masalah saat login. Silakan coba lagi.", title: "Gagal Login", type: MyCallbackType.error, devNote: devNote);
     if (devNote != null) print(devNote);
   }
 
@@ -177,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
         if (e.code == "account-exists-with-different-credential") {
           // final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(fbUserData["email"]);
           _emailController.text = fbUserData["email"];
-          h!.showCallbackDialog(
+          h.showCallbackDialog(
             "Alamat email kamu sudah terdaftar di aplikasi $APP_NAME.",
             title: "Email Sudah Terdaftar",
             type: MyCallbackType.info
@@ -193,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
         _loginFail("other error: $e");
       }
     } else if (result.status == LoginStatus.failed) {
-      h!.showCallbackDialog(
+      h.showCallbackDialog(
         "Terjadi masalah saat login dengan Facebook. Silakan coba lagi.",
         title: "Login Facebook Gagal",
         type: MyCallbackType.error
@@ -206,11 +210,20 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.addListener(() { if (_emailController.text.isNotEmpty) _dismissError("email"); });
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
 
+      SharedPreferences prefs = await SharedPreferences.getInstance();
       isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);
       isTour2Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour2Completed') ?? false);
       isTour3Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour3Completed') ?? false);
+
+      // check current user
+      User? firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser?.email != null) {
+        _emailController.text = firebaseUser!.email!;
+        _checkUserEmail();
+        return;
+      }
+
       isFirstRun = (isDebugMode && DEBUG_ONBOARDING) || (prefs.getBool('isFirstRun') ?? true);
       String email = prefs.getString('login_email') ?? (isDebugMode ? DEBUG_USER : '');
       int? savedID = prefs.getInt('login_id');

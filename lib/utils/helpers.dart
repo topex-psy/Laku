@@ -12,13 +12,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:theme_provider/theme_provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+// import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import '../plugins/toast.dart';
 import 'api.dart';
 import 'constants.dart';
@@ -54,7 +53,7 @@ class UIHelper {
       builder: (_, controller) {
         return Flash(
           controller: controller,
-          backgroundColor: h!.backgroundColor(),
+          backgroundColor: h.backgroundColor(),
           brightness: ThemeProvider.themeOf(context).data.brightness,
           boxShadows: [BoxShadow(color: Colors.grey[800]!, blurRadius: 8.0)],
           barrierBlur: 3.0,
@@ -144,7 +143,7 @@ class UIHelper {
               opacity: a1.value,
               child: SafeArea(
                 child: AlertDialog(
-                  backgroundColor: h!.backgroundColor(),
+                  backgroundColor: h.backgroundColor(),
                   shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
                   title: title == null ? const SizedBox() : Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18.0),),
                   titlePadding: title == null ? const EdgeInsets.only(top: 24) : const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 12),
@@ -333,14 +332,14 @@ class LocationHelper {
     LocationPermission permission;
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return await h!.showCallbackDialog(
+      return await h.showCallbackDialog(
         "Harap aktifkan GPS untuk dapat menggunakan aplikasi ini.",
         title: "GPS Tidak Aktif",
         type: MyCallbackType.warning,
       );
     }
 
-    callbackMessage() async => await h!.showCallbackDialog(
+    callbackMessage() async => await h.showCallbackDialog(
       "Izin akses lokasi dibutuhkan untuk dapat menggunakan aplikasi ini.",
       title: "Izin Dibutuhkan",
       type: MyCallbackType.warning,
@@ -355,7 +354,7 @@ class LocationHelper {
     if (permission == LocationPermission.deniedForever) {
       await callbackMessage();
       print("location permission: will open app settings");
-      await openAppSettings();
+      await Geolocator.openAppSettings();
       permission = await Geolocator.checkPermission();
     }
     print("location permission 3: $permission");
@@ -370,7 +369,7 @@ class LocationHelper {
     return await Geolocator.getLastKnownPosition();
   }
   Future<Position?> pickPosition([Position? currentPosition]) async {
-    return await h!.showDialog(
+    return await h.showDialog(
       Container(), // TODO google map
       closeButtonText: 'action_cancel'.tr(),
       isDismissible: false,
@@ -380,7 +379,7 @@ class LocationHelper {
 
 class AppHelper {
   ImageProvider<Object> imageProvider(src, {String? fallbackAsset}) {
-    final fallback = AssetImage(fallbackAsset ?? DEFAULT_NONE_PIC_ASSET);
+    final fallback = AssetImage(fallbackAsset ?? SETUP_IMAGE_NONE);
     if (src is AssetEntity) return AssetEntityImageProvider(src, isOriginal: true);
     if (src is File) return FileImage(src);
     if (src is String) {
@@ -436,7 +435,7 @@ class UserHelper {
     final numImages = selectedList.length;
     final numImagesEdit = uploadedList.length;
     if (numImages + numImagesEdit == maxSelect) {
-      h!.showCallbackDialog(
+      h.showCallbackDialog(
         "Anda sudah memilih maksimal $maxSelect foto!",
         title: "Maksimal Foto",
         type: MyCallbackType.warning,
@@ -447,7 +446,7 @@ class UserHelper {
     ImageSource? source = ImageSource.camera;
 
     if (withGallery) {
-      source = await h!.showDialog(
+      source = await h.showDialog(
         Column(
           children: pickImageOptions.map((menu) {
             final ImageSource source = menu.value;
@@ -476,17 +475,18 @@ class UserHelper {
     selected = const <AssetEntity>[],
   }) async {
     var resultList = <AssetEntity>[...selected];
-    if (source == ImageSource.camera) {
-      final AssetEntity? entity = await CameraPicker.pickFromCamera(
-        context,
-        enableAudio: false,
-        shouldDeletePreviewFile: true,
-        textDelegate: EnglishCameraPickerTextDelegate(),
-      );
-      if (entity != null) {
-        resultList.add(entity);
-      }
-    } else {
+    // TODO FIXME camera source
+    // if (source == ImageSource.camera) {
+    //   final AssetEntity? entity = await CameraPicker.pickFromCamera(
+    //     context,
+    //     enableAudio: false,
+    //     shouldDeletePreviewFile: true,
+    //     textDelegate: EnglishCameraPickerTextDelegate(),
+    //   );
+    //   if (entity != null) {
+    //     resultList.add(entity);
+    //   }
+    // } else {
       resultList = await AssetPicker.pickAssets(
         context,
         textDelegate: EnglishTextDelegate(),
@@ -494,12 +494,12 @@ class UserHelper {
         selectedAssets: selected,
         requestType: RequestType.image,
       ) ?? [];
-    }
+    // }
     return resultList;
   }
 
   Future<String?> promptPIN({String? title, bool showForgot = true, bool showUsePassword = true}) async {
-    return await h!.showDialog(
+    return await h.showDialog(
       MyInputPIN(
         title: title ?? 'placeholder.pin'.tr(),
         showForgot: showForgot,
@@ -531,7 +531,7 @@ class UserHelper {
   }
 
   navigatePage(int page) {
-    h!.closeDrawer();
+    h.closeDrawer();
     screenPageController.animateToPage(page, duration: const Duration(milliseconds: 500), curve: Curves.ease);
     firebaseAnalytics.setCurrentScreen(
       screenName: screenNames[page],
@@ -556,7 +556,7 @@ class UserHelper {
   }
 
   /// store user data to shared prefs and put last position to provider
-  Future login() async {
+  Future<void> login() async {
     if (profile == null) return;
     session = SessionModel.fromUserModel(profile!);
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -571,11 +571,12 @@ class UserHelper {
     }
     await firebaseAnalytics.setUserId(profile!.id.toString());
     await firebaseAnalytics.setUserProperty(name: 'email', value: profile!.email);
+    await firebaseAnalytics.logLogin();
   }
 
-  logout() async {
+  Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('login_user_id');
+    await prefs.remove('login_id');
     await prefs.remove('login_email');
     await FacebookAuth.instance.logOut();
     Navigator.of(context).popUntil((route) => route.isFirst);

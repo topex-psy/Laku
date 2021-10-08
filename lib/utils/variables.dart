@@ -8,17 +8,18 @@ import 'package:preload_page_view/preload_page_view.dart';
 import 'helpers.dart';
 import 'models.dart';
 
+var isDebugMode = false;
+
 late FirebaseAnalytics firebaseAnalytics;
 late FirebaseAnalyticsObserver firebaseObserver;
-
-bool isDebugMode = false;
-SessionModel? session;
-UserModel? profile;
-UIHelper? h;
-UserHelper? u;
-FormatHelper? f;
+late UIHelper h;
+late UserHelper u;
+late FormatHelper f;
 final l = LocationHelper();
 final a = AppHelper();
+
+SessionModel? session;
+UserModel? profile;
 
 final screenPageController = PreloadPageController();
 final screenScaffoldKey = GlobalKey<ScaffoldState>();

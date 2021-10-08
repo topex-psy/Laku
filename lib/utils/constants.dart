@@ -62,11 +62,10 @@ const DEBUG_USER = "topexgames@yahoo.com";
 const DEBUG_TOUR = true;
 const DEBUG_ONBOARDING = false;
 
-const DEFAULT_USER_PIC_ASSET = "assets/images/anon.png";
-const DEFAULT_NONE_PIC_ASSET = "assets/images/none.jpg";
-
 const SETUP_IMAGE_COMPRESS_QUALITY = 75;
 const SETUP_IMAGE_COMPRESS_RESIZE = 1000;
+const SETUP_IMAGE_NONE = "assets/images/none.jpg";
+const SETUP_IMAGE_NONE_USER = "assets/images/anon.png";
 const SETUP_MAX_LENGTH_PIN = 6;
 const SETUP_MAX_LENGTH_CURRENCY = 15;
 const SETUP_MAX_USER_AGE = 100;

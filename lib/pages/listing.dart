@@ -73,14 +73,14 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
         });
         if (favoriteResult.isSuccess) {
           if (_item.isFavorite) {
-            h!.showFlashBar("Favorit Dihapus!", "Iklan ini berhasil dihapus dari daftar favorit!", actionLabel: "Undo", action: () => _action('favorit'));
+            h.showFlashBar("Favorit Dihapus!", "Iklan ini berhasil dihapus dari daftar favorit!", actionLabel: "Undo", action: () => _action('favorit'));
           } else {
-            h!.showFlashbarSuccess("Favorit Ditambahkan!", "Iklan ini berhasil ditambahkan ke daftar favorit!");
+            h.showFlashbarSuccess("Favorit Ditambahkan!", "Iklan ini berhasil ditambahkan ke daftar favorit!");
           }
           setState(() {
             _item.toggleFav();
           });
-          u!.loadNotif();
+          u.loadNotif();
         }
         break;
       case 'edit':
@@ -98,12 +98,12 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
       case 'open_shop':
         break;
       case 'delete':
-        if (await h!.showConfirmDialog('action_confirm'.tr(), title: 'action_delete_listing'.tr()) ?? false) {
+        if (await h.showConfirmDialog('action_confirm'.tr(), title: 'action_delete_listing'.tr()) ?? false) {
           // TODO hapus iklan
         }
         break;
       case 'deactivate':
-        if (await h!.showConfirmDialog('action_confirm'.tr(), title: 'action_deacivate'.tr()) ?? false) {
+        if (await h.showConfirmDialog('action_confirm'.tr(), title: 'action_deacivate'.tr()) ?? false) {
           // TODO nonaktif
         }
         break;
@@ -122,6 +122,27 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
     _scrollController.addListener(_scrollListener);
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) {
+      // params: https://firebase.google.com/docs/reference/android/com/google/firebase/analytics/FirebaseAnalytics.Param#LOCATION_ID
+      firebaseAnalytics.logViewItem(
+        itemId: _item.id.toString(),
+        itemName: _item.title,
+        itemCategory: _item.category ?? "other",
+        itemLocationId: _item.latLng,
+        price: _item.price,
+        // quantity: 6,
+        currency: 'IDR',
+        // value: 67.8,
+        // flightNumber: 'test flight number',
+        // numberOfPassengers: 3,
+        // numberOfRooms: 1,
+        // numberOfNights: 2,
+        // origin: 'test origin',
+        // destination: 'test destination',
+        startDate: _item.validFrom?.toIso8601String(),
+        endDate: _item.validUntil?.toIso8601String(),
+        // searchTerm: 'test search term',
+        // travelClass: 'test travel class',
+      );
     });
   }
 
@@ -180,7 +201,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                                 child: Hero(
                                   tag: "${heroTag}_$index",
                                   child: FadeInImage.assetNetwork(
-                                    placeholder: DEFAULT_NONE_PIC_ASSET,
+                                    placeholder: SETUP_IMAGE_NONE,
                                     image: pic,
                                     fit: BoxFit.cover,
                                   ),
@@ -236,7 +257,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                Text("${f!.formatNumber(_item.viewCount)}x", style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                                Text("${f.formatNumber(_item.viewCount)}x", style: const TextStyle(fontSize: 13, color: Colors.grey)),
                                 const SizedBox(width: 4,),
                                 const Icon(Icons.visibility, color: APP_UI_COLOR_MAIN, size: 18,),
                               ],
@@ -307,7 +328,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                               ),
                               Transform.translate(
                                 offset: const Offset(0, 29.5),
-                                child: Text(f!.formatNumber(_item.favoriteCount), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12),),
+                                child: Text(f.formatNumber(_item.favoriteCount), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12),),
                               )
                             ],
                           ),
@@ -374,7 +395,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                                     ),
                                   ),
                                   const SizedBox(width: 6,),
-                                  Text(f!.formatPriceAbbr(_item.price, singkat: true), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white)),
+                                  Text(f.formatPriceAbbr(_item.price, singkat: true), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white)),
                                 ],
                               ),
                             ),
@@ -500,12 +521,12 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                               Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                                 const Icon(Icons.favorite_outline, size: 20, color: Colors.pink,),
                                 const SizedBox(width: 6,),
-                                Text("${f!.formatNumber(_item.shop?.favoriteCount ?? _item.owner.favoriteCount!)} favorit"),
+                                Text("${f.formatNumber(_item.shop?.favoriteCount ?? _item.owner.favoriteCount!)} favorit"),
                               ],),
                               Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                                 const Icon(Icons.file_present_outlined, size: 20, color: Colors.grey,),
                                 const SizedBox(width: 6,),
-                                Text("${f!.formatNumber(_item.shop?.listingCount ?? _item.owner.listingCount!)} iklan"),
+                                Text("${f.formatNumber(_item.shop?.listingCount ?? _item.owner.listingCount!)} iklan"),
                               ],),
                             ],
                           ),
@@ -513,7 +534,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                           Row(children: <Widget>[
                             const Icon(Icons.circle, size: 20, color: Colors.grey,),
                             const SizedBox(width: 6,),
-                            Expanded(child: Text(f!.formatTimeago(_item.owner.lastActive), style: const TextStyle(fontSize: 12))),
+                            Expanded(child: Text(f.formatTimeago(_item.owner.lastActive), style: const TextStyle(fontSize: 12))),
                           ],),
                         ],),),
                         const SizedBox(width: 8),
@@ -531,7 +552,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
                             children: <Widget>[
                               const Icon(Icons.place, color: Colors.grey),
                               const SizedBox(height: 2,),
-                              Text(f!.formatDistance(_item.distanceMeter), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12),)
+                              Text(f.formatDistance(_item.distanceMeter), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12),)
                             ],
                           ),
                         ),

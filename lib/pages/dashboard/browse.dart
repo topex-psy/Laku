@@ -164,8 +164,8 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
             child: Hero(
               tag: "listing_${item.id}_0",
               child: FadeInImage.assetNetwork(
-                placeholder: DEFAULT_NONE_PIC_ASSET,
-                image: item.images.isNotEmpty ? item.images.first : DEFAULT_NONE_PIC_ASSET,
+                placeholder: SETUP_IMAGE_NONE,
+                image: item.images.isNotEmpty ? item.images.first : "$APP_URL_HOST/$SETUP_IMAGE_NONE",
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,
@@ -196,7 +196,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
                 children: <Widget>[
                   const Icon(LineIcons.mapMarker, color: Colors.white, size: 13,),
                   const SizedBox(width: 4,),
-                  Text(f!.formatDistance(item.distanceMeter), style: const TextStyle(color: Colors.white, fontSize: 11)),
+                  Text(f.formatDistance(item.distanceMeter), style: const TextStyle(color: Colors.white, fontSize: 11)),
                 ],
               ),
             ],),
@@ -232,7 +232,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
                       item.toggleFav();
                     }
                   });
-                  u!.loadNotif();
+                  u.loadNotif();
                 }
               },
             ),

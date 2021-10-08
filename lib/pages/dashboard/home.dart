@@ -303,7 +303,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           // TODO show popup notification (broadcast berakhir, news, etc)
                         },),
                         IconButton(icon: const Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
-                          u!.openProfile();
+                          u.openProfile();
                         },),
                         const SizedBox(width: 8,)
                       ],
@@ -535,7 +535,7 @@ class _CardBoxState extends State<CardBox> {
           color: Colors.blue,
           onPressed: () {
             settings.setSettings(isViewFavorites: false);
-            u!.navigatePage(tabBrowse);
+            u.navigatePage(tabBrowse);
           },
         );
         break;
@@ -602,7 +602,7 @@ class _CardBoxState extends State<CardBox> {
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
                   // TODO check spinkit size
-                  total == null ? const SpinKitRipple(color: Colors.white70, size: 50,) : Text(f!.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 28, color: Colors.white),),
+                  total == null ? const SpinKitRipple(color: Colors.white70, size: 50,) : Text(f.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 28, color: Colors.white),),
                   Text(menu.label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),),
                   const SizedBox(height: 14,),
                   Row(children: <Widget>[
@@ -647,7 +647,7 @@ class _CardListState extends State<CardList> {
           additionalValue: "Cek",
           onPressed: () {
             settings.setSettings(isViewFavorites: true);
-            u!.navigatePage(tabBrowse);
+            u.navigatePage(tabBrowse);
           },
         );
         break;
@@ -661,7 +661,7 @@ class _CardListState extends State<CardList> {
           color: Colors.pink[300]!,
           additionalValue: total == 0 ? "Buat" : "Kelola",
           onPressed: () {
-            u!.openMyListings();
+            u.openMyListings();
           },
         );
         break;
@@ -706,7 +706,7 @@ class _CardListState extends State<CardList> {
         padding: const EdgeInsets.all(12),
         child: Row(children: <Widget>[
           const SizedBox(width: 8,),
-          Text(f!.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
+          Text(f.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
           const SizedBox(width: 8,),
           Expanded(child: Text(menu.label)),
           MyButton(

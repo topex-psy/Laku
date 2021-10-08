@@ -195,8 +195,8 @@ class UserModel {
     isNear = row['is_near'],
     isFavorite = row['is_favorite'],
     lastActive = DateTime.parse(row['last_active']),
-    lastLatitude = double.tryParse(row['last_latitude']),
-    lastLongitude = double.tryParse(row['last_longitude']),
+    lastLatitude = double.tryParse(row['last_latitude']??""),
+    lastLongitude = double.tryParse(row['last_longitude']??""),
     createdAt = DateTime.parse(row['created_at']);
 
   @override
@@ -249,6 +249,9 @@ class ListingModel {
     required this.longitude,
     required this.distanceMeter,
     required this.deliveryInfo,
+    required this.deliveryMaxDistance,
+    required this.validFrom,
+    required this.validUntil,
     required this.isMine,
     required this.isNear,
     required this.isNew,
@@ -276,6 +279,9 @@ class ListingModel {
   final double longitude;
   final double distanceMeter;
   final String? deliveryInfo;
+  final int? deliveryMaxDistance;
+  final DateTime? validFrom;
+  final DateTime? validUntil;
   final bool isMine;
   final bool isNear;
   final bool isNew;
@@ -286,6 +292,8 @@ class ListingModel {
   final DateTime updatedAt;
   bool isFavorite;
   int favoriteCount;
+
+  String get latLng => "$latitude, $longitude";
 
   toggleFav() {
     isFavorite = !isFavorite;
@@ -312,6 +320,9 @@ class ListingModel {
     longitude = double.parse(row['longitude']),
     distanceMeter = double.parse(row['distance_meter']),
     deliveryInfo = row['delivery_info'],
+    deliveryMaxDistance = int.tryParse(row['delivery_max_distance']??""),
+    validFrom = DateTime.tryParse(row['valid_from']??""),
+    validUntil = DateTime.tryParse(row['valid_until']??""),
     isMine = row['is_mine'],
     isNear = row['is_near'],
     isNew = row['is_new']??true,

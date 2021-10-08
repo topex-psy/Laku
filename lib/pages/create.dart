@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+// import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import '../../../extensions/string.dart';
 import '../../../utils/api.dart';
 import '../../../utils/constants.dart';
@@ -82,7 +82,7 @@ class _CreatePageState extends State<CreatePage> {
       return setState(() { _step++; });
     }
     if (_images.isEmpty && !_isEdit && _type != "broadcast") {
-      return h!.showCallbackDialog("Unggah minimal 1 foto untuk iklan Anda.", title: "Tambahkan Foto", type: MyCallbackType.warning);
+      return h.showCallbackDialog("Unggah minimal 1 foto untuk iklan Anda.", title: "Tambahkan Foto", type: MyCallbackType.warning);
     }
     // if (_category == null || _subcategory == null) {
     //   return h!.showCallbackDialog("Harap pilih kategori iklan Anda.", title: "Pilih Kategori", type: MyCallbackType.warning);
@@ -90,7 +90,7 @@ class _CreatePageState extends State<CreatePage> {
 
     Position? position;
     if (_shop == null && _listShop.isNotEmpty) {
-      dynamic setLocation = await h!.showConfirmDialog(
+      dynamic setLocation = await h.showConfirmDialog(
         "Kamu tidak memilih toko. Apakah ingin menjadikan posisimu saat ini sebagai titik poin?",
         additionalButtons: [
           MenuModel("Set lokasi", false, color: APP_UI_COLOR_PRIMARY, onPressed: () => Navigator.of(context).pop("manual")),
@@ -118,7 +118,7 @@ class _CreatePageState extends State<CreatePage> {
       _loadingText = "Memasang iklan";
       _loadingProgress = 0.0;
     });
-    final hash = _item == null ? f!.generateHash(): _item.hashCode;
+    final hash = _item == null ? f.generateHash(): _item.hashCode;
     // final postData = <String, String?>{
     final postData = <String, dynamic>{
       'id': _item?.id.toString(),
@@ -169,10 +169,10 @@ class _CreatePageState extends State<CreatePage> {
         caption = "Iklan Terpasang!";
         message = "Iklan <strong>${postData['title']}</strong> telah terpasang!";
       }
-      await h!.showCallbackDialog(message, title: caption, type: MyCallbackType.success);
+      await h.showCallbackDialog(message, title: caption, type: MyCallbackType.success);
       Navigator.of(context).pop({'isSubmit': true});
     } else {
-      h!.showCallbackDialog(
+      h.showCallbackDialog(
         "Terjadi kendala saat memasang ${_type == 'broadcast' ? 'broadcast' : 'iklan'}mu.",
         title: "Gagal Memproses",
         type: MyCallbackType.error
@@ -185,7 +185,7 @@ class _CreatePageState extends State<CreatePage> {
   int get _maxAllowedPic => profile!.tier.maxListingPic;
 
   _browsePicture() async {
-    final resultList = await u?.browsePicture(
+    final resultList = await u.browsePicture(
       maximum: _maxAllowedPic - _imagesEdit.length,
       selectedList: _images,
       uploadedList: _imagesEdit,
@@ -332,7 +332,7 @@ class _CreatePageState extends State<CreatePage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        return await h!.showConfirmDialog("Apakah Anda yakin ingin batal memasang iklan?", title: "Batal Pasang") ?? false;
+        return await h.showConfirmDialog("Apakah Anda yakin ingin batal memasang iklan?", title: "Batal Pasang") ?? false;
       },
       child: Scaffold(
         resizeToAvoidBottomInset: true,

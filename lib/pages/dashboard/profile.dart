@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _emailController.text = _userData!.email;
       _genderController.text = _gender.label;
       _phoneController.text = _userData!.phone ?? "";
-      _dobController.text = f!.formatDate(_userData!.dob);
+      _dobController.text = f.formatDate(_userData!.dob);
     }
   }
 
@@ -94,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (_nameController.text.isEmpty) _errorText["name"] = "Harap masukkan nama lengkapmu!";
       if (_emailController.text.isEmpty) {
         _errorText["email"] = "Harap masukkan alamat emailmu!";
-      } else if (!f!.isValidEmail(_emailController.text)) {
+      } else if (!f.isValidEmail(_emailController.text)) {
         _errorText["email"] = "Harap masukkan alamat email valid!";
       }
       if (_phoneController.text.isEmpty) _errorText["phone"] = "Harap masukkan nomor ponselmu!";
@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
     User? user;
     AuthCredential? cred;
     if (isEmailChanged) {
-      final pin = await u!.promptPIN();
+      final pin = await u.promptPIN();
       if (pin == null) return;
       final firebaseAuth = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: pin);
       user = firebaseAuth.user;
@@ -149,11 +149,11 @@ class _ProfilePageState extends State<ProfilePage> {
       profile = UserModel.fromJson(putUserResult.data.first);
 
       // update firebase profile
-      u!.firebaseUpdateProfile(
+      u.firebaseUpdateProfile(
         name: profile!.name,
         image: _image == null ? null : profile!.image
       );
-      if (isEmailChanged) u!.firebaseUpdateEmail(email);
+      if (isEmailChanged) u.firebaseUpdateEmail(email);
       // TODO update phone in firebase
       // if (isPhoneChanged) u!.firebaseUpdatePhoneNumber(cred);
 
@@ -166,10 +166,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
       // TODO butuh delay?
       Future.delayed(const Duration(milliseconds: 200), () {
-        h!.showFlashbarSuccess("Profil Disunting!", "Informasi profil Anda telah berhasil disimpan.");
+        h.showFlashbarSuccess("Profil Disunting!", "Informasi profil Anda telah berhasil disimpan.");
       });
     } else {
-      h!.showCallbackDialog(
+      h.showCallbackDialog(
         "Terjadi kendala saat menyimpan profil.",
         title: "Gagal Memproses",
         type: MyCallbackType.error,
@@ -178,7 +178,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   _resetPIN() {
-    h!.showDialog(
+    h.showDialog(
       // TODO ResetPIN(),
       Container(),
       title: "Ganti Nomor PIN",
@@ -187,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   _browsePicture([ImageSource? source]) async {
-    source ??= await h?.showDialog(
+    source ??= await h.showDialog(
       Column(
         children: pickImageOptions.map((menu) {
           final ImageSource source = menu.value;
@@ -203,7 +203,7 @@ class _ProfilePageState extends State<ProfilePage> {
       buttonSize: MyButtonSize.SMALL
     );
     if (source == null) return;
-    var resultList = await u!.takePicture(source, maxSelect: 1);
+    var resultList = await u.takePicture(source, maxSelect: 1);
     setState(() {
       _image = resultList.first;
     });
@@ -290,6 +290,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             strokeWidth: 0,
                             elevation: 4,
                             size: 140.0,
+                            cached: true,
                             onTapEdit: _isEdit ? _browsePicture : null,
                           ),
                         ),
@@ -332,7 +333,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ) : const SizedBox(),
                           _isEdit ? const SizedBox() : MyButton("Ganti Nomor PIN", color: Colors.teal[300], icon: Icons.keyboard, iconRight: true, onPressed: _resetPIN,),
                           const SizedBox(height: 12,),
-                          _isEdit ? const SizedBox() : MyButton("Keluar", color: Colors.red, icon: Icons.logout, iconRight: true, onPressed: u!.logout,),
+                          _isEdit ? const SizedBox() : MyButton("Keluar", color: Colors.red, icon: Icons.logout, iconRight: true, onPressed: u.logout,),
                           const SizedBox(height: 12,),
                         ],)
                       ),
