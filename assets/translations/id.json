@@ -22,6 +22,8 @@
   "action_use_password": "Gunakan kata sandi",
   "action_use_pin": "Gunakan PIN",
   "action_forgot": "Lupa?",
+  "action_view": "Lihat",
+  "action_check": "Cek",
   "placeholder": {
     "password": "Kata sandi",
     "pin": "Masukkan PIN",
@@ -31,11 +33,15 @@
   },
   "current_location": "Kamu berada di:",
   "current_items": "Kamu punya:",
+  "current_things": "Di sekitarmu ada:",
   "gender": {
     "male": "Laki-Laki",
     "female": "Perempuan"
   },
+  "menu_notifications": "Notifikasi",
+  "menu_profile": "Profil Saya",
   "menu_favorites": "Favorit",
+  "menu_inbox": "Pesan Masuk",
   "menu_bottom": {
     "home": "Beranda",
     "browse": "Temukan",

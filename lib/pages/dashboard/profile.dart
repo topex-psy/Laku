@@ -325,15 +325,15 @@ class _ProfilePageState extends State<ProfilePage> {
                             });
                           }) : MyInputField(label: "", showLabel: false, readOnly: true, icon: LineIcons.male, controller: _genderController,),
                           const SizedBox(height: 30,),
-                          MyButton(_isEdit ? "Simpan" : "Edit Profil", disabled: _userData == null, color: _isEdit ? Colors.green : Colors.blue, icon: _isEdit ? Icons.check_circle_outline : Icons.edit, iconRight: true, onPressed: _isEdit ? _submit : _edit,),
+                          MyButton(_isEdit ? "Simpan" : "Edit Profil", fullWidth: true, size: MyButtonSize.SMALL, disabled: _userData == null, color: _isEdit ? Colors.green : Colors.blue, icon: _isEdit ? Icons.check_circle_outline : Icons.edit, iconRight: true, onPressed: _isEdit ? _submit : _edit,),
                           const SizedBox(height: 12,),
                           _isEdit ? Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
-                            child: MyButton("Batalkan", color: Colors.grey[400], icon: Icons.close, iconRight: true, onPressed: _edit,),
+                            child: MyButton("Batalkan", fullWidth: true, size: MyButtonSize.SMALL, color: Colors.grey[400], icon: Icons.close, iconRight: true, onPressed: _edit,),
                           ) : const SizedBox(),
-                          _isEdit ? const SizedBox() : MyButton("Ganti Nomor PIN", color: Colors.teal[300], icon: Icons.keyboard, iconRight: true, onPressed: _resetPIN,),
+                          _isEdit ? const SizedBox() : MyButton("Ganti Nomor PIN", fullWidth: true, size: MyButtonSize.SMALL, color: Colors.teal[300], icon: Icons.keyboard, iconRight: true, onPressed: _resetPIN,),
                           const SizedBox(height: 12,),
-                          _isEdit ? const SizedBox() : MyButton("Keluar", color: Colors.red, icon: Icons.logout, iconRight: true, onPressed: u.logout,),
+                          _isEdit ? const SizedBox() : MyButton("Keluar", fullWidth: true, size: MyButtonSize.SMALL, color: Colors.red, icon: Icons.logout, iconRight: true, onPressed: u.logout,),
                           const SizedBox(height: 12,),
                         ],)
                       ),

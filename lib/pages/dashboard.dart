@@ -55,7 +55,6 @@ class _DashboardPageState extends State<DashboardPage> {
   var _isConnected = true;
   var _isGPSActive = true;
   var _isWillExit = false;
-  var _isReady = false;
 
   double _lastLatitude = 0;
   double _lastLongitude = 0;
@@ -173,18 +172,13 @@ class _DashboardPageState extends State<DashboardPage> {
     });
 
     if (isConnected) {
-      ApiProvider(context).api("user", method: "put", withLog: true, data: {
+      ApiProvider(context).api("user", method: "put", withLog: false, data: {
         'id': session!.id,
         'last_latitude': lastLatitude,
         'last_longitude': lastLongitude,
         'last_active': DateTime.now().toIso8601String(),
       }).then((putLocationResult) {
         if (putLocationResult.isSuccess) {
-          if (!_isReady) {
-            setState(() {
-              _isReady = true;
-            });
-          }
           u.loadNotif();
         }
       });
@@ -332,7 +326,7 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!_isGPSActive) return noConnection("gps");
 
     final _listPages = <PageModel>[
-      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(key: Key("HomePage$_isReady"), isOpen: _pageIndex == tabHome, isReady: _isReady, onUpdatePosition: _sendPosition),),
+      PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(isOpen: _pageIndex == tabHome, onUpdatePosition: _sendPosition),),
       PageModel(title: tr('menu_bottom.browse'), icon: LineIcons.search, content: BrowsePage(isOpen: _pageIndex == tabBrowse,),), // favorit, featured ad, last viewed
       PageModel(title: tr('menu_bottom.broadcast'), icon: LineIcons.bullhorn, content: BroadcastPage(isOpen: _pageIndex == tabBroadcast,),),
       PageModel(title: tr('menu_bottom.profile'), icon: LineIcons.user, content: ProfilePage(isOpen: _pageIndex == tabProfile,),),

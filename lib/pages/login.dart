@@ -280,9 +280,9 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.all(30),
                   child: Column(children: [
                     const MyAppLogo(type: MyLogoType.inverted, size: 180.0),
-                    const Text(APP_TAGLINE, textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500)),
+                    const Text(APP_TAGLINE, textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 40,),
-                    const Text("Yuk, langsung aja!", textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+                    const Text("Yuk, langsung aja!", textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
                     const SizedBox(height: 40,),
                     MyInputField(label: 'Email', inputType: MyInputType.EMAIL, size: MyButtonSize.LARGE, inputAction: TextInputAction.go, onSubmitted: (email) => _login(), controller: _emailController, error: _errorText["email"],),
                     const SizedBox(height: 24,),

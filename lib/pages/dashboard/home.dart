@@ -31,11 +31,9 @@ class HomePage extends StatefulWidget {
   const HomePage({
     Key? key,
     this.isOpen = false,
-    this.isReady = false,
     required this.onUpdatePosition
   }) : super(key: key);
   final bool isOpen;
-  final bool isReady;
   final void Function(Position) onUpdatePosition;
 
   @override
@@ -71,20 +69,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _headerOffsetAnimationController.dispose();
     _headerOpacityAnimationController.dispose();
     _refreshController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   _getAllData() async {
-    if (!mounted || !widget.isReady) return;
+    if (!mounted) return;
     _spinController.forward();
     final settings = Provider.of<SettingsProvider>(context, listen: false);
-    settings.setSettings(
-      isGettingAddress: true,
-    );
+    settings.setSettings(isGettingAddress: true);
     final position = await l.myPosition();
     print("current position: $position");
     widget.onUpdatePosition(position);
@@ -124,10 +120,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } catch(e) {
       print("... GET ADDRESS error: $e");
     }
-    settings.setSettings(
-      isGettingAddress: false,
-      address: address,
-    );
+    settings.setSettings(isGettingAddress: false, address: address);
     if (mounted && _isLoading) {
       setState(() {
         _isLoading = false;
@@ -299,12 +292,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
                       actions: [
-                        IconButton(icon: const Icon(LineIcons.bell, color: Colors.white,), tooltip: 'Notifikasi', onPressed: () async {
+                        IconButton(icon: const Icon(LineIcons.bell, color: Colors.white,), tooltip: 'menu_notifications'.tr(), onPressed: () {
                           // TODO show popup notification (broadcast berakhir, news, etc)
                         },),
-                        IconButton(icon: const Icon(LineIcons.user, color: Colors.white,), tooltip: 'Profil Saya', onPressed: () async {
-                          u.openProfile();
-                        },),
+                        IconButton(icon: const Icon(LineIcons.envelope, color: Colors.white,), tooltip: 'menu_inbox'.tr(), onPressed: () {
+                          // TODO open inbox
+                        }),
                         const SizedBox(width: 8,)
                       ],
                       backgroundColor: APP_UI_COLOR_MAIN,
@@ -313,7 +306,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       pinned: false,
                     ),
                     SliverPersistentHeader(
-                      delegate: UiMainHeader(
+                      delegate: MyMainHeader(
                         Column(
                           children: [
                             AnimatedBuilder(
@@ -327,7 +320,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     const SizedBox(width: 12,),
                                     Expanded(
                                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-                                        Text(tr('current_location'), style: const TextStyle(color: Colors.white)),
+                                        Text('current_location'.tr(), style: const TextStyle(color: Colors.white)),
                                         const SizedBox(height: 2,),
                                         Consumer<SettingsProvider>(
                                           builder: (context, settings, child) {
@@ -358,7 +351,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                         ),
                                       ],),
                                     ),
-                                    widget.isReady ? Material(
+                                    Material(
                                       color: Colors.transparent,
                                       shape: const CircleBorder(),
                                       clipBehavior: Clip.antiAlias,
@@ -372,7 +365,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           child: const Icon(LineIcons.syncIcon, color: Colors.white,),
                                         ),
                                       ),
-                                    ) : const SizedBox(),
+                                    ),
                                     const SizedBox(width: 10,),
                                   ],),
                                 );
@@ -380,7 +373,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                             Expanded(child: LayoutBuilder(
                               builder: (context, constraints) {
-                                return constraints.maxHeight < 90 ? const SizedBox() : Container(
+                                return constraints.maxHeight < 80 ? const SizedBox() : Container(
                                   padding: const EdgeInsets.only(top: 10),
                                   width: double.infinity,
                                   height: constraints.maxHeight,
@@ -421,46 +414,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
 
-                                  // AnimatedSize(
-                                  //   duration: Duration(milliseconds: 800),
-                                  //   curve: Curves.easeOut,
-                                  //   vsync: this,
-                                  //   child: _isChartExpand ? Padding(
-                                  //     padding: EdgeInsets.only(bottom: 12),
-                                  //     child: Container(
-                                  //       width: double.infinity,
-                                  //       height: 150,
-                                  //       child: LineChart(
-                                  //         _getLineChartData(),
-                                  //         swapAnimationDuration: Duration(milliseconds: 500),
-                                  //       ),
-                                  //     ),
-                                  //   ) : Container(width: double.infinity,),
-                                  // ),
-
-                                  // Center(
-                                  //   child: Padding(
-                                  //     padding: EdgeInsets.only(bottom: SECTION_MARGIN),
-                                  //     child: AnimatedOpacity(
-                                  //       opacity: _isChartButton ? 1 : 0,
-                                  //       duration: Duration(milliseconds: 400),
-                                  //       child: UiButton(
-                                  //         _isChartExpand ? "Hide chart" : "Show chart",
-                                  //         icon: _isChartExpand ? LineIcons.chevron_circle_up : LineIcons.chevron_circle_down,
-                                  //         width: 118,
-                                  //         height: 30,
-                                  //         textStyle: style.textWhiteS,
-                                  //         color: Colors.teal[300],
-                                  //         onPressed: () {
-                                  //           setState(() {
-                                  //             _isChartExpand = !_isChartExpand;
-                                  //           });
-                                  //         },
-                                  //       ),
-                                  //     ),
-                                  //   ),
-                                  // ),
-
                                   Center(child: Text('current_items'.tr(), textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
                                   const SizedBox(height: 12,),
                                   const CardList(UserNotifType.listingPosted),
@@ -470,7 +423,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                                   const SizedBox(height: SECTION_MARGIN,),
 
-                                  Center(child: Text("Di sekitarmu ada:", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
+                                  Center(child: Text('current_things'.tr(), textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal[200]),),),
                                   const SizedBox(height: 12,),
                                   Wrap(spacing: 8, runSpacing: 8, runAlignment: WrapAlignment.center, children: const <Widget>[
                                     CardBox(UserNotifType.listing),
@@ -673,7 +626,7 @@ class _CardListState extends State<CardList> {
           total: total,
           icon: LineIcons.binoculars,
           color: Colors.pink[300]!,
-          additionalValue: "Lihat",
+          additionalValue: 'action_view'.tr(),
           onPressed: () {
             // TODO buka kelola pencarian
           },
@@ -688,7 +641,7 @@ class _CardListState extends State<CardList> {
           total: total,
           icon: LineIcons.inbox,
           color: Colors.orange[300]!,
-          additionalValue: "Cek",
+          additionalValue: 'action_check'.tr(),
           onPressed: () {
             // TODO buka kelola pesan
           },
@@ -723,8 +676,8 @@ class _CardListState extends State<CardList> {
   }
 }
 
-class UiMainHeader extends SliverPersistentHeaderDelegate {
-  UiMainHeader(this._widget);
+class MyMainHeader extends SliverPersistentHeaderDelegate {
+  MyMainHeader(this._widget);
   final Widget _widget;
 
   @override
@@ -741,7 +694,7 @@ class UiMainHeader extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(UiMainHeader oldDelegate) {
+  bool shouldRebuild(MyMainHeader oldDelegate) {
     return false;
   }
 }

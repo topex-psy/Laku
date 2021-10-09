@@ -121,6 +121,7 @@ class MyButton extends StatelessWidget {
     this.highlightColor,
     this.border,
     this.radius,
+    this.elevation,
     this.fullWidth = false,
     this.iconRight = false,
     this.icon,
@@ -134,6 +135,7 @@ class MyButton extends StatelessWidget {
   final Color? highlightColor;
   final BorderSide? border;
   final double? radius;
+  final double? elevation;
   final String text;
   final VoidCallback? onPressed;
   final bool fullWidth;
@@ -208,7 +210,7 @@ class MyButton extends StatelessWidget {
                 side: border ?? BorderSide(color: color ?? APP_UI_COLOR_MAIN)
               ),
             ),
-            elevation: MaterialStateProperty.all(0),
+            elevation: MaterialStateProperty.all(elevation ?? APP_UI_BUTTON_ELEVATION),
           ),
         ),
       ),

@@ -22,6 +22,8 @@
   "action_use_password": "Gunakan password",
   "action_use_pin": "Use PIN",
   "action_forgot": "Forgot?",
+  "action_view": "View",
+  "action_check": "Check",
   "placeholder": {
     "password": "Password",
     "pin": "Input PIN",
@@ -31,11 +33,15 @@
   },
   "current_location": "You're currently at:",
   "current_items": "You have:",
+  "current_things": "Things around you:",
   "gender": {
     "male": "Male",
     "female": "Female"
   },
+  "menu_notifications": "Notifications",
+  "menu_profile": "My Profile",
   "menu_favorites": "Favorites",
+  "menu_inbox": "Inbox",
   "menu_bottom": {
     "home": "Home",
     "browse": "Browse",
