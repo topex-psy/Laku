@@ -331,9 +331,9 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                                 ],
                               ),
                               const SizedBox(height: 20,),
-                              MyInputField(label: 'Nama Lengkap', inputType: MyInputType.NAME, controller: _nameController, error: _errorText["name"]),
+                              MyInputField(label: 'Nama Lengkap', type: MyInputType.NAME, controller: _nameController, error: _errorText["name"]),
                               const SizedBox(height: 20,),
-                              MyInputField(label: 'Tanggal Lahir', inputType: MyInputType.BIRTHDATE, controller: _dobController, error: _errorText["dob"]),
+                              MyInputField(label: 'Tanggal Lahir', type: MyInputType.BIRTHDATE, controller: _dobController, error: _errorText["dob"]),
                               const SizedBox(height: 20,),
                               MyToggleButton(options: genderOptions, selected: _gender, onSelect: (index) {
                                 setState(() {
@@ -348,7 +348,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                             children: [
                               _method == "facebook" ? const SizedBox() : MyInputField(
                                 label: 'Email',
-                                inputType: MyInputType.EMAIL,
+                                type: MyInputType.EMAIL,
                                 controller: _emailController,
                                 error: _errorText["email"],
                                 editMode: true,
@@ -356,7 +356,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                               const SizedBox(height: 20,),
                               MyInputField(
                                 label: 'Buat PIN',
-                                inputType: MyInputType.PIN,
+                                type: MyInputType.PIN,
                                 controller: _passwordController,
                                 focusNode: _passwordFocus,
                                 error: _errorText["password"]

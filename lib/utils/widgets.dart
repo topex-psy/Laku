@@ -6,6 +6,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/style.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:line_icons/line_icons.dart';
@@ -222,8 +223,8 @@ class MyInputField extends StatefulWidget {
   const MyInputField({
     Key? key,
     required this.label,
-    this.inputType = MyInputType.TEXT,
-    this.inputAction = TextInputAction.done,
+    this.type = MyInputType.TEXT,
+    this.action = TextInputAction.done,
     this.size = MyButtonSize.MEDIUM,
     this.icon,
     this.color,
@@ -238,11 +239,12 @@ class MyInputField extends StatefulWidget {
     this.controller,
     this.focusNode,
     this.error,
+    this.note,
     this.editMode = false,
   }) : super(key: key);
   final String label;
-  final MyInputType inputType;
-  final TextInputAction? inputAction;
+  final MyInputType type;
+  final TextInputAction? action;
   final MyButtonSize size;
   final IconData? icon;
   final Color? color;
@@ -257,6 +259,7 @@ class MyInputField extends StatefulWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? error;
+  final String? note;
   final bool editMode;
 
   @override
@@ -269,7 +272,7 @@ class _MyInputFieldState extends State<MyInputField> {
 
   TextInputType get keyboardType {
     if (isNumberInput) return TextInputType.number;
-    switch (widget.inputType) {
+    switch (widget.type) {
       case MyInputType.NAME: return TextInputType.name;
       case MyInputType.EMAIL: return TextInputType.emailAddress;
       case MyInputType.ADDRESS: return TextInputType.streetAddress;
@@ -282,7 +285,7 @@ class _MyInputFieldState extends State<MyInputField> {
   }
 
   TextCapitalization get textCapitalization {
-    switch (widget.inputType) {
+    switch (widget.type) {
       case MyInputType.NAME: return TextCapitalization.words;
       case MyInputType.NOTE: return TextCapitalization.sentences;
       default: return TextCapitalization.none;
@@ -297,10 +300,10 @@ class _MyInputFieldState extends State<MyInputField> {
         });
       },);
     }
-    if (widget.onBrowse != null || widget.inputType == MyInputType.PIN) {
+    if (widget.onBrowse != null || widget.type == MyInputType.PIN) {
       var browseIcon = widget.browseIcon;
       if (widget.browseIcon == null) {
-        switch (widget.inputType) {
+        switch (widget.type) {
           case MyInputType.PIN:
             browseIcon = Icons.keyboard;
             break;
@@ -310,7 +313,7 @@ class _MyInputFieldState extends State<MyInputField> {
       }
       return IconButton(icon: Icon(browseIcon), iconSize: 24, color: Colors.grey, onPressed: onBrowse,);
     }
-    if (widget.inputType == MyInputType.PASSWORD) {
+    if (widget.type == MyInputType.PASSWORD) {
       return IconButton(icon: Icon(_viewText ? Icons.visibility_off : Icons.visibility), iconSize: 24, color: Colors.grey, onPressed: () {
         setState(() { _viewText = !_viewText; });
       },);
@@ -345,7 +348,6 @@ class _MyInputFieldState extends State<MyInputField> {
   }
 
   Color get fillColor {
-    // return widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : Colors.white.withOpacity(.2));
     return widget.color ?? (widget.editMode && !_editText ? APP_UI_COLOR_ACCENT.withOpacity(.1) : h.backgroundColor(Colors.white));
   }
 
@@ -362,7 +364,7 @@ class _MyInputFieldState extends State<MyInputField> {
 
   InputDecoration get inputDecoration {
     Widget? prefix;
-    switch (widget.inputType) {
+    switch (widget.type) {
       case MyInputType.CURRENCY:
         prefix = Text("Rp ", style: inputStyle);
         break;
@@ -384,7 +386,7 @@ class _MyInputFieldState extends State<MyInputField> {
       enabledBorder: inputBorder(),
       contentPadding: padding,
       hintText: widget.label,
-      hintMaxLines: widget.inputType == MyInputType.NOTE ? null : 1,
+      hintMaxLines: widget.type == MyInputType.NOTE ? null : 1,
       hintStyle: const TextStyle(color: Colors.grey),
       fillColor: fillColor,
       filled: true,
@@ -392,23 +394,23 @@ class _MyInputFieldState extends State<MyInputField> {
     );
   }
 
-  bool get isNumberInput => widget.inputType == MyInputType.CURRENCY || widget.inputType == MyInputType.NUMBER || widget.inputType == MyInputType.PIN || widget.inputType == MyInputType.QTY;
-  bool get isDateInput => widget.inputType == MyInputType.DATE || widget.inputType == MyInputType.BIRTHDATE;
+  bool get isNumberInput => widget.type == MyInputType.CURRENCY || widget.type == MyInputType.NUMBER || widget.type == MyInputType.PIN || widget.type == MyInputType.QTY;
+  bool get isDateInput => widget.type == MyInputType.DATE || widget.type == MyInputType.BIRTHDATE;
 
   List<TextInputFormatter> get inputFormatters {
     var formatters = <TextInputFormatter>[];
     if (widget.maxLength != null) {
       formatters.add(LengthLimitingTextInputFormatter(widget.maxLength));
-    } else if (widget.inputType == MyInputType.CURRENCY) {
+    } else if (widget.type == MyInputType.CURRENCY) {
       formatters.add(LengthLimitingTextInputFormatter(SETUP_MAX_LENGTH_CURRENCY));
-    } else if (widget.inputType == MyInputType.PIN) {
+    } else if (widget.type == MyInputType.PIN) {
       formatters.add(LengthLimitingTextInputFormatter(SETUP_MAX_LENGTH_PIN));
     }
     if (isNumberInput) {
       // formatters.add(FilteringTextInputFormatter.allow(RegExp(r'[1-9]')));
       formatters.add(FilteringTextInputFormatter.digitsOnly);
     }
-    if (widget.inputType == MyInputType.CURRENCY) {
+    if (widget.type == MyInputType.CURRENCY) {
       formatters.add(MyCurrencyInputFormatter(context));
     }
     return formatters;
@@ -416,7 +418,7 @@ class _MyInputFieldState extends State<MyInputField> {
 
   VoidCallback? get onBrowse {
     if (widget.onBrowse != null) widget.onBrowse;
-    switch (widget.inputType) {
+    switch (widget.type) {
       case MyInputType.PIN:
         return () => widget.focusNode?.requestFocus();
       default:
@@ -474,7 +476,7 @@ class _MyInputFieldState extends State<MyInputField> {
           DateTime now = DateTime.now();
           DateTime min = DateTime(2019);
           DateTime max = now;
-          if (widget.inputType == MyInputType.BIRTHDATE) {
+          if (widget.type == MyInputType.BIRTHDATE) {
             min = now.subtract(const Duration(days: SETUP_MAX_USER_AGE * 365)); // umur maksimal
             max = now.subtract(const Duration(days: SETUP_MIN_USER_AGE * 365)); // umur minimal
           }
@@ -485,7 +487,7 @@ class _MyInputFieldState extends State<MyInputField> {
             lastDate: max,
             borderRadius: 16, //APP_UI_BORDER_RADIUS,
             locale: context.locale,
-            initialDatePickerMode: widget.inputType == MyInputType.BIRTHDATE ? DatePickerMode.year : DatePickerMode.day,
+            initialDatePickerMode: widget.type == MyInputType.BIRTHDATE ? DatePickerMode.year : DatePickerMode.day,
             theme: ThemeProvider.themeOf(context).data,
             customWeekDays: context.locale.languageCode == "id"
               ? ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
@@ -507,19 +509,19 @@ class _MyInputFieldState extends State<MyInputField> {
       focusNode: widget.focusNode,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
-      obscureText: widget.inputType == MyInputType.PASSWORD && !_viewText,
+      obscureText: widget.type == MyInputType.PASSWORD && !_viewText,
       decoration: inputDecoration,
-      maxLines: widget.inputType == MyInputType.NOTE ? 3 : 1,
+      maxLines: widget.type == MyInputType.NOTE ? 3 : 1,
       inputFormatters: inputFormatters,
       style: inputStyle,
-      textInputAction: widget.inputAction,
+      textInputAction: widget.action,
       onSubmitted: widget.onSubmitted,
       enableInteractiveSelection: !readOnly && widget.onBrowse == null && !isDateInput,
       readOnly: readOnly,
       onTap: onBrowse,
       onChanged: (val) {
         if (widget.controller != null) {
-          switch (widget.inputType) {
+          switch (widget.type) {
             case MyInputType.PHONE:
               if (val[0] == '0') {
                 widget.controller!.text = val.substring(1);
@@ -545,6 +547,7 @@ class _MyInputFieldState extends State<MyInputField> {
           shadowColor: Colors.grey.withOpacity(0.3),
           child: inputField,
         ),
+        // TODO show note
         widget.error == null ? const SizedBox() : MyInputError(widget.error!),
       ],
     );
@@ -664,7 +667,7 @@ class _MyInputPINState extends State<MyInputPIN> {
           const SizedBox(height: 20,),
           MyInputField(
             label: 'placeholder.password'.tr(),
-            inputType: MyInputType.PASSWORD,
+            type: MyInputType.PASSWORD,
             controller: textController,
             focusNode: textFocus,
             onSubmitted: (password) {
@@ -870,11 +873,10 @@ class MyToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: APP_UI_INPUT_HEIGHT,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),
-        border: Border.all(
-          color: APP_UI_BORDER_COLOR,
-        ),
+        border: Border.all(color: APP_UI_BORDER_COLOR),
       ),
       child: LayoutBuilder(builder: (context, constraints) {
         return ToggleButtons(
@@ -887,7 +889,7 @@ class MyToggleButton extends StatelessWidget {
           children: options.map<Widget>((item) {
             return Container(
               alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -1392,7 +1394,7 @@ class _MySearchBarState extends State<MySearchBar> {
                   isClearable: true,
                   showLabel: false,
                   icon: LineIcons.search,
-                  inputType: MyInputType.SEARCH,
+                  type: MyInputType.SEARCH,
                   controller: widget.searchController,
                   focusNode: widget.searchFocusNode,
                 ),
@@ -1510,94 +1512,111 @@ class MySection extends StatelessWidget {
   }
 }
 
-class MyImageUpload extends StatelessWidget {
-  const MyImageUpload({
-    this.imageList = const [],
-    this.imageEditList = const [],
-    this.placeholder,
-    required this.onDelete,
-    required this.maximum,
-    Key? key
+class MyDropImages extends StatelessWidget {
+  const MyDropImages({
+    Key? key,
+    required this.onPickImage,
+    required this.onDeleteImage,
+    required this.maxImages,
+    this.listImagesEdit = const [],
+    this.listImages = const [],
+    this.height = 100.0
   }) : super(key: key);
-  final List<AssetEntity> imageList;
-  final List<String> imageEditList;
-  final String? placeholder;
-  final void Function(dynamic) onDelete;
-  final int maximum;
+  
+  final VoidCallback onPickImage;
+  final void Function(dynamic) onDeleteImage;
+  final double height;
+  final int maxImages;
+  final List<String> listImagesEdit;
+  final List<dynamic> listImages;
+
+  Widget _getPlaceholder({double width = double.infinity}) {
+    return Container(
+      width: width,
+      height: height,
+      padding: const EdgeInsets.all(4.0),
+      child: DottedBorder(
+        dashPattern: const <double>[10, 6],
+        color: Colors.blueGrey[100]!,
+        strokeWidth: 2,
+        borderType: BorderType.RRect,
+        radius: const Radius.circular(8.0),
+        padding: EdgeInsets.zero,
+        child: Material(
+          color: Colors.white,
+          clipBehavior: Clip.antiAlias,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0),),),
+          child: InkWell(
+            splashColor: APP_UI_COLOR_MAIN.withOpacity(.3),
+            highlightColor: APP_UI_COLOR_MAIN.withOpacity(.3),
+            child: Center(child: Icon(Icons.camera, color: Colors.blueGrey[100], size: 50,),),
+            onTap: onPickImage,
+          ),
+        )
+      ),
+    );
+  }
+
+  int get _totalImages => listImages.length + listImagesEdit.length;
 
   @override
   Widget build(BuildContext context) {
+    // if (listImages.isEmpty) return _getPlaceholder();
 
-    List<Widget> _makeList(List images) {
-      final deleteButton = Container(
-        child: const Icon(Icons.close_rounded, color: Colors.black, size: 22,),
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white
-        ),
-      );
-      final galleryItems = images.map((image) => ImageGalleryItem(src: image)).toList();
-      return images.asMap().map((index, asset) {
-        return MapEntry(index, Stack(
-          alignment: Alignment.topRight,
-          children: <Widget>[
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => ImageGalleryViewer(
-                    galleryItems: galleryItems,
-                    backgroundDecoration: const BoxDecoration(color: Colors.black,),
-                    initialIndex: index,
-                    scrollDirection: Axis.horizontal,
+    List<Widget> _makeList(List assets) {
+      final galleryItems = assets.map((asset) => ImageGalleryItem(src: asset)).toList();
+      return assets.asMap().map((index, asset) {
+        return MapEntry(index, Container(
+          padding: const EdgeInsets.all(4.0),
+          child: Stack(
+            alignment: Alignment.topRight,
+            children: <Widget>[
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => ImageGalleryViewer(
+                      galleryItems: galleryItems,
+                      backgroundDecoration: const BoxDecoration(color: Colors.black,),
+                      initialIndex: index,
+                      scrollDirection: Axis.horizontal,
+                    ),
+                  ));
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image(image: a.imageProvider(asset), width: 300, height: 300, fit: BoxFit.cover,),
+                ),
+              ),
+              onDeleteImage == null ? Container() : GestureDetector(
+                onTap: () => onDeleteImage(asset),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Container(
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                    child: Icon(Icons.close_rounded, color: Colors.grey[850], size: 22,)
                   ),
-                ));
-              },
-              child: asset is AssetEntity
-                ? Image(
-                  image: AssetEntityImageProvider(asset, isOriginal: false),
-                  width: 300,
-                  height: 300,
-                  fit: BoxFit.cover,
-                )
-                : Image.network(asset,
-                  width: 300,
-                  height: 300,
-                  fit: BoxFit.cover,
-                )
-            ),
-            GestureDetector(
-              onTap: () {
-                onDelete(asset);
-              },
-              child: deleteButton,
-            ),
-          ]
+                ),
+              ),
+            ],
+          ),
         ));
       }).values.toList();
     }
 
-    var listImages = _makeList([...imageEditList, ...imageList]);
-    var gridCount = 3;
-    var gridHeight = (MediaQuery.of(context).size.width - 80) / gridCount;
-    var totalHeight = gridHeight * (listImages.length / gridCount).ceil();
+    final _gridItems = _makeList([...listImagesEdit, ...listImages]);
 
-    return listImages.isEmpty ? Text(
-      placeholder ?? "Silakan unggah maksimal $maximum foto.",
-      style: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey,
-      )
-    ) : SizedBox(
-      height: totalHeight,
+    if (_totalImages < maxImages && onPickImage != null) {
+      for (var i = 0; i < maxImages - _totalImages; i++) {
+        _gridItems.add(_getPlaceholder(width: height));
+      }
+    }
+
+    return SizedBox(
+      height: height,
       child: GridView.count(
-        mainAxisSpacing: 2.0,
-        crossAxisSpacing: 2.0,
-        // physics: listImages.length > gridCount ? AlwaysScrollableScrollPhysics() : NeverScrollableScrollPhysics(),
-        physics: const NeverScrollableScrollPhysics(),
-        // scrollDirection: Axis.horizontal,
-        crossAxisCount: gridCount,
-        children: listImages,
+        scrollDirection: Axis.horizontal,
+        crossAxisCount: 1,
+        children: _gridItems,
       ),
     );
   }
@@ -1651,7 +1670,7 @@ class MyWizard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           const SizedBox(width: 30,),
-                          Text(stepContent.title, style: TextStyle(color: Colors.grey[800], fontSize: 20, fontWeight: FontWeight.w600)),
+                          Text(stepContent.title, style: TextStyle(color: Colors.grey[800], fontSize: 18, fontWeight: FontWeight.w600)),
                           const Spacer(),
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.4,

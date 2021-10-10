@@ -63,9 +63,18 @@ class _LoginPageState extends State<LoginPage> {
     });
     final userData = {"email": _emailController.text};
     final userResult = await ApiProvider(context).api('user/check', method: "post", data: userData, withLog: true);
+    print("userResult: $userResult");
     if (!userResult.isSuccess) {
-      await Navigator.pushNamed(context, ROUTE_REGISTER, arguments: userData);
-      reInitContext(context);
+      if (userResult.message == "user-not-found") {
+        await Navigator.pushNamed(context, ROUTE_REGISTER, arguments: userData);
+        reInitContext(context);
+      } else {
+        h.showCallbackDialog(
+          "Terjadi kendala saat memuat data. Periksa koneksi internetmu atau coba lagi nanti!",
+          title: "Gagal Memproses",
+          type: MyCallbackType.error
+        );
+      }
       setState(() {
         _isLoading = false;
       });
@@ -280,15 +289,15 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.all(30),
                   child: Column(children: [
                     const MyAppLogo(type: MyLogoType.inverted, size: 180.0),
-                    const Text(APP_TAGLINE, textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+                    const Text(APP_TAGLINE, textAlign: TextAlign.center, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 40,),
                     const Text("Yuk, langsung aja!", textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
                     const SizedBox(height: 40,),
-                    MyInputField(label: 'Email', inputType: MyInputType.EMAIL, size: MyButtonSize.LARGE, inputAction: TextInputAction.go, onSubmitted: (email) => _login(), controller: _emailController, error: _errorText["email"],),
+                    MyInputField(label: 'Email', type: MyInputType.EMAIL, size: MyButtonSize.LARGE, action: TextInputAction.go, onSubmitted: (email) => _login(), controller: _emailController, error: _errorText["email"],),
                     const SizedBox(height: 24,),
                     MyButton('action_continue'.tr(), fullWidth: true, onPressed: _login),
                     const SizedBox(height: 10,),
-                    const Text("atau", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                    const Text("atau", style: TextStyle(fontSize: 14, color: Colors.blueGrey)),
                     const SizedBox(height: 10,),
                     MyButton('action_login_facebook'.tr(), color: Colors.blue[900], icon: Icons.facebook, size: MyButtonSize.SMALL, fullWidth: true, onPressed: _loginFacebook),
                     const SizedBox(height: 42,),

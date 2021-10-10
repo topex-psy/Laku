@@ -13,13 +13,6 @@ const APP_URL_TERMS      = "$APP_URL_HOST/terms";
 const APP_URL_API        = "$APP_URL_HOST/api";
 const APP_FACEBOOK_ID    = "844479926196457";
 
-const APP_UI_BORDER_COLOR  = Colors.grey;
-const APP_UI_BORDER_RADIUS = 8.0;
-const APP_UI_BUTTON_ELEVATION = 2.0;
-const APP_UI_CARD_ELEVATION = 4.0;
-const APP_UI_CARD_RADIUS = 8.0;
-const APP_UI_INPUT_HEIGHT = 48.0;
-
 // colors from: https://maketintsandshades.com/#009688
 const APP_UI_COLOR_MAIN    = Color(0xFF009688);
 const APP_UI_COLOR_ACCENT  = Color(0xFF75c6bf);
@@ -45,10 +38,16 @@ const APP_UI_COLOR = MaterialColor(0xFFDC143C, <int, Color>{
 
 const APP_UI_BACKGROUND_LIGHT = Color(0xFFF2FAF9);
 const APP_UI_BACKGROUND_DARK  = Color(0xFF262224);
-const APP_UI_FONT_MAIN      = "Quicksand";
-const APP_UI_FONT_SECONDARY = "Lato";
-const APP_UI_THEME_LIGHT    = "theme_light";
-const APP_UI_THEME_DARK     = "theme_dark";
+const APP_UI_BORDER_COLOR     = Colors.grey;
+const APP_UI_BORDER_RADIUS    = 8.0;
+const APP_UI_BUTTON_ELEVATION = 2.0;
+const APP_UI_CARD_ELEVATION   = 4.0;
+const APP_UI_CARD_RADIUS      = 8.0;
+const APP_UI_FONT_MAIN        = "Quicksand";
+const APP_UI_FONT_SECONDARY   = "Lato";
+const APP_UI_INPUT_HEIGHT     = 48.0;
+const APP_UI_THEME_LIGHT      = "theme_light";
+const APP_UI_THEME_DARK       = "theme_dark";
 
 const ROUTE_INTRO      = '/Intro';
 const ROUTE_LOGIN      = '/Login';

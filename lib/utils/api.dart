@@ -53,6 +53,10 @@ class ApiProvider {
             print("DioErrorType.other");
         }
         print("dio error: $e");
+        // DioError [DioErrorType.other]: SocketException: OS Error: Connection timed out, errno = 110, address = 192.168.1.68, port = 44796
+        print("dio error response: ${e.response}");
+        print("dio error error: ${e.error}");
+        // SocketException: OS Error: Connection timed out, errno = 110, address = 192.168.1.68, port = 44892
       } else {
         print("api error: $e");
       }

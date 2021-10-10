@@ -45,6 +45,10 @@ class _CreatePageState extends State<CreatePage> {
     MenuModel("Pasang Iklan", 'listing', icon: LineIcons.edit,),
     MenuModel("Broadcast", 'broadcast', icon: LineIcons.bullhorn,),
   ];
+  final _listCondition = <MenuModel>[
+    MenuModel("Baru", 'new', icon: LineIcons.checkCircle),
+    MenuModel("Bekas", 'used', icon: LineIcons.exclamationCircle),
+  ];
 
   final _scrollController = ScrollController();
   final _titleController = TextEditingController();
@@ -58,12 +62,12 @@ class _CreatePageState extends State<CreatePage> {
 
   String? _category;
   String? _subcategory;
-  var _isNew = true;
   var _isNegotiable = false;
   var _isDeliverable = false;
   var _isAdult = false;
   var _descriptionLength = 0;
-  var _type = "market";
+  late MenuModel _type;
+  late MenuModel _condition;
   DateTime? _jadwalMulai;
   DateTime? _jadwalAkhir;
   ShopModel? _shop;
@@ -81,7 +85,7 @@ class _CreatePageState extends State<CreatePage> {
     if (_step == 0) {
       return setState(() { _step++; });
     }
-    if (_images.isEmpty && !_isEdit && _type != "broadcast") {
+    if (_images.isEmpty && !_isEdit && _type.value != "broadcast") {
       return h.showCallbackDialog("Unggah minimal 1 foto untuk iklan Anda.", title: "Tambahkan Foto", type: MyCallbackType.warning);
     }
     // if (_category == null || _subcategory == null) {
@@ -124,13 +128,13 @@ class _CreatePageState extends State<CreatePage> {
       'id': _item?.id.toString(),
       'id_user': session!.id.toString(),
       'id_shop': _shop?.id.toString(),
-      'type': _type,
+      'type': _type.value,
       'category': _category,
       'subcategory': _subcategory,
       'title': _titleController.text,
       'description': _descriptionController.text,
       'price': _priceController.text.nominal.toString(),
-      'is_new': _isNew ? 1 : 0,
+      'is_new': _condition.value == "new" ? 1 : 0,
       'is_for_adult': _isAdult ? 1 : 0,
       'is_negotiable': _isNegotiable ? 1 : 0,
       'delivery_info': _isDeliverable ? _deliveryInfoController.text : null,
@@ -162,7 +166,7 @@ class _CreatePageState extends State<CreatePage> {
 
     if (postResult.isSuccess) {
       String caption, message;
-      if (_type == 'broadcast') {
+      if (_type.value == 'broadcast') {
         caption = "Broadcast Terkirim!";
         message = "Pesan broadcast Anda telah disiarkan dan dapat dilihat selama 24 jam!";
       } else {
@@ -173,7 +177,7 @@ class _CreatePageState extends State<CreatePage> {
       Navigator.of(context).pop({'isSubmit': true});
     } else {
       h.showCallbackDialog(
-        "Terjadi kendala saat memasang ${_type == 'broadcast' ? 'broadcast' : 'iklan'}mu.",
+        "Terjadi kendala saat memasang ${_type.value == 'broadcast' ? 'broadcast' : 'iklan'}mu.",
         title: "Gagal Memproses",
         type: MyCallbackType.error
       );
@@ -255,23 +259,23 @@ class _CreatePageState extends State<CreatePage> {
         _isLoadingCategory = true;
       });
     }
-    final listingCategoryResult = await ApiProvider(context).api('listing/category', method: "get", getParams: { 'type': _type });
+    final listingCategoryResult = await ApiProvider(context).api('listing/category', method: "get", getParams: { 'type': _type.value });
     if (listingCategoryResult.isSuccess) {
       if (mounted) {
         final listKelompok = List<Map<String, String>>.from(listingCategoryResult.data.first["category"]);
         setState(() {
           _listCategory = listKelompok.map((k) => k['category']!).toList() ..add('other');
           _isLoadingCategory = false;
-          // _resetKategori();
+          _resetKategori();
         });
       }
     }
   }
 
-  // _resetKategori() {
-  //   _category = null;
-  //   _subcategory = null;
-  // }
+  _resetKategori() {
+    _category = null;
+    _subcategory = null;
+  }
 
   // _clearKategori() {
   //   setState(_resetKategori);
@@ -298,6 +302,8 @@ class _CreatePageState extends State<CreatePage> {
     _images = widget.args["selectedAssets"] ?? [];
     _item = widget.args["item"];
     _isEdit = _item != null;
+    _type = _item != null ? _listType.firstWhere((type) => type.value == _item!.type) : _listType.first;
+    _condition = _listCondition.first;
     _titleController.addListener(() => _dismissError("title"));
     _descriptionController.addListener(() {
       _dismissError("deskripsi");
@@ -328,6 +334,62 @@ class _CreatePageState extends State<CreatePage> {
     super.dispose();
   }
 
+  Widget get _inputPrice {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        RichText(text: TextSpan(
+          style: Theme.of(context).textTheme.bodyText1,
+          children: const <TextSpan>[
+            TextSpan(text: 'Harga: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            TextSpan(text: '(Opsional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey)),
+          ],
+        ),),
+        const SizedBox(height: 8,),
+        Row(
+          children: <Widget>[
+            Expanded(child: MyInputField(label: "Harga", showLabel: false, icon: LineIcons.tag, type: MyInputType.CURRENCY, controller: _priceController, focusNode: _priceFocus, error: _errorText["harga"],)),
+            SizedBox(
+              width: 150,
+              child: CheckboxListTile(
+                activeColor: Colors.green,
+                controlAffinity: ListTileControlAffinity.leading,
+                dense: true,
+                title: const Text("Bisa nego"),
+                value: _isNegotiable,
+                onChanged: (val) {
+                  if (val != null) setState(() { _isNegotiable = val; });
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget get _inputCondition {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        const Text("Kondisi:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        const SizedBox(height: 8.0,),
+        MyToggleButton(
+          options: _listCondition,
+          selected: _condition,
+          onSelect: (int index) {
+            setState(() {
+              _condition = _listCondition[index];
+            });
+          },
+        ),
+        const SizedBox(height: 12,),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -345,23 +407,128 @@ class _CreatePageState extends State<CreatePage> {
             ],
             step: _step,
             body: [
-              Column(children: [
-                MyImageUpload(
-                  imageList: _images,
-                  imageEditList: _imagesEdit,
-                  maximum: _maxAllowedPic,
-                  onDelete: (asset) {
-                    print("onDelete: $asset");
-                    setState(() {
-                      if (asset is AssetEntity) {
-                        _images.remove(asset);
-                      } else {
-                        _imagesEdit.remove(asset);
-                      }
-                    });
-                  },
-                ),
-              ],),
+              Column(
+                children: <Widget>[
+                  Form(
+                    key: _formKey,
+                    autovalidateMode: AutovalidateMode.disabled,
+                    onChanged: () {
+                      _isChanged = true;
+                    },
+                    child: Column(children: <Widget>[
+                      _item != null ? const SizedBox() : MySection(children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: MyToggleButton(
+                                // height: 45.0,
+                                options: _listType,
+                                selected: _type,
+                                onSelect: (int index) {
+                                  setState(() {
+                                    _type = _listType[index];
+                                    _resetKategori();
+                                  });
+                                },
+                              ),
+                            ),
+                            _type.value == 'broadcast' ? const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Icon(Icons.tag, color: APP_UI_COLOR_MAIN),
+                            ) : const SizedBox(),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _type.value == 'broadcast'
+                            ? "Siarkan apapun ke pengguna $APP_NAME yang ada di sekitarmu selama 24 jam. Broadcast membutuhkan 1 tiket toa yang kamu punya."
+                            : "Pasang iklan yang dapat ditemukan oleh pengguna $APP_NAME di sekitarmu, kapanpun.",
+                          style: const TextStyle(fontSize: 12),
+                        )
+                      ]),
+
+                      _type.value == 'broadcast' ? const SizedBox() : MySection(
+                        title: "Unggah Foto",
+                        tool: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.teal[200]!.withOpacity(.2),
+                            borderRadius: BorderRadius.circular(8)
+                          ),
+                          child: Text('$_selectedPicsTotal/$_maxAllowedPic', style: const TextStyle(fontWeight: FontWeight.bold))
+                        ),
+                        children: <Widget>[
+                          MyDropImages(
+                            onPickImage: _browsePicture,
+                            onDeleteImage: (asset) => setState(() {
+                              if (asset is String) {
+                                _imagesEdit.remove(asset);
+                              } else {
+                                _images.remove(asset);
+                              }
+                            }),
+                            listImagesEdit: _imagesEdit,
+                            listImages: _images,
+                            maxImages: _maxAllowedPic,
+                            height: 200,
+                          ),
+                        ]
+                      ),
+
+                      MySection(title: _type.value == 'broadcast' ? "Detail Broadcast" : "Detail Iklan", titleSpacing: 20, children: <Widget>[
+                        MyInputField(label: "Judul iklan", icon: LineIcons.edit, type: MyInputType.NAME, controller: _titleController, focusNode: _titleFocus, error: _errorText["title"],),
+                        MyInputField(label: "Deskripsi", maxLength: _maxAllowedDesc, note: "Tulis deskripsi iklan dengan jelas dan lengkap ...", icon: Icons.note, type: MyInputType.NOTE, controller: _descriptionController, focusNode: _descriptionFocus, error: _errorText["description"],),
+                        Row(
+                          children: <Widget>[
+                            const Expanded(child: Padding(
+                              padding: EdgeInsets.only(top: 12.0),
+                              child: Text("Kategori:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            )),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black38,
+                                borderRadius: BorderRadius.circular(8)
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              child: Text("${f.formatNumber(_descriptionLength)}/${f.formatNumber(_maxAllowedDesc)}", style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold))
+                            ),
+                          ],
+                        ),
+                        // TODO fetch api recent kategori
+                        // const SizedBox(height: 12,),
+                        // _selectKategori(),
+                      ]),
+
+                      MySection(title: "Info Lainnya", titleSpacing: 20, children: <Widget>[
+                        _inputPrice,
+                        _inputCondition,
+                        // TODO other fields
+                        // _inputAvailable,
+                        // _inputDelivery,
+                        // _inputAdult,
+                        // TODO _isScheduleable
+                      ]),
+
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        child: MyFooter(),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: MyButton(
+                          _step == 0 ? "Selanjutnya" : (_type.value == 'broadcast' ? "Kirimkan" : "Pasang Iklan"),
+                          color: Colors.green,
+                          icon: _step == 0 ? Icons.chevron_right_rounded : (_type.value == 'broadcast' ? Icons.send : Icons.check),
+                          iconRight: true,
+                          onPressed: _submit,
+                        ),
+                      ),
+                      const SizedBox(height: 20,),
+                    ],)
+                  ),
+                ],
+              ),
             ]
           ),
         ),

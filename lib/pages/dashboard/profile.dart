@@ -310,13 +310,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
                           _isEdit
-                            ? MyInputField(label: 'Nama Lengkap', inputType: MyInputType.NAME, icon: LineIcons.user, controller: _nameController, focusNode: _namaFocus, error: _errorText["name"])
+                            ? MyInputField(label: 'Nama Lengkap', type: MyInputType.NAME, icon: LineIcons.user, controller: _nameController, focusNode: _namaFocus, error: _errorText["name"])
                             : const SizedBox(),
-                          MyInputField(label: "Nomor Ponsel", readOnly: !_isEdit, icon: LineIcons.mobilePhone, inputType: MyInputType.PHONE, controller: _phoneController, focusNode: _phoneFocus, error: _errorText["phone"],),
+                          MyInputField(label: "Nomor Ponsel", readOnly: !_isEdit, icon: LineIcons.mobilePhone, type: MyInputType.PHONE, controller: _phoneController, focusNode: _phoneFocus, error: _errorText["phone"],),
                           _isEdit
-                            ? MyInputField(label: "Alamat email", icon: LineIcons.envelope, inputType: MyInputType.EMAIL, controller: _emailController, focusNode: _emailFocus, error: _errorText["email"],)
+                            ? MyInputField(label: "Alamat email", icon: LineIcons.envelope, type: MyInputType.EMAIL, controller: _emailController, focusNode: _emailFocus, error: _errorText["email"],)
                             : const SizedBox(),
-                          MyInputField(label: "Tanggal lahir", readOnly: !_isEdit, icon: LineIcons.calendar, inputType: MyInputType.BIRTHDATE, controller: _dobController, focusNode: _dobFocus, error: _errorText["dob"],),
+                          MyInputField(label: "Tanggal lahir", readOnly: !_isEdit, icon: LineIcons.calendar, type: MyInputType.BIRTHDATE, controller: _dobController, focusNode: _dobFocus, error: _errorText["dob"],),
                           const Text("Jenis kelamin:"),
                           const SizedBox(height: 8.0,),
                           _isEdit ? MyToggleButton(options: genderOptions, selected: _gender, onSelect: (index) {
