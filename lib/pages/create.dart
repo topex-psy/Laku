@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -350,21 +351,23 @@ class _CreatePageState extends State<CreatePage> {
         Row(
           children: <Widget>[
             Expanded(child: MyInputField(label: "Harga", showLabel: false, icon: LineIcons.tag, type: MyInputType.CURRENCY, controller: _priceController, focusNode: _priceFocus, error: _errorText["harga"],)),
+            // Checkbox(value: _isNegotiable, onChanged: (val) {
+            //   if (val != null) setState(() { _isNegotiable = val; });
+            // }),
+            // Text("Bisa nego"),
             SizedBox(
               width: 150,
-              child: CheckboxListTile(
-                activeColor: Colors.green,
-                controlAffinity: ListTileControlAffinity.leading,
-                dense: true,
-                title: const Text("Bisa nego"),
+              child: MyInputCheck(
+                label: "Bisa nego",
                 value: _isNegotiable,
                 onChanged: (val) {
                   if (val != null) setState(() { _isNegotiable = val; });
-                },
+                }
               ),
             ),
           ],
         ),
+        const SizedBox(height: 12,),
       ],
     );
   }
@@ -399,137 +402,116 @@ class _CreatePageState extends State<CreatePage> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         body: SafeArea(
-          child: MyWizard(
-            scrollController: _scrollController,
-            steps: [
-              ContentModel(title: "Detail Iklan", description: "Lengkapi informasi detail untuk iklan yang akan kamu pasang!"),
-              ContentModel(title: "Pratinjau", description: "Pastikan iklan yang akan kamu pasang sudah terlihat bagus."),
-            ],
-            step: _step,
-            body: [
-              Column(
-                children: <Widget>[
-                  Form(
-                    key: _formKey,
-                    autovalidateMode: AutovalidateMode.disabled,
-                    onChanged: () {
-                      _isChanged = true;
-                    },
-                    child: Column(children: <Widget>[
-                      _item != null ? const SizedBox() : MySection(children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: MyToggleButton(
-                                // height: 45.0,
-                                options: _listType,
-                                selected: _type,
-                                onSelect: (int index) {
-                                  setState(() {
-                                    _type = _listType[index];
-                                    _resetKategori();
-                                  });
-                                },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MyAppBar(title: _type.value == "broadcast" ? "Broadcast" : "Pasang Iklan",),
+              Expanded(
+                child: Stack(
+                  children: [
+                    MyWizard(
+                      scrollController: _scrollController,
+                      steps: [
+                        ContentModel(title: "Detail Iklan", description: "Lengkapi informasi detail untuk iklan yang akan kamu pasang!"),
+                        ContentModel(title: "Pratinjau", description: "Pastikan iklan yang akan kamu pasang sudah terlihat bagus."),
+                      ],
+                      step: _step,
+                      body: [
+                        Form(
+                          key: _formKey,
+                          autovalidateMode: AutovalidateMode.disabled,
+                          onChanged: () {
+                            _isChanged = true;
+                          },
+                          child: Column(children: <Widget>[
+
+                            _type.value == 'broadcast' ? const SizedBox() : MySection(
+                              title: "Unggah Foto",
+                              tool: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.teal[200]!.withOpacity(.2),
+                                  borderRadius: BorderRadius.circular(8)
+                                ),
+                                child: Text('$_selectedPicsTotal/$_maxAllowedPic', style: const TextStyle(fontWeight: FontWeight.bold))
+                              ),
+                              children: <Widget>[
+                                MyDropImages(
+                                  onPickImage: _browsePicture,
+                                  onDeleteImage: (asset) => setState(() {
+                                    if (asset is String) {
+                                      _imagesEdit.remove(asset);
+                                    } else {
+                                      _images.remove(asset);
+                                    }
+                                  }),
+                                  listImagesEdit: _imagesEdit,
+                                  listImages: _images,
+                                  maxImages: _maxAllowedPic,
+                                  height: 200,
+                                ),
+                              ]
+                            ),
+
+                            MySection(title: _type.value == 'broadcast' ? "Detail Broadcast" : "Detail Iklan", titleSpacing: 20, children: <Widget>[
+                              MyInputField(label: "Judul iklan", icon: LineIcons.edit, type: MyInputType.NAME, controller: _titleController, focusNode: _titleFocus, error: _errorText["title"],),
+                              const SizedBox(height: 20,),
+                              MyInputField(label: "Deskripsi", maxLength: _maxAllowedDesc, note: "Tulis deskripsi iklan dengan jelas dan lengkap ...", icon: LineIcons.stickyNote, type: MyInputType.NOTE, controller: _descriptionController, focusNode: _descriptionFocus, error: _errorText["description"],),
+                              Row(
+                                children: <Widget>[
+                                  const Expanded(child: Padding(
+                                    padding: EdgeInsets.only(top: 20.0),
+                                    child: Text("Kategori:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                  )),
+                                  Container(
+                                    decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    child: Text("${f.formatNumber(_descriptionLength)}/${f.formatNumber(_maxAllowedDesc)}", style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold))
+                                  ),
+                                ],
+                              ),
+                              // TODO fetch api recent kategori
+                              // const SizedBox(height: 12,),
+                              // _selectKategori(),
+                            ]),
+
+                            MySection(title: "Info Lainnya", titleSpacing: 20, children: <Widget>[
+                              _inputPrice,
+                              _inputCondition,
+                              // TODO other fields
+                              // _inputAvailable,
+                              // _inputDelivery,
+                              // _inputAdult,
+                              // TODO _isScheduleable
+                            ]),
+
+                            const SizedBox(height: 20,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                              child: MyButton(
+                                _step == 0 ? 'action_continue'.tr() : (_type.value == 'broadcast' ? "Kirimkan" : "Pasang Iklan"),
+                                color: APP_UI_COLOR_SUCCESS,
+                                icon: _step == 0 ? Icons.chevron_right_rounded : (_type.value == 'broadcast' ? Icons.send : Icons.check),
+                                iconRight: true,
+                                fullWidth: true,
+                                onPressed: _submit,
                               ),
                             ),
-                            _type.value == 'broadcast' ? const Padding(
-                              padding: EdgeInsets.only(left: 8.0),
-                              child: Icon(Icons.tag, color: APP_UI_COLOR_MAIN),
-                            ) : const SizedBox(),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _type.value == 'broadcast'
-                            ? "Siarkan apapun ke pengguna $APP_NAME yang ada di sekitarmu selama 24 jam. Broadcast membutuhkan 1 tiket toa yang kamu punya."
-                            : "Pasang iklan yang dapat ditemukan oleh pengguna $APP_NAME di sekitarmu, kapanpun.",
-                          style: const TextStyle(fontSize: 12),
-                        )
-                      ]),
-
-                      _type.value == 'broadcast' ? const SizedBox() : MySection(
-                        title: "Unggah Foto",
-                        tool: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.teal[200]!.withOpacity(.2),
-                            borderRadius: BorderRadius.circular(8)
-                          ),
-                          child: Text('$_selectedPicsTotal/$_maxAllowedPic', style: const TextStyle(fontWeight: FontWeight.bold))
-                        ),
-                        children: <Widget>[
-                          MyDropImages(
-                            onPickImage: _browsePicture,
-                            onDeleteImage: (asset) => setState(() {
-                              if (asset is String) {
-                                _imagesEdit.remove(asset);
-                              } else {
-                                _images.remove(asset);
-                              }
-                            }),
-                            listImagesEdit: _imagesEdit,
-                            listImages: _images,
-                            maxImages: _maxAllowedPic,
-                            height: 200,
-                          ),
-                        ]
-                      ),
-
-                      MySection(title: _type.value == 'broadcast' ? "Detail Broadcast" : "Detail Iklan", titleSpacing: 20, children: <Widget>[
-                        MyInputField(label: "Judul iklan", icon: LineIcons.edit, type: MyInputType.NAME, controller: _titleController, focusNode: _titleFocus, error: _errorText["title"],),
-                        MyInputField(label: "Deskripsi", maxLength: _maxAllowedDesc, note: "Tulis deskripsi iklan dengan jelas dan lengkap ...", icon: Icons.note, type: MyInputType.NOTE, controller: _descriptionController, focusNode: _descriptionFocus, error: _errorText["description"],),
-                        Row(
-                          children: <Widget>[
-                            const Expanded(child: Padding(
-                              padding: EdgeInsets.only(top: 12.0),
-                              child: Text("Kategori:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            )),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black38,
-                                borderRadius: BorderRadius.circular(8)
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              child: Text("${f.formatNumber(_descriptionLength)}/${f.formatNumber(_maxAllowedDesc)}", style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold))
+                            const SizedBox(height: 30,),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 30.0),
+                              child: MyFooter(),
                             ),
-                          ],
+                            const SizedBox(height: 40,),
+                          ],)
                         ),
-                        // TODO fetch api recent kategori
-                        // const SizedBox(height: 12,),
-                        // _selectKategori(),
-                      ]),
-
-                      MySection(title: "Info Lainnya", titleSpacing: 20, children: <Widget>[
-                        _inputPrice,
-                        _inputCondition,
-                        // TODO other fields
-                        // _inputAvailable,
-                        // _inputDelivery,
-                        // _inputAdult,
-                        // TODO _isScheduleable
-                      ]),
-
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: MyFooter(),
-                      ),
-
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: MyButton(
-                          _step == 0 ? "Selanjutnya" : (_type.value == 'broadcast' ? "Kirimkan" : "Pasang Iklan"),
-                          color: Colors.green,
-                          icon: _step == 0 ? Icons.chevron_right_rounded : (_type.value == 'broadcast' ? Icons.send : Icons.check),
-                          iconRight: true,
-                          onPressed: _submit,
-                        ),
-                      ),
-                      const SizedBox(height: 20,),
-                    ],)
-                  ),
-                ],
+                      ][_step]
+                    ),
+                    MyLoader(isLoading: _isLoading, message: _loadingText, progress: _loadingProgress,),
+                  ],
+                ),
               ),
-            ]
+            ],
           ),
         ),
       ),

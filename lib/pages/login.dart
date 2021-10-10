@@ -14,7 +14,6 @@ import '../utils/helpers.dart';
 import '../utils/models.dart' show UserModel;
 import '../utils/variables.dart';
 import '../utils/widgets.dart';
-// import 'dashboard.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage(this.args, {Key? key}) : super(key: key);
@@ -301,7 +300,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 10,),
                     MyButton('action_login_facebook'.tr(), color: Colors.blue[900], icon: Icons.facebook, size: MyButtonSize.SMALL, fullWidth: true, onPressed: _loginFacebook),
                     const SizedBox(height: 42,),
-                    const MyFooter(),
+                    const MyFooter(showCopyright: true),
                   ],),
                 ),
               ),

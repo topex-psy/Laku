@@ -43,6 +43,7 @@ const APP_UI_BORDER_RADIUS    = 8.0;
 const APP_UI_BUTTON_ELEVATION = 2.0;
 const APP_UI_CARD_ELEVATION   = 4.0;
 const APP_UI_CARD_RADIUS      = 8.0;
+const APP_UI_CONTENT_PADDING  = 20.0;
 const APP_UI_FONT_MAIN        = "Quicksand";
 const APP_UI_FONT_SECONDARY   = "Lato";
 const APP_UI_INPUT_HEIGHT     = 48.0;

@@ -61,7 +61,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Timer? _timer;
 
   final _listActions = [
-    MenuModel(tr('action_create.listing'), 'listing', icon: LineIcons.camera, color: Colors.blue),
+    MenuModel(tr('action_create.listing'), 'listing', icon: LineIcons.edit, color: Colors.blue),
     MenuModel(tr('action_create.broadcast'), 'broadcast', icon: LineIcons.bullhorn, color: Colors.yellow),
   ];
 
@@ -203,14 +203,17 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   _create(String what) async {
-    final resultList = await u.browsePicture(maximum: profile!.tier.maxListingPic) ?? [];
-    if (resultList.isNotEmpty) {
-      final createResult = await Navigator.pushNamed(context, ROUTE_CREATE, arguments: {
-        "selectedAssets": resultList,
-      });
-      print("createResult: $createResult");
-      reInitContext(context);
-    }
+    final createResult = await Navigator.pushNamed(context, ROUTE_CREATE);
+    print("createResult: $createResult");
+    reInitContext(context);
+    // final resultList = await u.browsePicture(maximum: profile!.tier.maxListingPic) ?? [];
+    // if (resultList.isNotEmpty) {
+    //   final createResult = await Navigator.pushNamed(context, ROUTE_CREATE, arguments: {
+    //     "selectedAssets": resultList,
+    //   });
+    //   print("createResult: $createResult");
+    //   reInitContext(context);
+    // }
   }
 
   @override
@@ -473,11 +476,8 @@ class _DashboardPageState extends State<DashboardPage> {
           switchOutCurve: Curves.linear,
           // transitionBuilder: (Widget child, Animation<double> animation) => ScaleTransition(child: child, scale: animation,),
           transitionBuilder: (Widget child, Animation<double> animation) {
-            final  offsetAnimation = Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0)).animate(animation);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
+            final offsetAnimation = Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0)).animate(animation);
+            return SlideTransition(position: offsetAnimation, child: child);
           },
           child: _pageIndex > 0 ? const SizedBox() : MyFabCircular(
             LineIcons.plus,

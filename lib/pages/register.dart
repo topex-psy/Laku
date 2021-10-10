@@ -245,9 +245,9 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
     
     final footerWidgets = [
       const SizedBox(height: 36,),
-      MyButton(tr('action_continue'), fullWidth: true, onPressed: _register),
+      MyButton('action_continue'.tr(), fullWidth: true, onPressed: _register),
       const SizedBox(height: 42,),
-      const MyFooter(),
+      const MyFooter(showCopyright: true),
       const SizedBox(height: 36,),
     ];
 
@@ -278,20 +278,22 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 6,),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 15,),
-                    IconButton(icon: const Icon(Icons.chevron_left_rounded), iconSize: 32, color: APP_UI_COLOR_MAIN, onPressed: () async {
-                      if (await _onWillPop()) Navigator.of(context).pop();
-                    },),
-                    const SizedBox(width: 12,),
-                    const Expanded(child: Text("Buat Akunmu", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
-                    const SizedBox(width: 30,),
-                  ],
-                ),
-                const SizedBox(height: 6,),
+                MyAppBar(title: "Buat Akunmu", onWillPop: _onWillPop),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(vertical: 6.0),
+                //   child: Row(
+                //     crossAxisAlignment: CrossAxisAlignment.center,
+                //     children: [
+                //       const SizedBox(width: 15,),
+                //       IconButton(icon: const Icon(Icons.chevron_left_rounded), iconSize: 32, color: APP_UI_COLOR_MAIN, onPressed: () async {
+                //         if (await _onWillPop()) Navigator.of(context).pop();
+                //       },),
+                //       const SizedBox(width: 12,),
+                //       const Expanded(child: Text("Buat Akunmu", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
+                //       const SizedBox(width: 30,),
+                //     ],
+                //   ),
+                // ),
                 Expanded(
                   child: Stack(
                     children: [
@@ -302,6 +304,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                           ContentModel(title: "Data Login", description: "Buat PIN 6 digit angka Anda untuk login ke aplikasi $APP_NAME."),
                         ],
                         step: _step,
+                        bodyPadding: const EdgeInsets.all(APP_UI_CONTENT_PADDING),
                         body: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +367,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
                               ...footerWidgets,
                             ],
                           ),
-                        ],
+                        ][_step],
                       ),
                       MyLoader(isLoading: _isLoading, message: _loadingText, progress: _loadingProgress,),
                     ],

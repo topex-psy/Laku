@@ -147,10 +147,10 @@ class MyButton extends StatelessWidget {
 
   double get fontSize {
     switch (size) {
-      case MyButtonSize.SMALLEST: return 14;
-      case MyButtonSize.SMALLER: return 16;
-      case MyButtonSize.SMALL: return 18;
-      case MyButtonSize.LARGE: return 22;
+      case MyButtonSize.SMALLEST: return 12;
+      case MyButtonSize.SMALLER: return 14;
+      case MyButtonSize.SMALL: return 16;
+      case MyButtonSize.LARGE: return 20;
       default: return 20;
     }
   }
@@ -876,36 +876,47 @@ class MyToggleButton extends StatelessWidget {
       height: APP_UI_INPUT_HEIGHT,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),
-        border: Border.all(color: APP_UI_BORDER_COLOR),
+        border: Border.all(color: APP_UI_BORDER_COLOR, width: 0),
       ),
-      child: LayoutBuilder(builder: (context, constraints) {
-        return ToggleButtons(
-          selectedColor: APP_UI_COLOR[800],
-          fillColor: APP_UI_COLOR_MAIN.withOpacity(0.2),
-          splashColor: APP_UI_COLOR[300]!.withOpacity(0.3),
-          renderBorder: false,
-          constraints: BoxConstraints.expand(width: constraints.maxWidth / options.length),
-          borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),
-          children: options.map<Widget>((item) {
-            return Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  item.icon == null ? const SizedBox() : Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: Icon(item.icon, size: 20,),
-                  ),
-                  Text(item.label, style: const TextStyle(fontSize: 16),),
-                ],
-              ),
-            );
-          }).toList(),
-          isSelected: options.map((t) => t == selected).toList(),
-          onPressed: onSelect,
-        );
-      }),
+      child: Material(
+        borderRadius: const BorderRadius.all(Radius.circular(APP_UI_BORDER_RADIUS),),
+        elevation: 2.0,
+        shadowColor: Colors.grey.withOpacity(0.3),
+        child: LayoutBuilder(builder: (context, constraints) {
+          return ToggleButtons(
+            selectedColor: APP_UI_COLOR[800],
+            fillColor: APP_UI_COLOR_MAIN.withOpacity(0.2),
+            splashColor: APP_UI_COLOR[300]!.withOpacity(0.3),
+            renderBorder: false,
+            constraints: BoxConstraints.expand(width: constraints.maxWidth / options.length),
+            borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),
+            children: options.map<Widget>((item) {
+              final isActive = item == selected;
+              final color = isActive ? APP_UI_COLOR[600] : Colors.grey[600];
+              return Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    item.icon == null ? const SizedBox() : Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Icon(item.icon, size: 20, color: color),
+                    ),
+                    Text(item.label, style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      color: color
+                    ),),
+                  ],
+                ),
+              );
+            }).toList(),
+            isSelected: options.map((t) => t == selected).toList(),
+            onPressed: onSelect,
+          );
+        }),
+      ),
     );
   }
 }
@@ -1135,7 +1146,8 @@ class MyTooltip extends StatelessWidget {
 }
 
 class MyFooter extends StatelessWidget {
-  const MyFooter({Key? key}) : super(key: key);
+  const MyFooter({Key? key, this.showCopyright = false}) : super(key: key);
+  final bool showCopyright;
 
   @override
   Widget build(BuildContext context) {
@@ -1157,11 +1169,11 @@ class MyFooter extends StatelessWidget {
           ),
         },
       ),
-      Container(
+      showCopyright ? Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.only(top: 12.0),
         child: Text("Hak cipta ©${DateTime.now().year} $APP_COPYRIGHT", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
-      ),
+      ) : const SizedBox(),
     ],);
   }
 }
@@ -1493,7 +1505,7 @@ class MySection extends StatelessWidget {
       child: Container(
         width: double.infinity,
         color: Colors.white,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           title == null && tool == null ? const SizedBox() : Padding(
             padding: EdgeInsets.only(bottom: titleSpacing ?? 12.0),
@@ -1549,7 +1561,7 @@ class MyDropImages extends StatelessWidget {
           child: InkWell(
             splashColor: APP_UI_COLOR_MAIN.withOpacity(.3),
             highlightColor: APP_UI_COLOR_MAIN.withOpacity(.3),
-            child: Center(child: Icon(Icons.camera, color: Colors.blueGrey[100], size: 50,),),
+            child: Center(child: Icon(LineIcons.camera, color: Colors.blueGrey[100], size: 50,),),
             onTap: onPickImage,
           ),
         )
@@ -1624,13 +1636,15 @@ class MyDropImages extends StatelessWidget {
 
 class MyWizard extends StatelessWidget {
   const MyWizard({
-    required this.body,
     required this.steps,
     required this.step,
+    required this.body,
+    this.bodyPadding,
     this.scrollController,
     Key? key
   }) : super(key: key);
-  final List<Widget> body;
+  final Widget body;
+  final EdgeInsetsGeometry? bodyPadding;
   final List<ContentModel> steps;
   final int step;
   final ScrollController? scrollController;
@@ -1666,23 +1680,24 @@ class MyWizard extends StatelessWidget {
                     opacity: height > 60 ? 0.0 : 1.0,
                     child: Opacity(
                       opacity: height > 75 ? 0.0 : 1.0,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          const SizedBox(width: 30,),
-                          Text(stepContent.title, style: TextStyle(color: Colors.grey[800], fontSize: 18, fontWeight: FontWeight.w600)),
-                          const Spacer(),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.4,
-                            child: MyStepIndicator(count: stepTotal, step: step, dotSize: 25),
-                          ),
-                          const SizedBox(width: 30,),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: APP_UI_CONTENT_PADDING),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Text(stepContent.title, style: TextStyle(color: Colors.grey[800], fontSize: 18, fontWeight: FontWeight.w600)),
+                            const Spacer(),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.4,
+                              child: MyStepIndicator(count: stepTotal, step: step, dotSize: 25),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   background: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                    padding: const EdgeInsets.symmetric(horizontal: APP_UI_CONTENT_PADDING),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1702,8 +1717,8 @@ class MyWizard extends StatelessWidget {
         ];
       },
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-        child: body[step],
+        padding: bodyPadding ?? EdgeInsets.zero,
+        child: body,
       ),
     );
   }
@@ -1734,6 +1749,31 @@ class MyProfileCard extends StatelessWidget {
             const SizedBox(height: 4,),
             Text(profile!.email, style: TextStyle(fontSize: 14, color: h.textColor(),),),
           ],))
+        ],
+      ),
+    );
+  }
+}
+
+class MyAppBar extends StatelessWidget {
+  const MyAppBar({ Key? key, required this.title, this.onWillPop }) : super(key: key);
+  final String title;
+  final Future<bool> Function()? onWillPop;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // const SizedBox(width: 15,),
+          IconButton(icon: const Icon(Icons.chevron_left_rounded), iconSize: 32, color: APP_UI_COLOR_MAIN, onPressed: () async {
+            if (onWillPop == null || await onWillPop!()) Navigator.of(context).pop();
+          },),
+          const SizedBox(width: 12,),
+          Expanded(child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
+          const SizedBox(width: APP_UI_CONTENT_PADDING,),
         ],
       ),
     );

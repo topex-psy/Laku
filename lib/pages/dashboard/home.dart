@@ -77,7 +77,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   _getAllData() async {
-    if (!mounted) return;
     _spinController.forward();
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     settings.setSettings(isGettingAddress: true);
@@ -121,11 +120,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       print("... GET ADDRESS error: $e");
     }
     settings.setSettings(isGettingAddress: false, address: address);
-    if (mounted && _isLoading) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    _refreshController.refreshCompleted();
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   List<LineChartBarData> _getLineChartBarData() {
@@ -554,7 +552,6 @@ class _CardBoxState extends State<CardBox> {
                   ),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-                  // TODO check spinkit size
                   total == null ? const SpinKitRipple(color: Colors.white70, size: 50,) : Text(f.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 28, color: Colors.white),),
                   Text(menu.label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),),
                   const SizedBox(height: 14,),
