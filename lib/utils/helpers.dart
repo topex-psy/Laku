@@ -122,11 +122,9 @@ class UIHelper {
         ),
       );
     }
-    List<Widget> actions = buttons?.map((button) {
-      return _makeButton(button.label, color: button.color, action: button.onPressed);
-    }).toList() ?? [];
+    List<Widget> actions = buttons?.map((button) => _makeButton(button.label, color: button.color, action: button.onPressed)).toList() ?? [];
 
-    if (showCloseButton) actions.add(_makeButton(closeButtonText ?? "Tutup", color: closeButtonColor, action: closeDialog));
+    if (showCloseButton) actions.add(_makeButton(closeButtonText ?? 'action_close'.tr(), color: closeButtonColor, action: closeDialog));
 
     return showGeneralDialog(
       barrierColor: Colors.black.withOpacity(0.5),
@@ -135,7 +133,6 @@ class UIHelper {
       transitionBuilder: (context, a1, a2, widget) {
         final _curvedValue = Curves.easeInOutBack.transform(a1.value);
         return Theme(
-          // data: Theme.of(context),
           data: ThemeProvider.themeOf(context).data,
           child: Transform(
             transform: Matrix4.identity()..scale(1.0, 0.5 + _curvedValue / 2, 1.0),
@@ -149,7 +146,19 @@ class UIHelper {
                   titlePadding: title == null ? const EdgeInsets.only(top: 24) : const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 12),
                   content: SingleChildScrollView(padding: EdgeInsets.only(left: 24, right: 24, bottom: actions.isEmpty ? 24 : 8), child: body,),
                   contentPadding: EdgeInsets.zero,
-                  actions: actions.isEmpty ? null : actions,
+                  // actions: actions.isEmpty ? null : actions,
+                  actions: actions.isEmpty ? null : [Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      // alignment: WrapAlignment.center,
+                      // runAlignment: WrapAlignment.center,
+                      // crossAxisAlignment: WrapCrossAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (var action in actions) action
+                      ]
+                    ),
+                  )],
                 ),
               ),
             ),
@@ -170,7 +179,7 @@ class UIHelper {
       buttonSize: MyButtonSize.SMALL,
       buttons: [
         MenuModel(approveText ?? "Ya", true, onPressed: () => Navigator.of(context).pop(true)),
-        MenuModel(rejectText ?? "Tidak", false, color: rejectColor ?? Colors.grey[600], onPressed: () => Navigator.of(context).pop(false)),
+        MenuModel(rejectText ?? "Tidak", false, color: rejectColor ?? Colors.grey, onPressed: () => Navigator.of(context).pop(false)),
         ...additionalButtons,
       ],
       showCloseButton: false,
@@ -329,37 +338,40 @@ class FormatHelper {
 
 class LocationHelper {
   Future<dynamic> checkGPS() async {
-    LocationPermission permission;
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return await h.showCallbackDialog(
+    var serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    while (!serviceEnabled) {
+      await h.showCallbackDialog(
         "Harap aktifkan GPS untuk dapat menggunakan aplikasi ini.",
         title: "GPS Tidak Aktif",
         type: MyCallbackType.warning,
       );
+      await Geolocator.openLocationSettings();
+      await Future.delayed(const Duration(milliseconds: 1000));
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
     }
 
-    callbackMessage() async => await h.showCallbackDialog(
-      "Izin akses lokasi dibutuhkan untuk dapat menggunakan aplikasi ini.",
-      title: "Izin Dibutuhkan",
-      type: MyCallbackType.warning,
-    );
+    var permission = await Geolocator.checkPermission();
+    isAllowed() => [LocationPermission.whileInUse, LocationPermission.always].contains(permission);
 
-    permission = await Geolocator.checkPermission();
     print("location permission 1: $permission");
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
+
     print("location permission 2: $permission");
-    if (permission == LocationPermission.deniedForever) {
-      await callbackMessage();
+    if (!isAllowed()) {
+      await h.showCallbackDialog(
+        "Izin akses lokasi dibutuhkan untuk dapat menggunakan aplikasi ini.",
+        title: "Izin Dibutuhkan",
+        type: MyCallbackType.warning,
+      );
       print("location permission: will open app settings");
       await Geolocator.openAppSettings();
+      await Future.delayed(const Duration(milliseconds: 1000));
       permission = await Geolocator.checkPermission();
+      print("location permission 3: $permission");
     }
-    print("location permission 3: $permission");
-    if ([LocationPermission.whileInUse, LocationPermission.always].contains(permission)) return await myPosition();
-    return await callbackMessage();
+    return isAllowed() ? await myPosition() : null;
   }
 
   Future<Position> myPosition() async {
@@ -458,7 +470,7 @@ class UserHelper {
             );
           }).toList(),
         ),
-        closeButtonText: "Batal",
+        closeButtonText: 'action_cancel'.tr(),
         buttonSize: MyButtonSize.SMALL
       );
       if (source == null) return null;
@@ -530,9 +542,13 @@ class UserHelper {
     // TODO forgot password
   }
 
-  navigatePage(int page) {
+  navigatePage(int page, {bool animate = false}) {
     h.closeDrawer();
-    screenPageController.animateToPage(page, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+    if (animate) {
+      screenPageController.animateToPage(page, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+    } else {
+      screenPageController.jumpToPage(page);
+    }
     firebaseAnalytics.setCurrentScreen(
       screenName: screenNames[page],
     );
@@ -542,7 +558,7 @@ class UserHelper {
 
   Future<bool> loadNotif() async {
     if (session?.id == null) return false;
-    final notifResult = await ApiProvider(context).api("user/notif", method: "get", withLog: true);
+    final notifResult = await ApiProvider().api("user/notif", method: "get", withLog: false);
     if (notifResult.isSuccess) {
       Provider.of<SettingsProvider>(context, listen: false).setSettings(
         notif: NotifModel.fromJson(notifResult.data.first)

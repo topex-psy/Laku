@@ -1,16 +1,12 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'constants.dart';
 import 'variables.dart';
 
 class ApiProvider {
-  ApiProvider(this.context);
 
-  final BuildContext context;
   final baseOptions = BaseOptions(
     baseUrl: isDebugMode ? "http://192.168.1.68/yaku/api" : APP_URL_API,
     connectTimeout: 60000,
@@ -26,7 +22,9 @@ class ApiProvider {
     void Function(int, int)? onSendProgress,
     bool withLog = false,
   }) async {
-    if (method.toLowerCase() == 'get') getParams = {...getParams, "lang": context.locale.languageCode, 'uid': session!.id.toString()};
+    if (method.toLowerCase() == 'get') {
+      getParams = { ...getParams, 'lang': languageCode, 'uid': session!.id.toString() };
+    }
     print("${method.toUpperCase()} $url $getParams");
     try {
       var response = method.toLowerCase() == 'post'

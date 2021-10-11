@@ -161,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> with TickerProviderStateMix
       isFacebook: _method == "facebook",
     ).toJson();
     
-    final registerResult = await ApiProvider(context).api('user', method: "post", data: registerPostData, withLog: true, onSendProgress: (sent, total) {
+    final registerResult = await ApiProvider().api('user', method: "post", data: registerPostData, withLog: true, onSendProgress: (sent, total) {
       final progress = sent / total;
       final percent = progress * 100;
       if (percent.toInt() % 10 == 0) {

@@ -1,6 +1,7 @@
 {
   "action_apply": "Terapkan",
   "action_cancel": "Batal",
+  "action_close": "Tutup",
   "action_retry": "Coba Lagi",
   "action_continue": "Lanjutkan",
   "action_create": {
@@ -42,6 +43,9 @@
   "menu_profile": "Profil Saya",
   "menu_favorites": "Favorit",
   "menu_inbox": "Pesan Masuk",
+  "menu_dark_mode": "Mode Gelap",
+  "menu_feedback": "Feedback",
+  "menu_logout": "Keluar",
   "menu_bottom": {
     "home": "Beranda",
     "browse": "Temukan",

@@ -104,6 +104,7 @@ class MyInputCheck extends StatelessWidget {
   Widget build(BuildContext context) {
     return CheckboxListTile(
       activeColor: APP_UI_COLOR_SUCCESS,
+      contentPadding: EdgeInsets.zero,
       controlAffinity: ListTileControlAffinity.leading,
       dense: true,
       title: Text(label, style: const TextStyle(fontSize: 16)),
@@ -157,11 +158,11 @@ class MyButton extends StatelessWidget {
 
   EdgeInsets get padding {
     switch (size) {
-      case MyButtonSize.SMALLEST: return const EdgeInsets.symmetric(horizontal: 12, vertical: 4);
-      case MyButtonSize.SMALLER: return const EdgeInsets.symmetric(horizontal: 18, vertical: 7);
+      case MyButtonSize.SMALLEST: return const EdgeInsets.symmetric(horizontal: 12, vertical: 6);
+      case MyButtonSize.SMALLER: return const EdgeInsets.symmetric(horizontal: 18, vertical: 8);
       case MyButtonSize.SMALL: return const EdgeInsets.symmetric(horizontal: 24, vertical: 10);
-      case MyButtonSize.LARGE: return const EdgeInsets.symmetric(horizontal: 36, vertical: 16);
-      default: return const EdgeInsets.symmetric(horizontal: 30, vertical: 13);
+      case MyButtonSize.LARGE: return const EdgeInsets.symmetric(horizontal: 36, vertical: 14);
+      default: return const EdgeInsets.symmetric(horizontal: 30, vertical: 12);
     }
   }
 
@@ -749,6 +750,7 @@ class MyInputSelect extends StatefulWidget {
   const MyInputSelect({
     Key? key,
     this.icon,
+    this.caretIcon,
     required this.listMenu,
     required this.onSelect,
     this.value,
@@ -759,6 +761,7 @@ class MyInputSelect extends StatefulWidget {
     this.error = ''
   }) : super(key: key);
   final IconData? icon;
+  final IconData? caretIcon;
   final List<MenuModel> listMenu;
   final MenuModel? value;
   final Color? color;
@@ -795,7 +798,6 @@ class _MyInputSelectState extends State<MyInputSelect> {
     }
   }
 
-
   @override
   void initState() {
     _val = widget.value;
@@ -816,7 +818,7 @@ class _MyInputSelectState extends State<MyInputSelect> {
         Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(APP_UI_BORDER_RADIUS),),
           clipBehavior: Clip.antiAlias,
-          margin: widget.margin ?? const EdgeInsets.only(bottom: 8),
+          margin: widget.margin,
           elevation: 0,
           color: widget.color ?? Colors.white,
           child: Padding(
@@ -832,6 +834,7 @@ class _MyInputSelectState extends State<MyInputSelect> {
                 DropdownButtonHideUnderline(
                   child: DropdownButton<MenuModel>(
                     isDense: true,
+                    icon: widget.caretIcon == null ? null : Icon(widget.caretIcon!),
                     underline: null,
                     value: widget.value ?? _val,
                     hint: Text(widget.placeholder ?? "Pilih satu"),
@@ -1301,10 +1304,9 @@ class MyCurrencyInputFormatter extends TextInputFormatter {
 }
 
 class MyFabCircular extends StatelessWidget {
-  const MyFabCircular(this.icon, this.listActions, this.onAction, {Key? key, this.getOffset, this.getSize}) : super(key: key);
+  const MyFabCircular(this.icon, this.listActions, {Key? key, this.getOffset, this.getSize}) : super(key: key);
   final IconData icon;
   final List<MenuModel> listActions;
-  final void Function(String) onAction;
   final Offset Function(int)? getOffset;
   final double Function(int)? getSize;
 
@@ -1329,15 +1331,12 @@ class MyFabCircular extends StatelessWidget {
                 color: Colors.transparent,
                 clipBehavior: Clip.antiAlias,
                 child: IconButton(
-                  splashColor: action.color,
                   padding: const EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 12),
                   icon: Icon(action.icon),
                   iconSize: getSize == null ? 24.0 : getSize!(i),
                   color: Colors.white,
                   tooltip: action.label,
-                  onPressed: () {
-                    onAction(action.value);
-                  }
+                  onPressed: action.onPressed,
                 ),
               ),
               IgnorePointer(
@@ -1756,8 +1755,9 @@ class MyProfileCard extends StatelessWidget {
 }
 
 class MyAppBar extends StatelessWidget {
-  const MyAppBar({ Key? key, required this.title, this.onWillPop }) : super(key: key);
+  const MyAppBar({ Key? key, required this.title, this.action, this.onWillPop }) : super(key: key);
   final String title;
+  final Widget? action;
   final Future<bool> Function()? onWillPop;
 
   @override
@@ -1767,13 +1767,13 @@ class MyAppBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // const SizedBox(width: 15,),
           IconButton(icon: const Icon(Icons.chevron_left_rounded), iconSize: 32, color: APP_UI_COLOR_MAIN, onPressed: () async {
             if (onWillPop == null || await onWillPop!()) Navigator.of(context).pop();
           },),
           const SizedBox(width: 12,),
           Expanded(child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700))),
-          const SizedBox(width: APP_UI_CONTENT_PADDING,),
+          action == null ? const SizedBox() : Padding(padding: const EdgeInsets.only(left: 12), child: action!),
+          const SizedBox(width: 12,),
         ],
       ),
     );

@@ -12,6 +12,7 @@ const APP_URL_PRIVACY    = "$APP_URL_HOST/privacy";
 const APP_URL_TERMS      = "$APP_URL_HOST/terms";
 const APP_URL_API        = "$APP_URL_HOST/api";
 const APP_FACEBOOK_ID    = "844479926196457";
+const APP_GOOGLE_MAP_KEY = 'AIzaSyCJ0ddaiNK8nPVr7nXisrViLCG887KQZgE';
 
 // colors from: https://maketintsandshades.com/#009688
 const APP_UI_COLOR_MAIN    = Color(0xFF009688);
@@ -71,3 +72,5 @@ const SETUP_MAX_LENGTH_PIN = 6;
 const SETUP_MAX_LENGTH_CURRENCY = 15;
 const SETUP_MAX_USER_AGE = 100;
 const SETUP_MIN_USER_AGE = 13;
+const SETUP_MAP_DEFAULT_ZOOM = 16.34;
+const SETUP_MAP_DEFAULT_RADIUS = 10000;

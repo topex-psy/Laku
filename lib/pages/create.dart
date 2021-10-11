@@ -150,7 +150,7 @@ class _CreatePageState extends State<CreatePage> {
       'hash': hash.toString(),
     };
     print(" ... POST DATA: $postData");
-    final postResult = await ApiProvider(context).api('listing', method: 'post', data: postData, withLog: true, onSendProgress: (sent, total) {
+    final postResult = await ApiProvider().api('listing', method: 'post', data: postData, withLog: true, onSendProgress: (sent, total) {
       final progress = sent / total;
       final percent = progress * 100;
       if (percent.toInt() % 10 == 0) {
@@ -213,7 +213,7 @@ class _CreatePageState extends State<CreatePage> {
   }
 
   Future<ApiModel> _uploadImages(List<Map<String, dynamic>> data) async {
-    ApiModel? uploadResult = await ApiProvider(context).api(
+    ApiModel? uploadResult = await ApiProvider().api(
       'upload',
       method: "post",
       getParams: {"type": "data"},
@@ -245,7 +245,7 @@ class _CreatePageState extends State<CreatePage> {
         _isLoadingShop = true;
       });
     }
-    final shopResult = await ApiProvider(context).api('shop/user', method: 'get', getParams: { 'id': session!.id.toString() });
+    final shopResult = await ApiProvider().api('shop/user', method: 'get', getParams: { 'id': session!.id.toString() });
     if (mounted) {
       setState(() {
         _listShop = shopResult.data.map((shop) => ShopModel.fromJson(shop)).toList();
@@ -260,7 +260,7 @@ class _CreatePageState extends State<CreatePage> {
         _isLoadingCategory = true;
       });
     }
-    final listingCategoryResult = await ApiProvider(context).api('listing/category', method: "get", getParams: { 'type': _type.value });
+    final listingCategoryResult = await ApiProvider().api('listing/category', method: "get", getParams: { 'type': _type.value });
     if (listingCategoryResult.isSuccess) {
       if (mounted) {
         final listKelompok = List<Map<String, String>>.from(listingCategoryResult.data.first["category"]);
@@ -303,7 +303,7 @@ class _CreatePageState extends State<CreatePage> {
     _images = widget.args["selectedAssets"] ?? [];
     _item = widget.args["item"];
     _isEdit = _item != null;
-    _type = _item != null ? _listType.firstWhere((type) => type.value == _item!.type) : _listType.first;
+    _type = _listType.firstWhere((type) => type.value == (_item?.type ?? widget.args["type"]), orElse: () => _listType.first);
     _condition = _listCondition.first;
     _titleController.addListener(() => _dismissError("title"));
     _descriptionController.addListener(() {

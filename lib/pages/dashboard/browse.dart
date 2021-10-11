@@ -132,7 +132,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
       'limit': limit.toString(),
       'keyword': keyword,
     };
-    final listingResult = await ApiProvider(context).api('listing/${settings.isViewFavorites ? 'fav' : 'near'}', method: "get", withLog: true, getParams: listingParams);
+    final listingResult = await ApiProvider().api('listing/${settings.isViewFavorites ? 'fav' : 'near'}', method: "get", withLog: true, getParams: listingParams);
     setState(() {
       _isGettingData = false;
     });
@@ -219,7 +219,7 @@ class _BrowsePageState extends State<BrowsePage> with TickerProviderStateMixin {
               // TODO translate
               tooltip: item.isFavorite ? "Hapus favorit" : "Tambahkan ke favorit",
               onPressed: () async {
-                final favoriteResult = await ApiProvider(context).api("favorite", data: {
+                final favoriteResult = await ApiProvider().api("favorite", data: {
                   "id": item.id,
                   "type": item.isFavorite ? 'del' : 'add'
                 });

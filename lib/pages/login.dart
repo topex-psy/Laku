@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     final userData = {"email": _emailController.text};
-    final userResult = await ApiProvider(context).api('user/check', method: "post", data: userData, withLog: true);
+    final userResult = await ApiProvider().api('user/check', method: "post", data: userData, withLog: true);
     print("userResult: $userResult");
     if (!userResult.isSuccess) {
       if (userResult.message == "user-not-found") {
@@ -218,6 +218,7 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.addListener(() { if (_emailController.text.isNotEmpty) _dismissError("email"); });
     super.initState();
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      languageCode = context.locale.languageCode;
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       isTour1Completed = isDebugMode && DEBUG_TOUR ? false : (prefs.getBool('isTour1Completed') ?? false);

@@ -10,8 +10,11 @@ import 'models.dart';
 
 var isDebugMode = false;
 
+// String languageCode = "id";
+
 late FirebaseAnalytics firebaseAnalytics;
 late FirebaseAnalyticsObserver firebaseObserver;
+late String languageCode;
 late UIHelper h;
 late UserHelper u;
 late FormatHelper f;
@@ -51,12 +54,12 @@ final pickImageOptions = <MenuModel>[
 ];
 
 final listingCategories = [
-  MenuModel('Semua', 'all', icon: LineIcons.at),
-  MenuModel('Jual-Beli', 'market', icon: LineIcons.at),
-  MenuModel('Tempat', 'place', icon: LineIcons.at),
-  MenuModel('Servis', 'service', icon: LineIcons.at),
-  MenuModel('Event', 'event', icon: LineIcons.at),
-  MenuModel('Loker', 'job', icon: LineIcons.at),
-  MenuModel('Jodoh', 'dating', icon: LineIcons.at),
-  MenuModel('Lainnya', 'other', icon: LineIcons.at),
+  MenuModel('Semua', 'all', icon: LineIcons.searchLocation),
+  MenuModel('Jual-Beli', 'market', icon: LineIcons.searchLocation),
+  MenuModel('Tempat', 'place', icon: LineIcons.searchLocation),
+  MenuModel('Servis', 'service', icon: LineIcons.searchLocation),
+  MenuModel('Event', 'event', icon: LineIcons.searchLocation),
+  MenuModel('Loker', 'job', icon: LineIcons.searchLocation),
+  MenuModel('Jodoh', 'dating', icon: LineIcons.searchLocation),
+  MenuModel('Lainnya', 'other', icon: LineIcons.searchLocation),
 ];

@@ -135,6 +135,7 @@ flutter:
     - assets/images/
     - assets/images/logo/
     - assets/images/onboarding/
+    - assets/images/pin/
     - assets/sounds/
     - assets/translations/
 

@@ -60,11 +60,6 @@ class _DashboardPageState extends State<DashboardPage> {
   double _lastLongitude = 0;
   Timer? _timer;
 
-  final _listActions = [
-    MenuModel(tr('action_create.listing'), 'listing', icon: LineIcons.edit, color: Colors.blue),
-    MenuModel(tr('action_create.broadcast'), 'broadcast', icon: LineIcons.bullhorn, color: Colors.yellow),
-  ];
-
   _openPage(int index) {
     FocusScope.of(context).unfocus();
     setState(() {
@@ -172,7 +167,7 @@ class _DashboardPageState extends State<DashboardPage> {
     });
 
     if (isConnected) {
-      ApiProvider(context).api("user", method: "put", withLog: false, data: {
+      ApiProvider().api("user", method: "put", withLog: false, data: {
         'id': session!.id,
         'last_latitude': lastLatitude,
         'last_longitude': lastLongitude,
@@ -203,7 +198,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   _create(String what) async {
-    final createResult = await Navigator.pushNamed(context, ROUTE_CREATE);
+    final createResult = await Navigator.pushNamed(context, ROUTE_CREATE, arguments: {"type": what});
     print("createResult: $createResult");
     reInitContext(context);
     // final resultList = await u.browsePicture(maximum: profile!.tier.maxListingPic) ?? [];
@@ -266,67 +261,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLocationGranted == null) return const MyLoader();
-
-    // permission lokasi belum diizinkan
-    if (!_isLocationGranted!) {
-      return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(40.0),
-          child: MyPlaceholder(
-            content: ContentModel(
-              title: "Izin Dibutuhkan",
-              description: "Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.",
-            ),
-            retryLabel: "Izinkan",
-            onRetry: _checkLocationPermission,
-          ),
-        ),
-      );
-    }
-
-    Widget noConnection(String type) {
-      return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(40.0),
-          child: MyPlaceholder(
-            retryLabel: type == "gps" ? "Pengaturan" : "Coba Lagi",
-            onRetry: () async {
-              if (type == "gps") await Geolocator.openLocationSettings();
-              setState(() {
-                _isLoading = true;
-                _loadingText = "Mencari koneksi";
-              });
-
-              var gpsEnabled = await Geolocator.isLocationServiceEnabled();
-              var connectivityResult = await (Connectivity().checkConnectivity());
-              var isConnected = connectivityResult != ConnectivityResult.none;
-              setState(() {
-                _isGPSActive = gpsEnabled;
-                _isConnected = isConnected;
-                _isLoading = false;
-                _loadingText = null;
-              });
-
-            },
-            content: ContentModel(
-              title: type == "internet" ? "Gagal Terhubung!" : "GPS Tidak Aktif!",
-              description: type == "internet" ? "Mohon periksa jaringan internet Anda." : "Mohon aktifkan GPS untuk dapat menggunakan aplikasi.",
-              image: "assets/images/no-network.png",
-            ),
-          ),
-        ),
-      );
-    }
-
-    // sedang memuat
-    if (_isLoading) return MyLoader(message: _loadingText,);
-
-    // internet putus
-    if (!_isConnected) return noConnection("internet");
-
-    // gps tidak aktif
-    if (!_isGPSActive) return noConnection("gps");
 
     final _listPages = <PageModel>[
       PageModel(title: tr('menu_bottom.home'), icon: LineIcons.home, content: HomePage(isOpen: _pageIndex == tabHome, onUpdatePosition: _sendPosition),),
@@ -334,6 +268,76 @@ class _DashboardPageState extends State<DashboardPage> {
       PageModel(title: tr('menu_bottom.broadcast'), icon: LineIcons.bullhorn, content: BroadcastPage(isOpen: _pageIndex == tabBroadcast,),),
       PageModel(title: tr('menu_bottom.profile'), icon: LineIcons.user, content: ProfilePage(isOpen: _pageIndex == tabProfile,),),
     ];
+
+    Widget getBody() {
+      // sedang memuat
+      if (_isLoading || _isLocationGranted == null) return MyLoader(message: _loadingText,);
+
+      // permission lokasi belum diizinkan
+      if (!_isLocationGranted!) {
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(40.0),
+            child: MyPlaceholder(
+              content: ContentModel(
+                title: "Izin Dibutuhkan",
+                description: "Harap izinkan aplikasi untuk mengakses lokasi Anda saat ini.",
+              ),
+              retryLabel: "Izinkan",
+              onRetry: _checkLocationPermission,
+            ),
+          ),
+        );
+      }
+
+      Widget noConnection(String type) {
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(40.0),
+            child: MyPlaceholder(
+              retryLabel: type == "gps" ? "Pengaturan" : "Coba Lagi",
+              onRetry: () async {
+                if (type == "gps") await Geolocator.openLocationSettings();
+                setState(() {
+                  _isLoading = true;
+                  _loadingText = "Mencari koneksi";
+                });
+
+                var gpsEnabled = await Geolocator.isLocationServiceEnabled();
+                var connectivityResult = await (Connectivity().checkConnectivity());
+                var isConnected = connectivityResult != ConnectivityResult.none;
+                setState(() {
+                  _isGPSActive = gpsEnabled;
+                  _isConnected = isConnected;
+                  _isLoading = false;
+                  _loadingText = null;
+                });
+
+              },
+              content: ContentModel(
+                title: type == "internet" ? "Gagal Terhubung!" : "GPS Tidak Aktif!",
+                description: type == "internet" ? "Mohon periksa jaringan internet Anda." : "Mohon aktifkan GPS untuk dapat menggunakan aplikasi.",
+                image: "assets/images/no-network.png",
+              ),
+            ),
+          ),
+        );
+      }
+
+      // internet putus
+      if (!_isConnected) return noConnection("internet");
+
+      // gps tidak aktif
+      if (!_isGPSActive) return noConnection("gps");
+
+      return PreloadPageView.builder(
+        preloadPagesCount: 2,
+        controller: screenPageController,
+        itemCount: _listPages.length,
+        itemBuilder: (context, index) => _listPages[index].content,
+        onPageChanged: _openPage,
+      );
+    }
 
     return WillPopScope(
       onWillPop: () async {
@@ -382,13 +386,13 @@ class _DashboardPageState extends State<DashboardPage> {
                       const SizedBox(height: 20,),
                       DashboardNavMenu(
                         menus: [
-                          MenuModel("Mode Gelap: ${ThemeProvider.themeOf(context).id == APP_UI_THEME_LIGHT ? 'Off' : 'Aktif'}", "change_theme", icon: LineIcons.moon, onPressed: () {
+                          MenuModel("${'menu_dark_mode'.tr()}: ${ThemeProvider.themeOf(context).id == APP_UI_THEME_LIGHT ? 'Off' : 'Aktif'}", "change_theme", icon: LineIcons.moon, onPressed: () {
                             ThemeProvider.controllerOf(context).nextTheme();
                           }),
-                          MenuModel("Feedback", "feedback", icon: LineIcons.comments, onPressed: () {
+                          MenuModel('menu_feedback'.tr(), "feedback", icon: LineIcons.comments, onPressed: () {
                             LaunchReview.launch();
                           }),
-                          MenuModel("Keluar", "logout", icon: LineIcons.alternateSignOut, onPressed: () {
+                          MenuModel('menu_logout'.tr(), "logout", icon: LineIcons.alternateSignOut, onPressed: () {
                             u.logout();
                           }),
                         ],
@@ -429,13 +433,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         body: SafeArea(
-          child: PreloadPageView.builder(
-            preloadPagesCount: 2,
-            controller: screenPageController,
-            itemCount: _listPages.length,
-            itemBuilder: (context, index) => _listPages[index].content,
-            onPageChanged: _openPage,
-          ),
+          child: getBody(),
         ),
         bottomNavigationBar: Stack(
           alignment: Alignment.topCenter,
@@ -479,10 +477,13 @@ class _DashboardPageState extends State<DashboardPage> {
             final offsetAnimation = Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0)).animate(animation);
             return SlideTransition(position: offsetAnimation, child: child);
           },
-          child: _pageIndex > 0 ? const SizedBox() : MyFabCircular(
+          // child: _pageIndex > 0 ? const SizedBox() : MyFabCircular(
+          child: MyFabCircular(
             LineIcons.plus,
-            _listActions,
-            _create,
+            [
+              MenuModel(tr('action_create.listing'), 'listing', icon: LineIcons.edit, onPressed: () => _create('listing')),
+              MenuModel(tr('action_create.broadcast'), 'broadcast', icon: LineIcons.bullhorn, onPressed: () => _create('broadcast')),
+            ],
             getSize: (i) => 48.0 - 6 * i,
             getOffset: (i) {
               double x = 0.0, y = 0.0;

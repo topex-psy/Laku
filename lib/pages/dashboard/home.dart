@@ -498,8 +498,10 @@ class _CardBoxState extends State<CardBox> {
           total: total,
           icon: LineIcons.users,
           color: Colors.green,
-          onPressed: () {
+          onPressed: () async {
             // TODO list shop near
+            await Navigator.of(context).pushNamed(ROUTE_MAP);
+            reInitContext(context);
           },
         );
         break;
@@ -553,10 +555,10 @@ class _CardBoxState extends State<CardBox> {
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
                   total == null ? const SpinKitRipple(color: Colors.white70, size: 50,) : Text(f.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 28, color: Colors.white),),
-                  Text(menu.label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),),
+                  Text(menu.label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),),
                   const SizedBox(height: 14,),
                   Row(children: <Widget>[
-                    Expanded(child: Text('action_more'.tr(), style: const TextStyle(fontSize: 12, color: Colors.white70),)),
+                    Expanded(child: Text('action_more'.tr(), style: const TextStyle(color: Colors.white70),)),
                     const SizedBox(width: 8,),
                     const Icon(LineIcons.chevronCircleRight, color: Colors.white70, size: 15,)
                   ],)
@@ -658,10 +660,10 @@ class _CardListState extends State<CardList> {
           const SizedBox(width: 8,),
           Text(f.formatNumber(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
           const SizedBox(width: 8,),
-          Expanded(child: Text(menu.label)),
+          Expanded(child: Text(menu.label, style: const TextStyle(fontSize: 15))),
           MyButton(
             menu.additionalValue,
-            size: MyButtonSize.SMALLER,
+            size: MyButtonSize.SMALL,
             color: menu.color,
             icon: menu.icon,
             iconRight: true,

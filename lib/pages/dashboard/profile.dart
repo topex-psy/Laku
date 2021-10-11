@@ -42,7 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
   UserModel? _userData;
 
   _getAllData() async {
-    final userResult = await ApiProvider(context).api('user', method: "get", getParams: {'id': session!.id.toString()});
+    final userResult = await ApiProvider().api('user', method: "get", getParams: {'id': session!.id.toString()});
     if (userResult.isSuccess) {
       if (mounted) {
         setState(() {
@@ -144,7 +144,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _loadingProgress = 0.0;
     });
 
-    final putUserResult = await ApiProvider(context).api('user', method: 'put', withLog: true, data: postData);
+    final putUserResult = await ApiProvider().api('user', method: 'put', withLog: true, data: postData);
     if (putUserResult.isSuccess) {
       profile = UserModel.fromJson(putUserResult.data.first);
 

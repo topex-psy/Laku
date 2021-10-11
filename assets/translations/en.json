@@ -1,6 +1,7 @@
 {
   "action_apply": "Apply",
   "action_cancel": "Cancel",
+  "action_close": "Close",
   "action_retry": "Retry",
   "action_continue": "Continue",
   "action_create": {
@@ -42,6 +43,9 @@
   "menu_profile": "My Profile",
   "menu_favorites": "Favorites",
   "menu_inbox": "Inbox",
+  "menu_dark_mode": "Dark Mode",
+  "menu_feedback": "Feedback",
+  "menu_logout": "Logout",
   "menu_bottom": {
     "home": "Home",
     "browse": "Browse",

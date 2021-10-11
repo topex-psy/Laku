@@ -3,8 +3,6 @@ import 'package:geocoding/geocoding.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
 
-const DEFAULT_ZOOM = 16.34;
-
 class SettingsProvider with ChangeNotifier {
   late bool _isGettingAddress;
   late bool _isUploadListing;

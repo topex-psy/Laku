@@ -28,11 +28,6 @@ class ListingPage extends StatefulWidget {
 class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin {
   final _scrollController = ScrollController();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _listActions = <MenuModel>[
-    MenuModel("Edit", 'edit', icon: Icons.edit_attributes_outlined, color: Colors.blue),
-    MenuModel("Nonaktifkan", 'deactivate', icon: Icons.close, color: Colors.yellow),
-    MenuModel("Hapus", 'delete', icon: Icons.delete_outline, color: Colors.red),
-  ];
   final _refreshController = RefreshController(initialRefresh: false);
 
   bool get isShrink => _scrollController.hasClients && _scrollController.offset > (200 - kToolbarHeight);
@@ -41,7 +36,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
   late ListingModel _item;
 
   _getAllData() async {
-    final putListingResult = await ApiProvider(context).api('listing', method: "get", withLog: true, getParams: { 'id': _item.id.toString() });
+    final putListingResult = await ApiProvider().api('listing', method: "get", withLog: true, getParams: { 'id': _item.id.toString() });
     if (putListingResult.isSuccess) {
       _refreshController.refreshCompleted();
       setState(() {
@@ -67,7 +62,7 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
     print("TAP ACTION: $action");
     switch (action) {
       case 'favorit':
-        final favoriteResult = await ApiProvider(context).api("favorite", data: {
+        final favoriteResult = await ApiProvider().api("favorite", data: {
           "id": _item.id,
           "type": _item.isFavorite ? 'del' : 'add'
         });
@@ -609,8 +604,11 @@ class _ListingPageState extends State<ListingPage> with TickerProviderStateMixin
       ),
       floatingActionButton: _item.isMine ? MyFabCircular(
         Icons.edit,
-        _listActions,
-        _action,
+        [
+          MenuModel("Edit", 'edit', icon: Icons.edit_attributes_outlined, onPressed: () => _action('edit')),
+          MenuModel("Nonaktifkan", 'deactivate', icon: Icons.close, onPressed: () => _action('deactivate')),
+          MenuModel("Hapus", 'delete', icon: Icons.delete_outline, onPressed: () => _action('delete')),
+        ],
         getOffset: (i) {
           double x = 0.0, y = 0.0;
           if (i == 0) {

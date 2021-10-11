@@ -16,7 +16,7 @@ class _BroadcastPageState extends State<BroadcastPage> {
   var _listBroadcasts = <ListingModel>[];
 
   _getAllData() async {
-    final broadcastResult = await ApiProvider(context).api('listing/near', method: "get", getParams: { 'type': 'broadcast' });
+    final broadcastResult = await ApiProvider().api('listing/near', method: "get", getParams: { 'type': 'broadcast' });
     if (broadcastResult.isSuccess) {
       if (mounted) {
         setState(() {
